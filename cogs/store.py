@@ -147,9 +147,11 @@ class Store(commands.Cog): # create a class for our cog that inherits from comma
 	@item_commands.command() # we can also add application commands
 	async def create(self, ctx: discord.ApplicationContext):
 		await ctx.send_modal(ItemForm(title='Створити предмет'))
+
+	@commands.has_permissions(administrator=True)
 	@item_commands.command() # we can also add application commands
 	async def shop2(self, ctx: discord.ApplicationContext):
-		await ctx.send_modal(ItemForm(title='Створити предмет'))
+		await ctx.respond(view=StoreSelect(timeout=None))
 	@item_commands.command() # we can also add application commands
 	async def inventory(self, ctx: discord.ApplicationContext):
 		user  =shop_controll.get_user_cash(ctx.author.id)
