@@ -159,6 +159,7 @@ class Posts(commands.Cog):
 
     @commands.Cog.listener()
     async def on_ready(self):
+        await self.update_all()
         print("Оновіть пости після перезапуску!")
     @posts_commands.command()
     @commands.has_permissions()

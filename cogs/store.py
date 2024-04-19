@@ -9,21 +9,57 @@ class StoreSelect(discord.ui.View):
         max_values = 1, # the maximum number of values that can be selected by the users
         options = [ # the list of options from which users can choose, a required field
             discord.SelectOption(
-                label="Vanilla",
-                description="Pick this if you like vanilla!"
+                label="Тінь"
             ),
             discord.SelectOption(
-                label="Chocolate",
-                description="Pick this if you like chocolate!"
+                label="Виноград"
             ),
             discord.SelectOption(
-                label="Strawberry",
-                description="Pick this if you like strawberry!"
+                label="Невизначеність"
+            ),
+            discord.SelectOption(
+                label="Червоне полум'я"
+            ),
+            discord.SelectOption(
+                label="Чорне море"
+            ),
+            discord.SelectOption(
+                label="Діамант"
+            ),
+            discord.SelectOption(
+                label="Сніжок"
+            ),
+            discord.SelectOption(
+                label="Квітка"
+            ),
+            discord.SelectOption(
+                label="Хвоя"
+            ),
+            discord.SelectOption(
+                label="Великодка"
+            ),
+            discord.SelectOption(
+                label="Левада"
+            ),
+            discord.SelectOption(
+                label="Палючий пісок"
+            ),
+            discord.SelectOption(
+                label="Гарбуз"
+            ),
+            discord.SelectOption(
+                label="Вечірнє небо"
+            ),
+            discord.SelectOption(
+                label="Лимон"
+            ),
+            discord.SelectOption(
+                label="Світло"
             )
         ]
     )
-    async def select_callback(self, select, interaction): # the function called when the user is done selecting options
-        await interaction.response.send_message(f"Awesome! I like {select.values[0]} too!")
+    async def select_callback(self, select, interaction: discord.Interaction): # the function called when the user is done selecting options
+        await interaction.response.send_message(f"{select.values[0]}!", ephemeral=True)
 
 class Store(commands.Cog): # create a class for our cog that inherits from commands.Cog
     # this class is used to create a cog, which is a module that can be added to the bot
@@ -34,7 +70,6 @@ class Store(commands.Cog): # create a class for our cog that inherits from comma
     @discord.slash_command() # we can also add application commands
     async def store(self, ctx):
         await ctx.respond('Goodbye!')
-
     @discord.user_command()
     async def greet(self, ctx, member: discord.Member):
         await ctx.respond(f'{ctx.author.mention} says hello to {member.mention}!')
