@@ -91,16 +91,27 @@ class StoreSelect(discord.ui.View):
 
 	options = []
 	for i,option in enumerate(options_labels):
-		options.append(discord.SelectOption(label=option, value=str(i),emoji=sorted_emojies[i]))
+		options.append(discord.SelectOption(label=option,emoji=sorted_emojies[i]))
 
 	@discord.ui.select( # the decorator that lets you specify the properties of the select menu
-		placeholder = "Магазин кольорів", # the placeholder text that will be displayed if nothing is selected
+		placeholder = "🎨 | Магазин кольорів", # the placeholder text that will be displayed if nothing is selected
 		min_values = 1, # the minimum number of values that must be selected by the users
 		max_values = 1, # the maximum number of values that can be selected by the users
 		options = options
 	)
 	async def select_callback(self, select: discord.ui.Select, interaction: discord.Interaction): # the function called when the user is done selecting options
-		await interaction.response.send_message(f"{select.values[0]}!", ephemeral=True)
+		try:
+			item = shop_controll.get_item(select.values[0])
+		except:
+			await interaction.respond("Такого предмета не існує 0_о")
+			return
+		result = shop_controll.buy_item(item["name"], interaction.user.id)
+		if result == 'cash':
+			await interaction.respond("Недостатньо коштів", ephemeral=True)
+		elif result == 'item':
+			await interaction.respond("Такого предмета не існує 0_о", ephemeral=True)
+		else:
+			await interaction.respond("Предмет успішно куплено", ephemeral=True)
 
 class Store(commands.Cog): # create a class for our cog that inherits from commands.Cog
 	# this class is used to create a cog, which is a module that can be added to the bot
@@ -121,7 +132,10 @@ class Store(commands.Cog): # create a class for our cog that inherits from comma
 			items_embed = discord.Embed()
 			n = '\n'
 			print(item)
-			items_embed.title=f"**{item['name']}**"
+			icon  ="📦"
+			if item['name'] in options_labels:
+				icon="🎨"
+			items_embed.title=f"**{icon} | {item['name']}**"
 			items_embed.description = f"{item['description'].replace('&', n)}\n> - Автор: <@{item['author_id']}>\n> - Ціна: {item['price']}\n> - ID: {i}"
 
 			items_pages.append(items_embed)
@@ -150,7 +164,7 @@ class Store(commands.Cog): # create a class for our cog that inherits from comma
 
 	@commands.has_permissions(administrator=True)
 	@item_commands.command() # we can also add application commands
-	async def shop2(self, ctx: discord.ApplicationContext):
+	async def shop_colors(self, ctx: discord.ApplicationContext):
 		await ctx.respond(view=StoreSelect(timeout=None))
 	@item_commands.command() # we can also add application commands
 	async def inventory(self, ctx: discord.ApplicationContext):
@@ -159,7 +173,12 @@ class Store(commands.Cog): # create a class for our cog that inherits from comma
 
 		embed = discord.Embed(title='Інвентар', description=f"Ваш баланс: {user['cash']}")
 		for k,v in user_items.items():
-			embed.add_field(name =k+": ",value=v,inline=True)
+			if k in options_labels:
+				k='🎨 | '+k
+			else:
+				k='📦 | '+k
+
+			embed.add_field(name =k+": ",value=v,inline=False)
 
 		await ctx.respond(embed=embed)
 
