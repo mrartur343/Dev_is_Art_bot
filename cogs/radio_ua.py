@@ -2,13 +2,18 @@ import discord
 from discord.ext import commands
 import requests
 import time
-
+radio_list = {
+			"HitFM": "https://online.hitfm.ua/HitFM_Top",
+			"RadioRoks": 'https://online.radioroks.ua/RadioROKS',
+			"KissFM": "https://online.kissfm.ua/KissFM"
+		}
 class RadioUa(commands.Cog): # create a class for our cog that inherits from commands.Cog
 	# this class is used to create a cog, which is a module that can be added to the bot
 
 	def __init__(self, bot): # this is a special method that is called when the cog is loaded
 		self.bot: discord.Bot = bot
 		print("Radio: ON")
+
 
 	def load_audio(self):
 		stream_url = 'https://online.hitfm.ua/HitFM_Top'
@@ -23,6 +28,16 @@ class RadioUa(commands.Cog): # create a class for our cog that inherits from com
 					f.write(block)
 			except KeyboardInterrupt:
 				pass
+
+	@commands.slash_command(name="info", description='Інформація про бота та його розробника')
+	async def info(self,ctx: discord.ApplicationContext):
+		embed= discord.Embed(title='Про Radio UA')
+		embed.description = ("###🤖 | Бот\n> Бот вміє вмикати українське радіо у голосовому каналі\n"
+							 "###🐚 | Розробник\n> Розробив його 16-и річний програміст з Хмельницького - оптиміст, ось доречі мій сервер ;) https://discord.gg/RqTVhRD5vR\n"
+							 "###💖 | Дякуємо що користуєтесь нашим ботом!\n> На нашому сервері можете поглянути на інших наших ботів, а також отримати фідбек щодо цього бота\n")
+		embed.colour = discord.Colour.purple()
+		embed.set_thumbnail(url=self.bot.user.avatar.url)
+		await ctx.respond(embed=embed)
 	@commands.slash_command(name="radio_stop", description="🛸 | Зупинити радіо") # we can add event listeners to our cog
 	async def radio_stop(self,ctx: discord.ApplicationContext):
 
@@ -33,15 +48,8 @@ class RadioUa(commands.Cog): # create a class for our cog that inherits from com
 		await ctx.respond("Радіо вимкнено 🛸")
 		await ctx.voice_client.disconnect()
 	@commands.slash_command(name="radio", description="🛸 | Запустити радіо") # we can add event listeners to our cog
-	async def radio(self,ctx: discord.ApplicationContext, radio_station=discord.Option(str, choices=['HitFM', 'RadioRoks', "Класичне радіо"])):
-		stream_url = 'https://online.hitfm.ua/HitFM_Top'
-		match radio_station:
-			case "HitFM":
-				stream_url = 'https://online.hitfm.ua/HitFM_Top'
-			case "RadioRoks":
-				stream_url = 'https://online.radioroks.ua/RadioROKS'
-			case "Класичне радіо":
-				stream_url = 'https://online.classicradio.com.ua/ClassicRadio'
+	async def radio(self,ctx: discord.ApplicationContext, radio_station=discord.Option(str, choices=list(radio_list.keys()))):
+		stream_url = radio_list[radio_station]
 
 		r = requests.get(stream_url, stream=True)
 		voice_channel: discord.VoiceChannel = ctx.author.voice.channel

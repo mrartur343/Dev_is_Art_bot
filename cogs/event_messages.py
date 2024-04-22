@@ -55,23 +55,6 @@ class EventsMessages(commands.Cog):
 
 
 
-        ######
-
-
-        embed = discord.Embed()
-
-        with open("text.txt", 'r') as file:
-            text = file.read()
-        embed.description=text
-        embed.colour = discord.Colour.from_rgb(111,103,118)
-
-        embed.set_image(url="https://cdn.discordapp.com/attachments/1208129686572638214/1229045157140107264/7d_background.png?ex=662e4080&is=661bcb80&hm=37a32461938ed4fd6a53f18b04354722e80757b10a97a4b20e29d6d908a0cccd&")
-
-        channel_to_send =await  self.bot.fetch_channel(1208129686127911026)
-
-        await channel_to_send.send(embed=embed, view=InfoView())
-
-        ######
     @commands.Cog.listener()
     async def on_member_join(self, member: discord.Member):
         # noinspection PyTypeChecker
