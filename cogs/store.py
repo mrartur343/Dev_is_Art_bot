@@ -57,58 +57,9 @@ class ItemForm(discord.ui.Modal):
 		except:
 			await interaction.respond(f"Помилка ❌")
 
+options_labels = shop_controll.options_labels
 
 
-options_labels = [
-
-	"Тінь"
-	,
-
-	"Виноград"
-	,
-
-	"Невизначеність"
-	,
-
-	"Червоне полум'я"
-	,
-
-	"Чорне море"
-	,
-
-	"Діамант"
-	,
-
-	"Сніжок"
-	,
-
-	"Квітка"
-	,
-
-	"Хвоя"
-	,
-
-	"Великодка"
-	,
-
-	"Левада"
-	,
-
-	"Палючий пісок"
-	,
-
-	"Гарбуз"
-	,
-
-	"Вечірнє небо"
-	,
-
-	"Лимон"
-	,
-
-	"Світло"
-
-]
 
 
 class StoreSelect(discord.ui.View):
@@ -226,8 +177,6 @@ class Store(commands.Cog): # create a class for our cog that inherits from comma
 
 	@commands.Cog.listener()
 	async def on_ready(self):
-		for role in options_labels:
-			shop_controll.item_create(role,100, "Колір нікнейму", self.bot.user.id)
 		self.color_roles = {}
 
 		server = await self.bot.fetch_guild(1208129686031310848)
@@ -244,45 +193,6 @@ class Store(commands.Cog): # create a class for our cog that inherits from comma
 		print(self.color_roles)
 
 	item_commands = discord.SlashCommandGroup(name='item', description='дії з предметами')
-
-	async def profile_embed(self, member):
-		with open('emojies.json', 'r') as file:
-			emojies = json.loads(file.read())
-		ids =[]
-		for emoji in emojies:
-			emoji: str
-			ids.append(int(emoji.split(':')[1].split('tile')[-1]))
-
-		sorted_emojies = [None]*16
-
-		for i,id_e in enumerate(ids):
-			sorted_emojies[id_e]=emojies[i]
-
-		user  =shop_controll.get_user_cash(member.id)
-		user_items:dict  =shop_controll.get_user_items(member.id)
-
-		embed = discord.Embed(title=member.name)
-
-		embed.add_field(name="Загальні відомості",  inline=False, value='---')
-		embed.add_field(name="> 🪙 | Баланс: ",  inline=False, value=f"> {user['cash']}")
-		embed.add_field(name="Інвентар",  inline=False, value='---\n`Змінити колір: `</item select_color:1232018128507240499>')
-
-		for k,v in user_items.items():
-			if not k in options_labels:
-				k='> 📦 | '+k
-			else:
-				emojie = sorted_emojies[options_labels.index(k)]
-				k=f'> {emojie} | '+k
-
-
-
-
-			embed.add_field(name =k+": ",value=f"> {v}",inline=True)
-			embed.add_field(name ="",value="",inline=True)
-		if member.avatar!=None:
-			embed.set_thumbnail(url=member.avatar.url)
-
-		return embed
 
 	@item_commands.command(name= 'shop')
 	async def collection_list(self, ctx):
@@ -359,18 +269,9 @@ class Store(commands.Cog): # create a class for our cog that inherits from comma
 	async def shop_colors(self, ctx: discord.ApplicationContext):
 		await ctx.respond(view=StoreSelect(timeout=None))
 	@item_commands.command() # we can also add application commands
-	async def inventory(self, ctx: discord.ApplicationContext):
-		await ctx.respond(embed= await self.profile_embed(ctx.author))
-
-	@item_commands.command() # we can also add application commands
 	async def select_color(self, ctx: discord.ApplicationContext):
 
 		await ctx.respond(view=ColorSelect(member=ctx.user, color_roles=self.color_roles))
-
-	@discord.user_command(name='Check Balance')
-	async def balance(self, ctx: discord.ApplicationContext, member: discord.Member):
-		await ctx.respond(embed = await self.profile_embed(member))
-
 
 	@item_commands.command() # we can also add application commands
 	async def buy(self,ctx:discord.ApplicationContext, id: discord.Option(int)):

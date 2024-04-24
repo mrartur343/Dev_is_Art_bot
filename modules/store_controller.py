@@ -2,7 +2,54 @@ import csv
 import json
 import os.path
 import typing
+import discord
+options_labels = [
 
+	"Виноград"
+	,
+
+	"Паутина"
+	,
+
+	"Червоне полум'я"
+	,
+
+	"Чорне море"
+	,
+
+	"Діамант"
+	,
+
+	"Сніжок"
+	,
+
+	"Квітка"
+	,
+
+	"Хвоя"
+	,
+
+	"Великодка"
+	,
+
+	"Левада"
+	,
+
+	"Палючий пісок"
+	,
+
+	"Гарбуз"
+	,
+
+	"Вечірнє небо"
+	,
+
+	"Лимон"
+	,
+
+	"Світло"
+
+]
 def get_items()-> list:
 	file_name = f"shop/items.csv"
 	returned_collection = []
@@ -72,6 +119,19 @@ def get_user_cash(user_id: int):
 					item.replace('&', "\n")
 			collection_item[fields[j]] = int(item)
 		return collection_item
+
+def get_all_id():
+	rows = []
+	only_names = []
+	with open("shop/user_cash.csv",'r' ) as file:
+		csv_reader = csv.reader(file, delimiter="|")
+		fields = next(csv_reader)
+		for row in csv_reader:
+			if len(row)>0:
+				only_names.append(int(row[0]))
+				rows.append(row)
+
+	return only_names
 
 
 def change_cash(user_id: int, amount: int):
@@ -170,4 +230,6 @@ def buy_item(name:str, user_id: int):
 
 		return "cash"
 	return "item"
+
+
 
