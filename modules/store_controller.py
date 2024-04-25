@@ -3,7 +3,11 @@ import json
 import os.path
 import typing
 import discord
+
+
 options_labels = [
+
+	"Тінь",
 
 	"Виноград"
 	,
@@ -79,7 +83,7 @@ def get_user_items(user_id):
 		users_items[str(user_id)] = {}
 
 	return users_items[str(user_id)]
-def add_item(name: str, user_id: int, amount: int):
+def add_item(name: str, user_id: int, amount: int = 1):
 	r_name = name.replace('|', ' ').replace('\n', '&')
 
 	with open("shop/user_items.json", 'r', encoding='utf-8') as file:

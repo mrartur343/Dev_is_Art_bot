@@ -5,20 +5,21 @@ import discord
 from discord.ext import commands, pages
 from modules import store_controller as shop_controll
 
-
-
-
-class BuyItemButton(discord.ui.View): # Create a class called MyView that subclasses discord.ui.View
+hide_items = [
+	"Паутина"
+]
+class BuyItemButton(discord.ui.View):  # Create a class called MyView that subclasses discord.ui.View
 
 	def __init__(self, pages: pages.Paginator, *args, **kwargs):
 		super().__init__(*args)
-		if pages!=None:
+		if pages != None:
 			self.paginator = pages
 
-	@discord.ui.button(style=discord.ButtonStyle.green,custom_id="buy_button",label='Buy', emoji="🛒") # Create a button with the label "😎 Click me!" with color Blurple
+	@discord.ui.button(style=discord.ButtonStyle.green, custom_id="buy_button", label='Buy',
+					   emoji="🛒")  # Create a button with the label "😎 Click me!" with color Blurple
 	async def button_callback(self, button, interaction):
 		shop_msg = self.paginator.message
-		if shop_msg==None:
+		if shop_msg == None:
 			return
 		msg: discord.Message = shop_msg
 		name = msg.embeds[0].title.split(" | ")[1].split('**')[0]
@@ -38,7 +39,6 @@ class BuyItemButton(discord.ui.View): # Create a class called MyView that subcla
 			await interaction.respond(f"Предмет **`{item['name']}`** успішно куплено", ephemeral=True)
 
 
-
 class ItemForm(discord.ui.Modal):
 	def __init__(self, *args, **kwargs) -> None:
 		super().__init__(*args, **kwargs)
@@ -52,42 +52,40 @@ class ItemForm(discord.ui.Modal):
 		description = self.children[2].value
 
 		try:
-			shop_controll.item_create(name, int(price),description, interaction.user.id)
+			shop_controll.item_create(name, int(price), description, interaction.user.id)
 			await interaction.respond(f"Успішно додано **`{name}`**!")
 		except:
 			await interaction.respond(f"Помилка ❌")
 
+
 options_labels = shop_controll.options_labels
-
-
 
 
 class StoreSelect(discord.ui.View):
 	with open('emojies.json', 'r') as file:
 		emojies = json.loads(file.read())
-	ids =[]
+	ids = []
 	for emoji in emojies:
 		emoji: str
 		ids.append(int(emoji.split(':')[1].split('tile')[-1]))
 
-	sorted_emojies = [None]*16
+	sorted_emojies = [None] * 16
 
-	for i,id_e in enumerate(ids):
-		sorted_emojies[id_e]=emojies[i]
-
-
+	for i, id_e in enumerate(ids):
+		sorted_emojies[id_e] = emojies[i]
 
 	options = []
-	for i,option in enumerate(options_labels):
-		options.append(discord.SelectOption(label=option,emoji=sorted_emojies[i]))
+	for i, option in enumerate(options_labels):
+		options.append(discord.SelectOption(label=option, emoji=sorted_emojies[i]))
 
-	@discord.ui.select( # the decorator that lets you specify the properties of the select menu
-		placeholder = "🎨 | Магазин кольорів", # the placeholder text that will be displayed if nothing is selected
-		min_values = 1, # the minimum number of values that must be selected by the users
-		max_values = 1, # the maximum number of values that can be selected by the users
-		options = options
+	@discord.ui.select(  # the decorator that lets you specify the properties of the select menu
+		placeholder="🎨 | Магазин кольорів",  # the placeholder text that will be displayed if nothing is selected
+		min_values=1,  # the minimum number of values that must be selected by the users
+		max_values=1,  # the maximum number of values that can be selected by the users
+		options=options
 	)
-	async def select_callback(self, select: discord.ui.Select, interaction: discord.Interaction): # the function called when the user is done selecting options
+	async def select_callback(self, select: discord.ui.Select,
+							  interaction: discord.Interaction):  # the function called when the user is done selecting options
 		try:
 			item = shop_controll.get_item(select.values[0])
 		except:
@@ -101,16 +99,16 @@ class StoreSelect(discord.ui.View):
 		else:
 			await interaction.respond("Предмет успішно куплено", ephemeral=True)
 
+
 class ColorSelect(discord.ui.View):
 
-
-	def __init__(self,member:discord.Member,color_roles: typing.Dict[str, discord.Role], *args, **kwargs) -> None:
+	def __init__(self, member: discord.Member, color_roles: typing.Dict[str, discord.Role], *args, **kwargs) -> None:
 		super().__init__(*args, **kwargs)
 
 		user_items: dict = shop_controll.get_user_items(member.id)
 
 		self.member_colors = user_items
-		self.options=[]
+		self.options = []
 
 		select_menu: discord.ui.Select = super().get_item('select')
 		select_menu.options = []
@@ -126,53 +124,50 @@ class ColorSelect(discord.ui.View):
 		self.member = member
 		self.color_roles = color_roles
 
-
-
 	with open('emojies.json', 'r') as file:
 		emojies = json.loads(file.read())
-	ids =[]
+	ids = []
 	for emoji in emojies:
 		emoji: str
 		ids.append(int(emoji.split(':')[1].split('tile')[-1]))
 
-	sorted_emojies = [None]*16
+	sorted_emojies = [None] * 16
 
-	for i,id_e in enumerate(ids):
-		sorted_emojies[id_e]=emojies[i]
-
+	for i, id_e in enumerate(ids):
+		sorted_emojies[id_e] = emojies[i]
 
 	items = shop_controll.get_items()
 	color_items = []
 
-
-
 	options = []
-	options.append(discord.SelectOption(label="Очистити колір",emoji="🧼",value='clear'))
+	options.append(discord.SelectOption(label="Очистити колір", emoji="🧼", value='clear'))
 
-
-	@discord.ui.select( # the decorator that lets you specify the properties of the select menu
-		placeholder = "🎨 | Вибрати колір", # the placeholder text that will be displayed if nothing is selected
-		min_values = 1, # the minimum number of values that must be selected by the users
-		max_values = 1, # the maximum number of values that can be selected by the users
-		options = options,
+	@discord.ui.select(  # the decorator that lets you specify the properties of the select menu
+		placeholder="🎨 | Вибрати колір",  # the placeholder text that will be displayed if nothing is selected
+		min_values=1,  # the minimum number of values that must be selected by the users
+		max_values=1,  # the maximum number of values that can be selected by the users
+		options=options,
 		custom_id='select'
 	)
-	async def select_callback(self, select: discord.ui.Select, interaction: discord.Interaction): # the function called when the user is done selecting options
+	async def select_callback(self, select: discord.ui.Select,
+							  interaction: discord.Interaction):  # the function called when the user is done selecting options
 		for role in self.color_roles.values():
 			if role in interaction.user.roles:
 				await interaction.user.remove_roles(role)
-		if select.values[0]=='clear':
+		if select.values[0] == 'clear':
 			await interaction.respond(f"Успішно очищено ваш колір",
 									  ephemeral=True)
 			return
 
 		await interaction.user.add_roles(self.color_roles[select.values[0]])
-		await interaction.respond(f"Успішно змінено колір на {self.color_roles[select.values[0]].mention}", ephemeral=True)
+		await interaction.respond(f"Успішно змінено колір на {self.color_roles[select.values[0]].mention}",
+								  ephemeral=True)
 
-class Store(commands.Cog): # create a class for our cog that inherits from commands.Cog
+
+class Store(commands.Cog):  # create a class for our cog that inherits from commands.Cog
 	# this class is used to create a cog, which is a module that can be added to the bot
 
-	def __init__(self, bot): # this is a special method that is called when the cog is loaded
+	def __init__(self, bot):  # this is a special method that is called when the cog is loaded
 		self.bot: discord.Bot = bot
 
 	@commands.Cog.listener()
@@ -181,41 +176,58 @@ class Store(commands.Cog): # create a class for our cog that inherits from comma
 
 		server = await self.bot.fetch_guild(1208129686031310848)
 
-		all_roles: typing.Dict[str,discord.Role] = {}
+		all_roles: typing.Dict[str, discord.Role] = {}
 
 		for role in await server.fetch_roles():
 			if "・" in role.name:
-				all_roles[role.name.split("・")[2]]=role
+				all_roles[role.name.split("・")[2]] = role
 
-		for i,color_name in enumerate(options_labels):
-			self.color_roles[color_name]=all_roles[color_name]
+		for i, color_name in enumerate(options_labels):
+			self.color_roles[color_name] = all_roles[color_name]
 
 		print(self.color_roles)
 
 	item_commands = discord.SlashCommandGroup(name='item', description='дії з предметами')
 
-	@item_commands.command(name= 'shop')
-	async def collection_list(self, ctx):
+	@item_commands.command(name='shop')
+	async def shop(self, ctx, current_page: discord.Option(str, choices=["Кастомні предмети", "Кольори"],
+														   required=False) = "Кастомні предмети"):
+		group_i = 0
+		if current_page == "Кольори":
+			group_i = 1
+
 		items = shop_controll.get_items()
-		if len(items)==0:
+		if len(items) == 0:
 			await ctx.respond("Поки-що жодного предмета!")
 			return
 		custom_items = []
 		color_items = []
+		with open('emojies.json', 'r') as file:
+			emojies = json.loads(file.read())
+		ids = []
+		for emoji in emojies:
+			emoji: str
+			ids.append(int(emoji.split(':')[1].split('tile')[-1]))
 
-		for i,item in enumerate(items):
+		sorted_emojies = [None] * 16
+
+		for i, id_e in enumerate(ids):
+			sorted_emojies[id_e] = emojies[i]
+		for i, item in enumerate(items):
+			if item['name'] in hide_items:
+				continue
 			items_embed = discord.Embed()
 			n = '\n'
 			print(item)
-			icon  ="📦"
+			icon = "📦"
 			if item['name'] in options_labels:
-				icon="🎨"
-			items_embed.title=f"**{icon} | {item['name']}**"
-			items_embed.description = f"{item['description'].replace('&', n)}\n> - Автор: <@{item['author_id']}>\n> - Ціна: {item['price']}\n> - ID: {i}"
+				icon = sorted_emojies[options_labels.index(item['name'])]
+			items_embed.title = f"**{icon} | {item['name']}**"
+			items_embed.description = f"{item['description'].replace('&', n)}\n> - Автор: <@{item['author_id']}>\n> - Ціна: {item['price']} <:e_:1232623079637778482>\n> - ID: {i}"
 
-			if icon=='📦':
+			if icon == '📦':
 				custom_items.append(items_embed)
-			if icon=='🎨':
+			elif icon == sorted_emojies[options_labels.index(item['name'])]:
 				color_items.append(items_embed)
 
 		buttons = [
@@ -228,9 +240,9 @@ class Store(commands.Cog): # create a class for our cog that inherits from comma
 		msg: discord.Interaction = await ctx.respond("load...")
 		custom_view: BuyItemButton = BuyItemButton(None)
 
-
 		page_groups = [
 			pages.PageGroup(
+				default=group_i == 0,
 				pages=custom_items,
 				label="📦 | Кастомні предмети",
 				description="Предмети створенні учасниками серверу. Для колекціонування",
@@ -239,6 +251,7 @@ class Store(commands.Cog): # create a class for our cog that inherits from comma
 				custom_view=custom_view
 			),
 			pages.PageGroup(
+				default=group_i == 1,
 				pages=color_items,
 				label="🎨 | Фарби",
 				description="Фарби дають можливість у будь-який момент пофарбувати ваш нікнейм",
@@ -260,48 +273,30 @@ class Store(commands.Cog): # create a class for our cog that inherits from comma
 		await paginator.respond(msg, ephemeral=False)
 		await paginator.update(custom_view=custom_view)
 
-	@item_commands.command() # we can also add application commands
+	@item_commands.command()  # we can also add application commands
 	async def create(self, ctx: discord.ApplicationContext):
 		await ctx.send_modal(ItemForm(title='Створити предмет'))
 
 	@commands.has_permissions(administrator=True)
-	@item_commands.command() # we can also add application commands
-	async def shop_colors(self, ctx: discord.ApplicationContext):
-		await ctx.respond(view=StoreSelect(timeout=None))
-
-	@commands.has_permissions(administrator=True)
-	@item_commands.command() # we can also add application commands
+	@item_commands.command()  # we can also add application commands
 	async def leaderboard(self, ctx: discord.ApplicationContext):
 
 		leaderboard = shop_controll.get_top()
 
-		embed= discord.Embed()
+		embed = discord.Embed()
 		embed.title = "Таблиця лідерів"
-		embed.set_thumbnail(url= (await(await self.bot.fetch_guild(ctx.guild_id)).fetch_emoji(1232623079637778482)).url)
+		embed.set_thumbnail(url=(await(await self.bot.fetch_guild(ctx.guild_id)).fetch_emoji(1232623079637778482)).url)
 
 		for position in leaderboard[:10]:
-			embed.add_field(name=(await self.bot.fetch_user(position[0])).name,value=f"{position[1]} <:e_:1232623079637778482>", inline=False)
+			embed.add_field(name=(await self.bot.fetch_user(position[0])).name,
+							value=f"{position[1]} <:e_:1232623079637778482>", inline=False)
 		await ctx.respond(embed=embed)
-	@item_commands.command() # we can also add application commands
+
+	@item_commands.command()  # we can also add application commands
 	async def select_color(self, ctx: discord.ApplicationContext):
 
 		await ctx.respond(view=ColorSelect(member=ctx.user, color_roles=self.color_roles))
 
-	@item_commands.command() # we can also add application commands
-	async def buy(self,ctx:discord.ApplicationContext, id: discord.Option(int)):
-		all_items = shop_controll.get_items()
-		try:
-			item = all_items[id]
-		except:
-			await ctx.respond("Такого предмета не існує 0_о")
-			return
-		result = shop_controll.buy_item(item["name"],ctx.author.id)
-		if result=='cash':
-			await ctx.respond("Недостатньо коштів")
-		elif result=='item':
-			await ctx.respond("Такого предмета не існує 0_о")
-		else:
-			await ctx.respond("Предмет успішно куплено")
 
-def setup(bot): # this is called by Pycord to setup the cog
-	bot.add_cog(Store(bot)) # add the cog to the bot
+def setup(bot):  # this is called by Pycord to setup the cog
+	bot.add_cog(Store(bot))  # add the cog to the bot

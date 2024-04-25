@@ -8,6 +8,8 @@ from modules import account_controll
 
 options_labels = shop_controll.options_labels
 class AddEventPoints(discord.ui.Modal):
+
+
 	def __init__(self, member: discord.Member, *args, **kwargs) -> None:
 		super().__init__(*args, **kwargs)
 
@@ -113,10 +115,31 @@ async def profile_embed(self, member):
 	for i, id_e in enumerate(ids):
 		sorted_emojies[id_e] = emojies[i]
 
+
+	member_colour = discord.Colour.dark_grey()
+	for role in member.roles:
+		role: discord.Role
+		if role in self.color_roles.values():
+			member_colour = role.colour
+
+	with open('emojies.json', 'r') as file:
+		emojies = json.loads(file.read())
+	ids = []
+	for emoji in emojies:
+		emoji: str
+		ids.append(int(emoji.split(':')[1].split('tile')[-1]))
+
+	sorted_emojies = [None] * 16
+
+	for i, id_e in enumerate(ids):
+		sorted_emojies[id_e] = emojies[i]
+
 	user = shop_controll.get_user_cash(member.id)
 	user_items: dict = shop_controll.get_user_items(member.id)
 
 	embed = discord.Embed(title=member.name)
+
+	embed.colour = member_colour
 
 	embed.add_field(name="Загальні відомості", inline=False, value='---')
 	embed.add_field(name="> <:e_:1232623079637778482> | Івент поінти: ", inline=False, value=f"> {user['cash']}")
@@ -125,7 +148,7 @@ async def profile_embed(self, member):
 
 	for k, v in user_items.items():
 		if k in self.color_roles.keys():
-			k = f'> 🖌️ | ' + self.color_roles[k].mention
+			k = f'> {sorted_emojies[options_labels.index(k)]}️ | ' + self.color_roles[k].mention
 		else:
 			k = '> 📦 | ' + k
 
@@ -188,6 +211,21 @@ class Account(commands.Cog):  # create a class for our cog that inherits from co
 
 	@commands.Cog.listener()  # we can add event listeners to our cog
 	async def on_ready(self):  # this is called when a member joins the server
+		guild = await self.bot.fetch_guild(1208129686031310848)
+		achievements = account_controll.all_achievements()
+
+		for achievement_key, info in achievements.items():
+			if 'other' in info:
+				if 'role' in info['other']:
+					for member_id in info['members']:
+						member = await guild.fetch_member(member_id)
+						await member.add_roles(guild.get_role(info['other']['role']))
+				if 'gift' in info['other']:
+					for member_id in info['members']:
+						if not info['other']['gift'] in shop_controll.get_user_items(member_id):
+							shop_controll.add_item(info['other']['gift'], member_id)
+
+
 		print("Account: ON")
 
 
