@@ -33,7 +33,7 @@ def member_achievements(member_id):
 		member_achievements = {}
 
 		for k, v in loaded.items():
-			if member_id in v['members']:
+			if int(member_id) in v['members']:
 				member_achievements[k] = v
 
 		return member_achievements
@@ -71,8 +71,8 @@ def create(key_name: str, name: str, description: str):
 def add_to_member(achievement_key: str, member_id: int):
 	with open("shop/achievements.json", 'r', encoding='utf-8') as file:
 		loaded = json.loads(file.read())
-
-	loaded[achievement_key]["members"].append(member_id)
+	if not member_id in loaded[achievement_key]["members"]:
+		loaded[achievement_key]["members"].append(member_id)
 
 	with open("shop/achievements.json", 'w', encoding='utf-8') as file:
 		json.dump(loaded, file)

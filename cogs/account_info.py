@@ -1,6 +1,6 @@
 import json
 import typing
-
+import jmespath
 import discord
 from discord.ext import commands
 from modules import store_controller as shop_controll
@@ -13,35 +13,77 @@ class AddEventPoints(discord.ui.Modal):
 
 		self.member = member
 		self.add_item(discord.ui.InputText(label="Кількість івент поінтів"))
+		self.add_item(discord.ui.InputText(label="Коментар"))
 
 	async def callback(self, interaction: discord.Interaction):
 		amount =self.children[0].value
+		comment =self.children[1].value
 		shop_controll.change_cash(self.member.id, int(amount))
 		await interaction.respond(f"Успішно змінено кількість івент поінтів {self.member} на {'+' if int(amount)>0 else ''}{amount}", ephemeral=True)
-		await self.member.send(f"Кількість ваших івент поінтів на сервер Dev is Art змінили на {'+' if int(amount)>0 else ''}{amount}")
+		await self.member.send(f"Кількість ваших івент поінтів на сервер Dev is Art змінили на {'+' if int(amount)>0 else ''}{amount}\n> {comment}")
+
+
+class AdminPanel(discord.ui.View):
+	def __init__(self, *items):
+		super().__init__(*items)
+
+	achievements = account_controll.all_achievements()
+
+	options = []
+	options.append(discord.SelectOption(label='Створити ачівку', value='achievement_create'))
+
+	@discord.ui.select(  # the decorator that lets you specify the properties of the select menu
+		placeholder="Вибрати дію",  # the placeholder text that will be displayed if nothing is selected
+		min_values=1,  # the minimum number of values that must be selected by the users
+		max_values=1,  # the maximum number of values that can be selected by the users
+		options=options
+	)
+	async def select_callback(self, select: discord.ui.Select, interaction: discord.Interaction):  # the function called when the user is done selecting options
+		if select.values[0] == 'achievement_create':
+			await interaction.response.send_modal(CreateAchievement(title='Створити ачівку'))
+class CreateAchievement(discord.ui.Modal):
+	def __init__(self, *args, **kwargs) -> None:
+		super().__init__(*args, **kwargs)
+
+
+		self.add_item(discord.ui.InputText(label="Ключ",placeholder="example_key", style=discord.InputTextStyle.short))
+		self.add_item(discord.ui.InputText(label="Назва",placeholder="Приклад назви", style=discord.InputTextStyle.singleline))
+		self.add_item(discord.ui.InputText(label="Опис",placeholder="Приклад опису\nТут можна кілька рядків", style=discord.InputTextStyle.paragraph))
+
+	async def callback(self, interaction: discord.Interaction):
+		if interaction.user.id in [658217734814957578]:
+			account_controll.create(self.children[0].value,self.children[1].value,self.children[2].value)
+			await interaction.respond(f"Успішно створено ачівку {self.children[1].value} ({self.children[0].value})")
+		else:
+			await interaction.respond(f"Ти без прав")
 
 class AchievementsAdd(discord.ui.View):
 	def __init__(self, member, *items):
 		super().__init__(*items)
 		self.member: discord.Member = member
 
-	achievements = account_controll.all_achievements()
+		achievements = account_controll.all_achievements()
 
-	options = []
-	for achievement, info in achievements.items():
-		print(achievement)
-		print(info)
-		options.append(discord.SelectOption(
-			label=info['name'],
-			description=info['description'][:100],
-			value=achievement
-		))
+		options = []
+		for achievement, info in achievements.items():
+			print(achievement)
+			print(info)
+			options.append(discord.SelectOption(
+				label=info['name'],
+				description=info['description'][:100],
+				value=achievement
+			))
+
+		select_menu: discord.ui.Select = super().get_item('achievement_add')
+
+		select_menu.options = options
+
 
 	@discord.ui.select(  # the decorator that lets you specify the properties of the select menu
 		placeholder="Вибери які ачівки додати:",  # the placeholder text that will be displayed if nothing is selected
 		min_values=1,  # the minimum number of values that must be selected by the users
-		max_values=len(achievements.keys()),  # the maximum number of values that can be selected by the users
-		options=options
+		options=[],
+		custom_id='achievement_add'
 	)
 	async def select_callback(self, select, interaction):  # the function called when the user is done selecting options
 		achievements = account_controll.all_achievements()
@@ -93,7 +135,7 @@ async def profile_embed(self, member):
 	embed.add_field(name="Ачівки", inline=False, value='---')
 	for achievement in account_controll.member_achievements(str(member.id)).values():
 		print(achievement)
-		embed.add_field(name=achievement["name"], inline=False, value=f"{achievement['description']}\n- 👥 {len(achievement['members'])}")
+		embed.add_field(name=achievement["name"], inline=False, value=f">>> {achievement['description']}\n- 👥 {len(achievement['members'])}")
 	if len(account_controll.member_achievements(str(member.id)).values())==0:
 		embed.add_field(name="*Жодної ачівки*", inline=False, value='')
 
@@ -134,12 +176,15 @@ class Account(commands.Cog):  # create a class for our cog that inherits from co
 	@commands.Cog.listener()  # we can add event listeners to our cog
 	async def on_message(self, msg: discord.Message):  # this is called when a member joins the server
 		all_id = account_controll.get_all_id()
-
+		if msg.content=='admin_panel':
+			await msg.channel.send(view=AdminPanel())
 
 		for mention in msg.mentions:
-			if (mention.id in all_id) and (len(msg.content)-1<=len(mention.mention)) and (msg.content.endswith('p')):
+			if (len(msg.content)-1<=len(mention.mention)) and (msg.content.endswith('p')):
 				member = mention
 				await msg.channel.send(embeds=await profile_embed(self,member))
+
+
 
 	@commands.Cog.listener()  # we can add event listeners to our cog
 	async def on_ready(self):  # this is called when a member joins the server
