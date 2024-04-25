@@ -268,6 +268,20 @@ class Store(commands.Cog): # create a class for our cog that inherits from comma
 	@item_commands.command() # we can also add application commands
 	async def shop_colors(self, ctx: discord.ApplicationContext):
 		await ctx.respond(view=StoreSelect(timeout=None))
+
+	@commands.has_permissions(administrator=True)
+	@item_commands.command() # we can also add application commands
+	async def leaderboard(self, ctx: discord.ApplicationContext):
+
+		leaderboard = shop_controll.get_top()
+
+		embed= discord.Embed()
+		embed.title = "Таблиця лідерів"
+		embed.set_thumbnail(url= (await(await self.bot.fetch_guild(ctx.guild_id)).fetch_emoji(1232623079637778482)).url)
+
+		for position in leaderboard[:10]:
+			embed.add_field(name=(await self.bot.fetch_user(position[0])).name,value=f"{position[1]} <:e_:1232623079637778482>", inline=False)
+		await ctx.respond(embed=embed)
 	@item_commands.command() # we can also add application commands
 	async def select_color(self, ctx: discord.ApplicationContext):
 

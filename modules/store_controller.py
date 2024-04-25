@@ -96,6 +96,24 @@ def add_item(name: str, user_id: int, amount: int):
 	with open("shop/user_items.json", 'w', encoding='utf-8') as file:
 		json.dump(users_items,file)
 
+def get_top() -> typing.List[typing.List[int]]:
+	rows = []
+	only_names = []
+	with open("shop/user_cash.csv",'r' ) as file:
+		csv_reader = csv.reader(file, delimiter="|")
+		fields = next(csv_reader)
+		for row in csv_reader:
+
+			formated_row= []
+			for el in row:
+				formated_row.append(int(el))
+
+			if len(row)>0:
+				only_names.append(int(row[0]))
+				rows.append(formated_row)
+	rows.sort(key = lambda e: e[1],reverse=True)
+	return rows
+
 def get_user_cash(user_id: int):
 	rows = []
 	only_names = []

@@ -92,7 +92,7 @@ class AchievementsAdd(discord.ui.View):
 
 		for v in select.values:
 			account_controll.add_to_member(v, self.member.id)
-			achievements_listed += f"\n- {achievements[v]['name']}"
+			achievements_listed += f"\n- **`{achievements[v]['name']}`**\n> {achievements[v]['description']}"
 
 		await self.member.send(
 			f"Адміністрація серверу Dev is Art додала вам {len(select.values)} нових ачівок:\n{achievements_listed}")
