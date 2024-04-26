@@ -1,4 +1,5 @@
 import json
+import time
 import typing
 
 import discord
@@ -169,6 +170,7 @@ class Store(commands.Cog):  # create a class for our cog that inherits from comm
 
 	def __init__(self, bot):  # this is a special method that is called when the cog is loaded
 		self.bot: discord.Bot = bot
+		self.gift_time = time.time()
 
 	@commands.Cog.listener()
 	async def on_ready(self):
@@ -298,5 +300,26 @@ class Store(commands.Cog):  # create a class for our cog that inherits from comm
 		await ctx.respond(view=ColorSelect(member=ctx.user, color_roles=self.color_roles))
 
 
+	@commands.Cog.listener()
+	async def on_message(self, msg:discord.Message):
+
+		"""gift"""
+		if self.gift_time+(3600*4)<time.time():
+			self.gift_time=time.time()
+
+			class GiftButton(discord.ui.View):  # Create a class called MyView that subclasses discord.ui.View
+				def __init__(self,or_msg, *items):
+					self.or_msg:discord.Message = or_msg
+					super().__init__(*items)
+
+				@discord.ui.button(style=discord.ButtonStyle.green, custom_id="gift", label='Отримати 5 <:e_:1232623079637778482>',
+								   emoji="🎁")  # Create a button with the label "😎 Click me!" with color Blurple
+				async def button_callback(self, button:discord.Button, interaction: discord.Interaction):
+
+					await interaction.respond(f"{interaction.user.mention} перший забрав у нагороду 5 <:e_:1232623079637778482>!")
+					shop_controll.change_cash(interaction.user.id, 5)
+					await self.or_msg.delete()
+			bot_msg = await msg.channel.send('...')
+			await bot_msg.edit(content="Випадковий подарунок!",view=GiftButton(bot_msg))
 def setup(bot):  # this is called by Pycord to setup the cog
 	bot.add_cog(Store(bot))  # add the cog to the bot

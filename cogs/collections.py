@@ -1,3 +1,4 @@
+import asyncio
 import math
 import discord
 from discord.ext import commands, pages
@@ -30,6 +31,7 @@ class Collections(commands.Cog): # create a class for our cog that inherits from
 	@commands.Cog.listener()
 
 	async def on_thread_create(self,thread: discord.Thread):
+		await asyncio.sleep(3)
 		collection_name = None
 		if thread.parent.id == 1208456905320570910:
 			collection_name='poems'
@@ -41,7 +43,7 @@ class Collections(commands.Cog): # create a class for our cog that inherits from
 			collection_name='other'
 
 		if collection_name!=None:
-			start_message = (await thread.history(limit=1, oldest_first=True).flatten())[0]
+			start_message = thread.last_message
 			url = start_message.jump_url
 			if len(start_message.attachments) > 0:
 				url = start_message.attachments[0].url

@@ -218,8 +218,12 @@ class Account(commands.Cog):  # create a class for our cog that inherits from co
 			if 'other' in info:
 				if 'role' in info['other']:
 					for member_id in info['members']:
-						member = await guild.fetch_member(member_id)
-						await member.add_roles(guild.get_role(info['other']['role']))
+						all_id = []
+						for member_g in await guild.fetch_members().flatten():
+							all_id.append(member_g.id)
+						if member_id in all_id:
+							member = await guild.fetch_member(member_id)
+							await member.add_roles(guild.get_role(info['other']['role']))
 				if 'gift' in info['other']:
 					for member_id in info['members']:
 						if not info['other']['gift'] in shop_controll.get_user_items(member_id):
