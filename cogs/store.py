@@ -7,7 +7,8 @@ from discord.ext import commands, pages
 from modules import store_controller as shop_controll
 
 hide_items = [
-	"Паутина"
+	"Паутина",
+	'Вечірнє небо'
 ]
 class BuyItemButton(discord.ui.View):  # Create a class called MyView that subclasses discord.ui.View
 
