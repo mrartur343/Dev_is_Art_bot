@@ -1,23 +1,41 @@
 import math
 import datetime
-import time
-from modules import account_controll
+import requests
+from bs4 import BeautifulSoup
+from modules import account_controll, radio_timetable
 import discord
 from discord.ext import commands
 from os import listdir
 from os.path import isfile, join
 from tinytag import TinyTag
 
+def get_song_list(url: str):
+
+
+	r_onlineradio = requests.get(url).content
+
+	soup = BeautifulSoup(r_onlineradio, 'html.parser')
+
+	song_names = [heading.text for heading in
+					 soup.find_all('span', class_='ListRowTitle__LineClamp-sc-1xe2if1-0 jjpOuK')]
+
+	return song_names
 
 class RadioUa(commands.Cog):  # create a class for our cog that inherits from commands.Cog
 	# this class is used to create a cog, which is a module that can be added to the bot
 
 	def __init__(self, bot):  # this is a special method that is called when the cog is loaded
 		self.bot: discord.Bot = bot
-		print("Radio: ON")
+
 
 	@commands.Cog.listener()
 	async def on_ready(self):
+		print("Radio: ON")
+
+		album_short_names = [f for f in listdir('songs')]
+
+
+
 		songs = {}
 
 		albums_names = {
@@ -25,99 +43,28 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 			"MemoryBank": "Memory Bank",
 			'Zero': '0',
 			'FWN': 'Favourite Worst Nightmare',
-			'PS': 'Pineapple Sunrise'
+			'PS': 'Pineapple Sunrise',
+			"ILY": "I Love You.",
+			"LDA": "Little Dark Age"
 		}
 
-		AM_list = [
-			'Do I Wanna Know?',
-			'R U Mine?',
-			"One For The Road",
-			'Arabella',
-			'I Want It All',
-			"No. 1 Party Anthem",
-			"Mad Sounds",
-			"Fireside",
-			"Why'd You Only Call Me When You're High?",
-			'Snap Out Of It',
-			"Knee Socks",
-			"I Wanna Be Yours"
+		albums_url = {
+			'AM':'https://open.spotify.com/album/78bpIziExqiI9qztvNFlQu',
+			'MemoryBank': "https://open.spotify.com/album/08kV4nhdlCBbCWt9fO6AAa",
+			'Zero': 'https://open.spotify.com/album/4G3ZBFg8MpTSDxDQ3m2BCb',
+			"FWN": 'https://open.spotify.com/album/1XkGORuUX2QGOEIL4EbJKm',
+			"PS": "https://open.spotify.com/album/7gA8QSNSZvHUYC9feFpeLj",
+			'ILY':'https://open.spotify.com/album/4xkM0BwLM9H2IUcbYzpcBI',
+			'LDA': 'https://open.spotify.com/album/7GjVWG39IOj4viyWplJV4H'
+		}
 
-		]
 
-		MemoryBank_list = [
-			'Memory Bank',
-			'Cepheid Disk',
-			'Electrifying Landscape',
-			'Blueshift',
-			'Far Apart',
-			'Lisa',
-			'New Touch',
-			'Spliff & Wesson',
-			'Motions',
-			'System Shutdown',
-			'Simulation Sunrise(BONUS)',
-			'Decades(BONUS)',
-			'Last Call(BONUS)'
-		]
-		Zero_list = [
-			'Breathe In',
-			'Easy Way Out',
-			'Nobody Loves Me Like You',
-			'I\'ll Keep Coming',
-			'Half Asleep',
-			'Please Don\'t Stop (Chapter 1)',
-			'I\'m Leaving',
-			'In the Morning',
-			'Phantoms',
-			'Anything You Need',
-			'Dreamer',
-			'Vampire on My Fridge',
-			'Please Don\'t Stop (Chapter 2)',
-		]
 
-		FWN_list = [
-			"Brianstorm",
-			"Teddy Picker",
-			"D is for Dangerous",
-			"Balaclava",
-			"Fluorescent Adolescent",
-			"Only Ones Who Know",
-			"Do Me a Favour",
-			"This House is a Circus",
-			"If You Were There, Beware",
-			"The Bad Thing",
-			"Old Yellow Bricks",
-			"505"
-		]
+		song_files = {}
 
-		PS_list = [
-			'Pineapple Sunrise',
-			'High & Driving',
-			'Unlovable',
-			'Trouble With This Bed',
-			'Desert Oasis',
-			'Homebody',
-			'Hard Feelings',
-			'Silent Type',
-			'Miss You',
-			'Wildfire',
-			'Sex, Drugs, Etc.',
-		]
+		for short_name in album_short_names:
+			song_files[short_name] = [f for f in listdir(f"songs/{short_name}") if isfile(join(f"songs/{short_name}", f))]
 
-		AM = [f for f in listdir("songs/AM") if isfile(join("songs/AM", f))]
-		print(AM)
-
-		MemoryBank = [f for f in listdir("songs/MemoryBank") if isfile(join("songs/MemoryBank", f))]
-		print(MemoryBank)
-
-		Zero = [f for f in listdir("songs/Zero") if isfile(join("songs/Zero", f))]
-		print(Zero)
-
-		FWN = [f for f in listdir("songs/FWN") if isfile(join("songs/FWN", f))]
-		print(FWN)
-
-		PS = [f for f in listdir("songs/PS") if isfile(join("songs/PS", f))]
-		print(PS)
 
 
 
@@ -126,25 +73,21 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 		voice_channel: discord.VoiceChannel = await self.bot.fetch_channel(1208129687231008808)
 
 		voice_client: discord.VoiceClient = await voice_channel.connect()
-		songs = {'AM': {}, 'MemoryBank': {}, 'Zero': {}, 'FWN': {}, 'PS': {}}
 
-		for song_file in AM:
-			audio = TinyTag.get(f"songs/AM/{song_file}")
-			songs['AM'][audio.title] = song_file
-		for song_file in MemoryBank:
-			audio = TinyTag.get(f"songs/MemoryBank/{song_file}")
-			songs['MemoryBank'][audio.title] = song_file
-		for song_file in Zero:
-			audio = TinyTag.get(f"songs/Zero/{song_file}")
-			songs['Zero'][audio.title] = song_file
-		for song_file in FWN:
-			audio = TinyTag.get(f"songs/FWN/{song_file}")
-			songs['FWN'][audio.title] = song_file
-		for song_file in PS:
-			audio = TinyTag.get(f"songs/PS/{song_file}")
-			songs['PS'][audio.title] = song_file
+		for short_name in album_short_names:
+			songs[short_name]={}
 
-		song_lists = {"MemoryBank": MemoryBank_list, "AM": AM_list, "Zero": Zero_list, "FWN": FWN_list, "PS": PS_list,}
+
+		for short_name in album_short_names:
+
+			for song_file in song_files[short_name]:
+				audio = TinyTag.get(f"songs/{short_name}/{song_file}")
+				songs[short_name][audio.title] = song_file
+
+		song_lists = {}
+
+		for short_name in album_short_names:
+			song_lists[short_name] = get_song_list(albums_url[short_name])
 		album_durations={}
 		for k,v in songs.items():
 			d = 0
@@ -154,6 +97,7 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 			album_durations[k]=round(d)
 		msg = await voice_channel.send(embeds=[discord.Embed(title='load...'),discord.Embed(title='load...')])
 		album_list = []
+		print(song_lists)
 		for album_name in song_lists.keys():
 			album_list.append(album_name)
 
@@ -177,16 +121,19 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 						embed_info.add_field(name="📡 Бітрейт:", value=str(audio_info.bitrate) + " kBits/s")
 						embed_info.add_field(name="⚖️ Розмір: ",
 											 value=str(round(audio_info.filesize / (1024 ** 2), 2)) + " mb")
-						embed_info.add_field(name="💿 Альбом: ", value=album_name)
+						embed_info.add_field(name="💿 Альбом: ", value=albums_names[album_name])
 						embed_info.add_field(name="⏲️ Тривалість: ",
 											 value=f"{math.floor(audio_info.duration / 60)}m {math.floor(audio_info.duration) % 60}s")
 
-						embed2 = discord.Embed()
-						if i<len(album_list):
-							next_album=album_list[i]
-						else:
-							next_album=album_list[0]
-						embed2.add_field(name=f'Наступний альбом "{albums_names[next_album]}" заграє:', value=f"<t:{round((album_start_time+ datetime.timedelta(seconds=album_durations[album_name])).timestamp())}:R>")
+						embed2 = discord.Embed(title='Розпорядок наступних альбомів')
+						embed2.description=''
+
+						timetable = radio_timetable.get_album_times(list(album_durations.keys()), list(album_durations.values()), album_name,album_start_time+ datetime.timedelta(seconds=album_durations[album_name]))
+						i=0
+						for k, v in timetable.items():
+							embed2.description+=(f"{albums_names[k]} <t:{round(v.timestamp())}:T>\n")
+							i+=1
+
 						await msg.delete()
 						msg = await voice_channel.send(embeds=[embed_info,embed2])
 
@@ -206,7 +153,7 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 
 							for member in sde_achievement_list:
 								account_controll.add_to_member('sde', member.id)
-								if member.can_send():
+								if member.can_send() and member.id != 1231689822746181806:
 									await member.send(f"Адміністрація серверу Dev is Art додала вам 1 нових ачівок:\n- **`{achievements['sde']['name']}`**\n> {achievements['sde']['description']}")
 
 

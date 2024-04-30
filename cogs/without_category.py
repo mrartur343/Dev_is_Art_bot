@@ -14,7 +14,6 @@ class WithoutCategory(commands.Cog): # create a class for our cog that inherits 
 		embed.add_field(name='📆Created On', value=f"<t:{round(self.bot.user.created_at.timestamp())}:F>", inline=True)
 		owner = await (self.bot.fetch_user(658217734814957578))
 		embed.add_field(name='👑Owner', value=f"{owner}", inline=True)
-		embed.add_field(name='👥Servers', value=f'{len(await self.bot.fetch_guilds().flatten())} Servers', inline=True)
 
 		if ctx.guild.icon!=None:
 			embed.set_thumbnail(url=ctx.guild.icon.url)

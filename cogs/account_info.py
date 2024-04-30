@@ -1,30 +1,11 @@
 import json
 import typing
-import jmespath
 import discord
 from discord.ext import commands
 from modules import store_controller as shop_controll
 from modules import account_controll
 
 options_labels = shop_controll.options_labels
-class AddEventPoints(discord.ui.Modal):
-
-
-	def __init__(self, member: discord.Member, *args, **kwargs) -> None:
-		super().__init__(*args, **kwargs)
-
-		self.member = member
-		self.add_item(discord.ui.InputText(label="Кількість івент поінтів"))
-		self.add_item(discord.ui.InputText(label="Коментар"))
-
-	async def callback(self, interaction: discord.Interaction):
-		amount =self.children[0].value
-		comment =self.children[1].value
-		shop_controll.change_cash(self.member.id, int(amount))
-		await interaction.respond(f"Успішно змінено кількість івент поінтів {self.member} на {'+' if int(amount)>0 else ''}{amount}", ephemeral=True)
-		await self.member.send(f"Кількість ваших івент поінтів на сервер Dev is Art змінили на {'+' if int(amount)>0 else ''}{amount}\n> {comment}")
-
-
 class AdminPanel(discord.ui.View):
 	def __init__(self, *items):
 		super().__init__(*items)
@@ -95,7 +76,7 @@ class AchievementsAdd(discord.ui.View):
 		for v in select.values:
 			account_controll.add_to_member(v, self.member.id)
 			achievements_listed += f"\n- **`{achievements[v]['name']}`**\n> {achievements[v]['description']}"
-		if self.member.can_send():
+		if self.member.can_send() and self.member.id != 1232014648644206714:
 			await self.member.send(
 				f"Адміністрація серверу Dev is Art додала вам {len(select.values)} нових ачівок:\n{achievements_listed}")
 		await interaction.response.send_message(f"Додано {len(select.values)} ачівок для {self.member.mention}!",
@@ -103,18 +84,6 @@ class AchievementsAdd(discord.ui.View):
 
 
 async def profile_embed(self, member):
-	with open('emojies.json', 'r') as file:
-		emojies = json.loads(file.read())
-	ids = []
-	for emoji in emojies:
-		emoji: str
-		ids.append(int(emoji.split(':')[1].split('tile')[-1]))
-
-	sorted_emojies = [None] * 16
-
-	for i, id_e in enumerate(ids):
-		sorted_emojies[id_e] = emojies[i]
-
 
 	member_colour = discord.Colour.dark_grey()
 	for role in member.roles:
@@ -122,38 +91,15 @@ async def profile_embed(self, member):
 		if role in self.color_roles.values():
 			member_colour = role.colour
 
-	with open('emojies.json', 'r') as file:
-		emojies = json.loads(file.read())
-	ids = []
-	for emoji in emojies:
-		emoji: str
-		ids.append(int(emoji.split(':')[1].split('tile')[-1]))
-
 	sorted_emojies = [None] * 16
 
 	for i, id_e in enumerate(ids):
 		sorted_emojies[id_e] = emojies[i]
 
-	user = shop_controll.get_user_cash(member.id)
-	user_items: dict = shop_controll.get_user_items(member.id)
-
 	embed = discord.Embed(title=member.name)
 
 	embed.colour = member_colour
 
-	embed.add_field(name="Загальні відомості", inline=False, value='---')
-	embed.add_field(name="> <:e_:1232623079637778482> | Івент поінти: ", inline=False, value=f"> {user['cash']}")
-	embed.add_field(name="Інвентар", inline=False,
-					value='---\n`Змінити колір: `</item select_color:1232018128507240499>')
-
-	for k, v in user_items.items():
-		if k in self.color_roles.keys():
-			k = f'> {sorted_emojies[options_labels.index(k)]}️ | ' + self.color_roles[k].mention
-		else:
-			k = '> 📦 | ' + k
-
-		embed.add_field(name="", value=f"{k}:\n> {v}", inline=False)
-		embed.add_field(name="", value="", inline=False)
 
 	embed.add_field(name="Ачівки", inline=False, value='---')
 	for achievement in account_controll.member_achievements(str(member.id)).values():
@@ -174,26 +120,16 @@ class Account(commands.Cog):  # create a class for our cog that inherits from co
 	def __init__(self, bot):  # this is a special method that is called when the cog is loaded
 		self.bot: discord.Bot = bot
 
-	account_commands = discord.SlashCommandGroup(name='account',
-												 description="Повна інформаці про ваш акаунт на сервер: ачівки, івенти, івент поінти та інвентар")
-
-	@account_commands.command(name='me')  # we can also add application commands
-	async def about_me(self, ctx: discord.ApplicationContext):
+	@commands.slash_command(name='achievements')  # we can also add application commands
+	async def achievements(self, ctx: discord.ApplicationContext):
 		await ctx.respond(embeds=await profile_embed(self, ctx.author))
 
-	@discord.user_command(name='Акаунт серверу')
+	@discord.user_command(name='Ачівки людини')
 	async def about_member(self, ctx, member: discord.Member):
 		await ctx.respond(embeds=await profile_embed(self, member))
-
-	@discord.user_command(name='Add event points (для адмінів)')
-	@commands.has_permissions(administrator=True)
-	async def add_event_point(self, ctx: discord.ApplicationContext, member: discord.Member):
-		await ctx.send_modal(AddEventPoints(member, title='Add Event Points'))
-
 	@commands.has_permissions(administrator=True)
 	@discord.user_command(name='Add achievements (для адмінів)')
 	async def add_achievement(self, ctx, member: discord.Member):
-
 		await ctx.respond(view=AchievementsAdd(member), ephemeral=True)
 
 	@commands.Cog.listener()  # we can add event listeners to our cog
