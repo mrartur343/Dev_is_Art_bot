@@ -1,4 +1,5 @@
 import asyncio
+import io
 import json
 import math
 import datetime
@@ -46,14 +47,21 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 	async def on_ready(self):
 		print("Radio: ON")
 
+		albums_imgs = {}
+
+
 
 		while True:
+
 
 			album_short_names = [f for f in listdir('songs')]
 
 			songs = {}
-			with open('albums_data.json', 'r') as file:
+			with open('other/albums_data.json', 'r') as file:
 				album_data_json = json.loads(file.read())
+			singles_names = []
+			with open('other/singles_names.json', 'r') as file:
+				singles_names = json.loads(file.read())
 			albums_names={}
 			albums_url={}
 			for short_name, info in album_data_json.items():
@@ -81,15 +89,24 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 					songs[short_name][audio.title] = song_file
 
 			song_lists = {}
-
+			for single_name in singles_names:
+				if single_name in album_short_names:
+					album_short_names.remove(single_name)
+			i=0
 			for short_name in album_short_names:
 				song_lists[short_name] = get_song_list(albums_url[short_name])
+				for _ in range(2):
+					if i>=len(singles_names):
+						i=0
+					song_lists[singles_names[i]] = get_song_list(albums_url[short_name])
 			album_durations = {}
 			for k, v in songs.items():
 				d = 0
 				for name, file in v.items():
 					audio_info = TinyTag.get(f"songs/{k}/{file}")
-					d += audio_info.duration
+					print(f"get: songs/{k}/{file}")
+					if audio_info.duration!=None:
+						d += audio_info.duration
 				album_durations[k] = round(d)
 			msg = await voice_channel.send(embeds=[discord.Embed(title='load...'), discord.Embed(title='load...')])
 			album_list = []
@@ -111,9 +128,20 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 						print(voice_channel.members)
 						file_name = songs[album_name][song_name]
 						audio_source = discord.FFmpegPCMAudio(f"songs/{album_name}/{file_name}")
-						audio_info = TinyTag.get(f"songs/{album_name}/{file_name}")
+						audio_info = TinyTag.get(f"songs/{album_name}/{file_name}", image=True)
+
+						if not album_name in albums_imgs:
+							image_data: bytes = audio_info.get_image()
+							with open('a.png', 'wb') as file:
+								file.write(image_data)
+
+							file = discord.File(fp='a.png')
+							admin_logs = await voice_channel.guild.fetch_channel(1208129687067303940)
+							imgmsg = await admin_logs.send(content=".",file=file)
+							albums_imgs[album_name] = imgmsg.attachments[0].url
 
 						embed_info = discord.Embed(title='Зараз грає:')
+						embed_info.set_thumbnail(url=albums_imgs[album_name])
 
 						embed_info.add_field(name="🎵 Назва:", value=audio_info.title)
 						embed_info.add_field(name="🧑‍🎤 Виконавець: ", value=audio_info.artist)
@@ -121,7 +149,7 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 						embed_info.add_field(name="📡 Бітрейт:", value=str(audio_info.bitrate) + " kBits/s")
 						embed_info.add_field(name="⚖️ Розмір: ",
 											 value=str(round(audio_info.filesize / (1024 ** 2), 2)) + " mb")
-						embed_info.add_field(name="💿 Альбом: ", value=albums_names[album_name])
+						embed_info.add_field(name="💿 Альбом: " if (not album_name in singles_names) else "Сингл ⚡:", value=albums_names[album_name] if (not album_name in singles_names) else "Між кожним альбомом грають 2 випадкових сингла")
 						embed_info.add_field(name="⏲️ Тривалість: ",
 											 value=f"{math.floor(audio_info.duration / 60)}m {math.floor(audio_info.duration) % 60}s")
 
@@ -131,8 +159,10 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 						timetable = radio_timetable.get_album_times(list(album_durations.keys()), list(album_durations.values()), album_name,album_start_time+ datetime.timedelta(seconds=album_durations[album_name]-skip_offset))
 						i=0
 						for k, v in timetable.items():
-							embed2.description+=(f"{albums_names[k]} <t:{round(v.timestamp())}:T>\n")
-							i+=1
+							if not k in singles_names:
+								embed2.description+=(f"{albums_names[k]} <t:{round(v.timestamp())}:T>\n")
+								i+=1
+						embed2.set_footer(text='Між кожним альбомом грають 2 випадкових сингла')
 
 						await msg.delete()
 						msg = await voice_channel.send(embeds=[embed_info,embed2])
