@@ -1,5 +1,9 @@
+import asyncio
+import json
 import math
 import datetime
+import time
+
 import requests
 from bs4 import BeautifulSoup
 from modules import account_controll, radio_timetable
@@ -27,88 +31,84 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 	def __init__(self, bot):  # this is a special method that is called when the cog is loaded
 		self.bot: discord.Bot = bot
 
+	@commands.Cog.listener()
+	async def on_voice_state_update(self,member:discord.Member, before, after):
+		print(f'ovsu m: {member.name} b: {before.channel} a: {after.channel}')
+
+
+		channel: discord.VoiceChannel = after.channel
+		if channel.id == 1208129687231008808 and member.id!=self.bot.user.id:
+			guild: discord.Guild = channel.guild
+			normal_radio = await guild.fetch_channel(1208129687231008808)
+			await (await guild.fetch_member(self.bot.user.id)).move_to(normal_radio)
 
 	@commands.Cog.listener()
 	async def on_ready(self):
 		print("Radio: ON")
 
-		album_short_names = [f for f in listdir('songs')]
-
-
-
-		songs = {}
-
-		albums_names = {
-			"AM": "AM",
-			"MemoryBank": "Memory Bank",
-			'Zero': '0',
-			'FWN': 'Favourite Worst Nightmare',
-			'PS': 'Pineapple Sunrise',
-			"ILY": "I Love You.",
-			"LDA": "Little Dark Age"
-		}
-
-		albums_url = {
-			'AM':'https://open.spotify.com/album/78bpIziExqiI9qztvNFlQu',
-			'MemoryBank': "https://open.spotify.com/album/08kV4nhdlCBbCWt9fO6AAa",
-			'Zero': 'https://open.spotify.com/album/4G3ZBFg8MpTSDxDQ3m2BCb',
-			"FWN": 'https://open.spotify.com/album/1XkGORuUX2QGOEIL4EbJKm',
-			"PS": "https://open.spotify.com/album/7gA8QSNSZvHUYC9feFpeLj",
-			'ILY':'https://open.spotify.com/album/4xkM0BwLM9H2IUcbYzpcBI',
-			'LDA': 'https://open.spotify.com/album/7GjVWG39IOj4viyWplJV4H'
-		}
-
-
-
-		song_files = {}
-
-		for short_name in album_short_names:
-			song_files[short_name] = [f for f in listdir(f"songs/{short_name}") if isfile(join(f"songs/{short_name}", f))]
-
-
-
-
-
-
-		voice_channel: discord.VoiceChannel = await self.bot.fetch_channel(1208129687231008808)
-
-		voice_client: discord.VoiceClient = await voice_channel.connect()
-
-		for short_name in album_short_names:
-			songs[short_name]={}
-
-
-		for short_name in album_short_names:
-
-			for song_file in song_files[short_name]:
-				audio = TinyTag.get(f"songs/{short_name}/{song_file}")
-				songs[short_name][audio.title] = song_file
-
-		song_lists = {}
-
-		for short_name in album_short_names:
-			song_lists[short_name] = get_song_list(albums_url[short_name])
-		album_durations={}
-		for k,v in songs.items():
-			d = 0
-			for name, file in v.items():
-				audio_info = TinyTag.get(f"songs/{k}/{file}")
-				d+=audio_info.duration
-			album_durations[k]=round(d)
-		msg = await voice_channel.send(embeds=[discord.Embed(title='load...'),discord.Embed(title='load...')])
-		album_list = []
-		print(song_lists)
-		for album_name in song_lists.keys():
-			album_list.append(album_name)
-
 
 		while True:
+
+			album_short_names = [f for f in listdir('songs')]
+
+			songs = {}
+			with open('albums_data.json', 'r') as file:
+				album_data_json = json.loads(file.read())
+			albums_names={}
+			albums_url={}
+			for short_name, info in album_data_json.items():
+				albums_names[short_name]=info[0]
+				albums_url[short_name] = info[1]
+			song_files = {}
+
+			for short_name in album_short_names:
+				song_files[short_name] = [f for f in listdir(f"songs/{short_name}") if
+										  isfile(join(f"songs/{short_name}", f))]
+
+
+			voice_channel: discord.VoiceChannel = await self.bot.fetch_channel(1208129687231008808)
+			afk_radio:  discord.VoiceChannel = await self.bot.fetch_channel(1235991951547961478)
+			voice_client = await voice_channel.connect()
+
+
+			for short_name in album_short_names:
+				songs[short_name] = {}
+
+			for short_name in album_short_names:
+
+				for song_file in song_files[short_name]:
+					audio = TinyTag.get(f"songs/{short_name}/{song_file}")
+					songs[short_name][audio.title] = song_file
+
+			song_lists = {}
+
+			for short_name in album_short_names:
+				song_lists[short_name] = get_song_list(albums_url[short_name])
+			album_durations = {}
+			for k, v in songs.items():
+				d = 0
+				for name, file in v.items():
+					audio_info = TinyTag.get(f"songs/{k}/{file}")
+					d += audio_info.duration
+				album_durations[k] = round(d)
+			msg = await voice_channel.send(embeds=[discord.Embed(title='load...'), discord.Embed(title='load...')])
+			album_list = []
+			print(song_lists)
+			for album_name in song_lists.keys():
+				album_list.append(album_name)
+
+
+			####
+
 			i=0
 			for album_name, songs_list in song_lists.items():
 				i+=1
+
 				album_start_time = datetime.datetime.now()
+				skip_offset=0
 				for song_name in songs_list:
 					if song_name in songs[album_name]:
+						print(voice_channel.members)
 						file_name = songs[album_name][song_name]
 						audio_source = discord.FFmpegPCMAudio(f"songs/{album_name}/{file_name}")
 						audio_info = TinyTag.get(f"songs/{album_name}/{file_name}")
@@ -128,7 +128,7 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 						embed2 = discord.Embed(title='Розпорядок наступних альбомів')
 						embed2.description=''
 
-						timetable = radio_timetable.get_album_times(list(album_durations.keys()), list(album_durations.values()), album_name,album_start_time+ datetime.timedelta(seconds=album_durations[album_name]))
+						timetable = radio_timetable.get_album_times(list(album_durations.keys()), list(album_durations.values()), album_name,album_start_time+ datetime.timedelta(seconds=album_durations[album_name]-skip_offset))
 						i=0
 						for k, v in timetable.items():
 							embed2.description+=(f"{albums_names[k]} <t:{round(v.timestamp())}:T>\n")
@@ -143,7 +143,23 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 							for member in voice_channel.members:
 								sde_achievement_list.append(member)
 
+						if len(voice_channel.members)<2 and voice_channel.guild.voice_client != None:
+							await voice_channel.guild.voice_client.disconnect(force=True)
+
+
+						def members_ids(members):
+							r = [m.id for m in members]
+							if self.bot.user.id in r:
+								r.remove(self.bot.user.id)
+							return r
+
+						if len(members_ids(voice_channel.members))==0:
+							voice_client: discord.VoiceClient = await afk_radio.connect(reconnect=False)
+						else:
+							voice_client: discord.VoiceClient = await voice_channel.connect(reconnect=False)
+
 						await voice_client.play(audio_source, wait_finish=True)
+
 
 						if audio_info.title=='Sex, Drugs, Etc.':
 							for member in voice_channel.members:
@@ -153,7 +169,7 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 
 							for member in sde_achievement_list:
 								account_controll.add_to_member('sde', member.id)
-								if member.can_send() and member.id != 1231689822746181806:
+								if member.can_send() and member.id != 1221403700115800164:
 									await member.send(f"Адміністрація серверу Dev is Art додала вам 1 нових ачівок:\n- **`{achievements['sde']['name']}`**\n> {achievements['sde']['description']}")
 
 

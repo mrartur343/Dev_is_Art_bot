@@ -5,6 +5,18 @@ from discord.ext import commands
 from modules import store_controller as shop_controll
 from modules import account_controll
 
+
+
+
+class InfoView(discord.ui.View):
+    def __init__(self):
+        super().__init__(timeout=None)
+
+        supportServerButton = discord.ui.Button(label='Мої ачівки', style=discord.ButtonStyle.gray, url='https://discord.com/channels/1208129686031310848/1208129686572638214/1235970207747407932')
+        self.add_item(supportServerButton)
+
+
+
 options_labels = shop_controll.options_labels
 class AdminPanel(discord.ui.View):
 	def __init__(self, *items):
@@ -84,6 +96,12 @@ class AchievementsAdd(discord.ui.View):
 
 
 async def profile_embed(self, member):
+	with open('emojies.json', 'r') as file:
+		emojies = json.loads(file.read())
+	ids = []
+	for emoji in emojies:
+		emoji: str
+		ids.append(int(emoji.split(':')[1].split('tile')[-1]))
 
 	member_colour = discord.Colour.dark_grey()
 	for role in member.roles:
@@ -119,6 +137,7 @@ class Account(commands.Cog):  # create a class for our cog that inherits from co
 
 	def __init__(self, bot):  # this is a special method that is called when the cog is loaded
 		self.bot: discord.Bot = bot
+		self.color_roles = {}
 
 	@commands.slash_command(name='achievements')  # we can also add application commands
 	async def achievements(self, ctx: discord.ApplicationContext):
@@ -185,6 +204,24 @@ class Account(commands.Cog):  # create a class for our cog that inherits from co
 			self.color_roles[color_name] = all_roles[color_name]
 
 		print(self.color_roles)
+"""
+		######
+
+		embed = discord.Embed()
+
+		with open("text.txt", 'r', encoding='utf-8') as file:
+			text = file.read()
+		embed.description = text
+		embed.colour = discord.Colour.from_rgb(111, 103, 118)
+
+		embed.set_image(
+			url="https://cdn.discordapp.com/attachments/1208129686572638214/1235974171633254430/ach.png?ex=66365225&is=663500a5&hm=ff69eef38b9ce10e4850b9aaf17068ccb5697bce5e4b0f4d018fa9cd0ff682a7&")
+
+		forum: discord.ForumChannel = await  self.bot.fetch_channel(1235964109942427719)
+
+		await forum.create_thread(name='Ачівки', embed=embed, view=InfoView())
+
+		######"""
 
 
 def setup(bot):  # this is called by Pycord to setup the cog

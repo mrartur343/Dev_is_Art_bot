@@ -11,7 +11,7 @@ class InfoView(discord.ui.View):
     def __init__(self):
         super().__init__(timeout=None)
 
-        supportServerButton = discord.ui.Button(label='Оцінити сервер', style=discord.ButtonStyle.gray, url='https://discord.com')
+        supportServerButton = discord.ui.Button(label='Оцінити сервер', style=discord.ButtonStyle.gray, url='https://discord.com/channels/1208129686031310848/1228317769209221132/1229122722232008704')
         self.add_item(supportServerButton)
 
 
