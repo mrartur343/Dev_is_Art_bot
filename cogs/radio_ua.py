@@ -1,18 +1,13 @@
-import asyncio
-import io
 import os
 import json
 import math
 import datetime
 import random
-
 import jmespath
-import pytz
 import typing
-
 import requests
 from bs4 import BeautifulSoup
-from modules import account_controll, radio_timetable
+from modules import account_controll, radio_timetable, album_downloader
 import discord
 from discord.ext import commands, pages
 from os import listdir
@@ -163,6 +158,30 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 
 
 
+	@discord.slash_command(name="album_from_url", description='Лише для адмінів')
+	@commands.has_permissions(administrator=True)
+	async def album_from_url(self,ctx, album_key:discord.Option(str),album_name: discord.Option(str),album_url: discord.Option(str),single:discord.Option(bool)):
+		respond = await ctx.respond('wait...')
+		os.mkdir(f"songs/{album_key}")
+		albums_data= {}
+		with open("other/albums_data.json", 'r') as file:
+			albums_data = json.loads(file.read())
+		albums_data[album_key]=[album_name,album_url]
+		with open("other/albums_data.json", 'w') as file:
+			json.dump(albums_data,file)
+
+		if single:
+			with open("other/singles_names.json", 'r') as file:
+				singles = json.loads(file.read())
+			singles.append(album_key)
+			with open("other/singles_names.json", 'w') as file:
+				json.dump(singles,file)
+
+
+
+		await respond.edit(content=f"Успішно додано [**{album_name}**]({album_url}) ({album_key})")
+
+
 	@discord.slash_command(name="album_from_thread", description='Лише для адмінів')
 	@commands.has_permissions(administrator=True)
 	async def album_from_thread(self,ctx, thread: discord.Option(discord.Thread), album_key:discord.Option(str),album_name: discord.Option(str),album_url: discord.Option(str),single:discord.Option(bool)):
@@ -182,10 +201,7 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 			with open("other/singles_names.json", 'w') as file:
 				json.dump(singles,file)
 
-		thread: discord.Thread
-		async for message in thread.history(limit=100):
-			for attach in message.attachments:
-				await attach.save(f"songs/{album_key}/{attach.filename}")
+		album_downloader.download_album(album_url,album_key)
 
 		await respond.edit(content=f"Успішно додано [**{album_name}**]({album_url}) ({album_key})")
 
