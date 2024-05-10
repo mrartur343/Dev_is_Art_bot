@@ -1,4 +1,5 @@
 import json
+import os.path
 import typing
 import discord
 from discord.ext import commands
@@ -31,6 +32,8 @@ class AdminPanel(discord.ui.View):
 	options.append(discord.SelectOption(label='Створити ачівку', value='achievement_create'))
 	options.append(discord.SelectOption(label='Температура', value='temperature'))
 	options.append(discord.SelectOption(label='Вимкнути бота', value='poweroff'))
+	options.append(discord.SelectOption(label='Лог файл', value='load nohup'))
+	options.append(discord.SelectOption(label='Очистити лог файл', value='clean nohup'))
 
 	@discord.ui.select(  # the decorator that lets you specify the properties of the select menu
 		placeholder="Вибрати дію",  # the placeholder text that will be displayed if nothing is selected
@@ -63,6 +66,15 @@ class AdminPanel(discord.ui.View):
 		elif select.values[0] == 'poweroff':
 			await interaction.respond("Вимкнення бота!")
 			await self.bot.close()
+		elif select.values[0] == 'load nohup':
+			if os.path.exists('nohup.out'):
+				with open('nohup.out', 'r') as file:
+					file_d = discord.File(file.read(), filename='nohup.out')
+					await interaction.respond(file=file_d)
+		elif select.values[0] == 'clean nohup':
+			if os.path.exists('nohup.out'):
+				with open('nohup.out', 'w') as file:
+					file.write('')
 class CreateAchievement(discord.ui.Modal):
 	def __init__(self, *args, **kwargs) -> None:
 		super().__init__(*args, **kwargs)
