@@ -91,5 +91,5 @@ class EventsMessages(commands.Cog):
             for role in auto_roles:
                 await member.add_roles(role)
 
-def setup(bot):
-    bot.add_cog(EventsMessages(bot))
+async def setup(bot):
+    await bot.add(EventsMessages(bot))

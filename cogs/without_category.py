@@ -52,5 +52,5 @@ class WithoutCategory(commands.Cog): # create a class for our cog that inherits 
 		icon_url = icon_url)
 		await ctx.respond(embed=embed)
 
-def setup(bot): # this is called by Pycord to setup the cog
-	bot.add_cog(WithoutCategory(bot)) # add the cog to the bot
+async def setup(bot): # this is called by Pycord to setup the cog
+	await bot.add_cog(WithoutCategory(bot)) # add the cog to the bot

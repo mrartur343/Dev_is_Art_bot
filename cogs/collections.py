@@ -127,5 +127,5 @@ class Collections(commands.Cog): # create a class for our cog that inherits from
 
 
 
-def setup(bot): # this is called by Pycord to setup the cog
-	bot.add_cog(Collections(bot)) # add the cog to the bot
+async def setup(bot): # this is called by Pycord to setup the cog
+	await bot.add(Collections(bot)) # add the cog to the bot

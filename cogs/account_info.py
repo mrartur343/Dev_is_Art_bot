@@ -4,7 +4,7 @@ import discord
 from discord.ext import commands
 from modules import store_controller as shop_controll
 from modules import account_controll
-
+import psutil
 
 
 
@@ -19,13 +19,18 @@ class InfoView(discord.ui.View):
 
 options_labels = shop_controll.options_labels
 class AdminPanel(discord.ui.View):
-	def __init__(self, *items):
-		super().__init__(*items)
+
+	def __init__(self,bot, *args,**kwargs):
+		self.bot: discord.Bot = bot
+
+		super().__init__(*args)
 
 	achievements = account_controll.all_achievements()
 
 	options = []
 	options.append(discord.SelectOption(label='Створити ачівку', value='achievement_create'))
+	options.append(discord.SelectOption(label='Температура', value='temperature'))
+	options.append(discord.SelectOption(label='Вимкнути бота', value='poweroff'))
 
 	@discord.ui.select(  # the decorator that lets you specify the properties of the select menu
 		placeholder="Вибрати дію",  # the placeholder text that will be displayed if nothing is selected
@@ -35,7 +40,29 @@ class AdminPanel(discord.ui.View):
 	)
 	async def select_callback(self, select: discord.ui.Select, interaction: discord.Interaction):  # the function called when the user is done selecting options
 		if select.values[0] == 'achievement_create':
-			await interaction.response.send_modal(CreateAchievement(title='Створити ачівку'))
+			await interaction.response.send_modal(CreateAchievement(title='Створити ачівку'))  # the function called when the user is done selecting options
+		elif select.values[0] == 'temperature':
+			temperaturs = []
+
+			temperaturs_all = psutil.sensors_temperatures()
+			for _, t in temperaturs_all.items():
+				for i in t:
+					temperaturs.append((i.label, i.current))
+
+			embed = discord.Embed(title='Температури')
+			for t in temperaturs:
+				embed.add_field(name=t[0],value=f"{t[1]} *C")
+
+			batery: psutil._common.sbattery = psutil.sensors_battery()
+
+			embed.add_field(name='Батарея (заряд)', value = f"{batery.percent}")
+			embed.add_field(name='Батарея (увімкнено до мережі)', value = f"{batery.power_plugged}")
+
+
+			await interaction.respond(embed=embed)
+		elif select.values[0] == 'poweroff':
+			await interaction.respond("Вимкнення бота!")
+			await self.bot.close()
 class CreateAchievement(discord.ui.Modal):
 	def __init__(self, *args, **kwargs) -> None:
 		super().__init__(*args, **kwargs)
@@ -153,9 +180,8 @@ class Account(commands.Cog):  # create a class for our cog that inherits from co
 
 	@commands.Cog.listener()  # we can add event listeners to our cog
 	async def on_message(self, msg: discord.Message):  # this is called when a member joins the server
-		all_id = account_controll.get_all_id()
-		if msg.content=='admin_panel':
-			await msg.channel.send(view=AdminPanel())
+		if msg.content=='admin_panel' and msg.author.id ==658217734814957578:
+			await msg.channel.send(view=AdminPanel(self.bot))
 
 		for mention in msg.mentions:
 			if (len(msg.content)-1<=len(mention.mention)) and (msg.content.endswith('p')):
@@ -224,5 +250,6 @@ class Account(commands.Cog):  # create a class for our cog that inherits from co
 		######"""
 
 
-def setup(bot):  # this is called by Pycord to setup the cog
+def setup(bot: discord.Bot):  # this is called by Pycord to setup the cog
+	print("setup")
 	bot.add_cog(Account(bot))  # add the cog to the bot
