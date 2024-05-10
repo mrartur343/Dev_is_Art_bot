@@ -165,7 +165,7 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 
 	@discord.slash_command(name="album_from_url", description='Лише для адмінів')
 	@commands.has_permissions(administrator=True)
-	async def album_from_url(self,ctx, album_key:discord.Option(str),album_name: discord.Option(str),album_url: discord.Option(str),single:discord.Option(bool)):
+	async def album_from_url(self,ctx: discord.ApplicationContext, album_key:discord.Option(str),album_name: discord.Option(str),album_url: discord.Option(str),single:discord.Option(bool)):
 		respond = await ctx.respond('wait...')
 		os.mkdir(f"songs/{album_key}")
 		albums_data= {}
@@ -182,9 +182,11 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 			with open("other/singles_names.json", 'w') as file:
 				json.dump(singles,file)
 
-		album_downloader.download_album(album_url,album_key)
+		await respond.edit(content=f"Успішно створено [**{album_name}**]({album_url}) ({album_key})")
 
-		await respond.edit(content=f"Успішно додано [**{album_name}**]({album_url}) ({album_key})")
+
+		await album_downloader.download_album(album_url,album_key, ctx.channel)
+
 
 
 	@discord.slash_command(name="album_from_thread", description='Лише для адмінів')
