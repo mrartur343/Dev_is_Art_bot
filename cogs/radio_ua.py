@@ -1,10 +1,15 @@
+import asyncio
+import io
 import os
 import json
 import math
 import datetime
 import random
+
 import jmespath
+import pytz
 import typing
+
 import requests
 from bs4 import BeautifulSoup
 from modules import account_controll, radio_timetable, album_downloader
@@ -177,7 +182,7 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 			with open("other/singles_names.json", 'w') as file:
 				json.dump(singles,file)
 
-
+		album_downloader.download_album(album_url,album_key)
 
 		await respond.edit(content=f"Успішно додано [**{album_name}**]({album_url}) ({album_key})")
 
@@ -201,7 +206,10 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 			with open("other/singles_names.json", 'w') as file:
 				json.dump(singles,file)
 
-		album_downloader.download_album(album_url,album_key)
+		thread: discord.Thread
+		async for message in thread.history(limit=100):
+			for attach in message.attachments:
+				await attach.save(f"songs/{album_key}/{attach.filename}")
 
 		await respond.edit(content=f"Успішно додано [**{album_name}**]({album_url}) ({album_key})")
 
