@@ -159,7 +159,8 @@ class DislikeAlbumFromList(discord.ui.View):
 			album_likes[self.liked_album].remove(interaction.user.id)
 		with open("other/album_likes.json", 'w') as file:
 			json.dump(album_likes, file)
-		await self.pmsg.edit(content=f"Успішно видалено 1 альбом з ваших обраних!",embeds=[],view=None) # Send a message when the button is clicked
+		await self.pmsg.delete()
+		await interaction.respond(content=f"Успішно видалено 1 альбом з ваших обраних!",ephemeral=True) # Send a message when the button is clicked
 	@discord.ui.button(label="", style=discord.ButtonStyle.gray,custom_id='notification_button', emoji="🔔") # Create a button with the label "😎 Click me!" with color Blurple
 	async def button_callback2(self, button, interaction: discord.Interaction):
 		self.pmsg = interaction.message
@@ -183,10 +184,13 @@ class DislikeAlbumFromList(discord.ui.View):
 		with open('other/notifications_off.json', 'w') as file:
 			json.dump(notifications_off, file)
 
+
+		await self.pmsg.delete()
+
 		if not_check:
-			await self.pmsg.edit(content=f"🔔 Успішно **увімкнуто** сповіщення для цього альбому!",embeds=[],view=None)
+			await interaction.respond(content=f"🔔 Успішно **увімкнуто** сповіщення для цього альбому!",ephemeral=True)
 		else:
-			await self.pmsg.edit(content=f"🌙 Успішно **вимкнуто** сповіщення для цього альбому!",embeds=[],view=None)
+			await interaction.respond(content=f"🌙 Успішно **вимкнуто** сповіщення для цього альбому!",ephemeral=True)
 
 
 with open("other/songs_lists_cache.json", 'r') as file:
