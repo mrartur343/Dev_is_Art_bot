@@ -154,6 +154,15 @@ def get_song_list(url: str):
 		with open('other/songs_lists_cache.json', 'w') as file:
 			json.dump(songs_lists_cache, file)
 		return song_names
+def get_album_name_and_key(url: str):
+	r_onlineradio = requests.get(url).content
+
+	soup = BeautifulSoup(r_onlineradio, 'html.parser')
+
+	album_name = [heading.text for heading in
+						 soup.find_all('h1', class_='Type__TypeElement-sc-goli3j-0 ofaEA gj6rSoF7K4FohS2DJDEm')][0]
+	album_key = url[8:]
+	return (album_name,album_key)
 
 class RadioUa(commands.Cog):  # create a class for our cog that inherits from commands.Cog
 	# this class is used to create a cog, which is a module that can be added to the bot
@@ -165,7 +174,8 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 
 	@discord.slash_command(name="album_from_url", description='Лише для адмінів')
 	@commands.has_permissions(administrator=True)
-	async def album_from_url(self,ctx: discord.ApplicationContext, album_key:discord.Option(str),album_name: discord.Option(str),album_url: discord.Option(str),single:discord.Option(bool)):
+	async def album_from_url(self,ctx: discord.ApplicationContext,album_url: discord.Option(str),single:discord.Option(bool)):
+		album_name, album_key = get_album_name_and_key(url=album_url)
 		respond = await ctx.respond('wait...')
 		os.mkdir(f"songs/{album_key}")
 		with open("other/albums_data.json", 'r') as file:
