@@ -5,8 +5,8 @@ def get_album_times(albums_names: typing.List[str], albums_duration: typing.Dict
     if next_time==None:
         next_time=datetime.datetime.now()+datetime.timedelta(seconds=100)
     while albums_names[0]!=current_album:
-        albums_names = albums_names[1:] + albums_names[:1]
-    albums_names = albums_names[1:] + albums_names[:1]
+        albums_names = albums_names[1:]
+    albums_names = albums_names[1:]
 
     timetable: list = []
 

@@ -22,7 +22,10 @@ from tinytag import TinyTag
 radio_channel_id = 1208129687231008808
 
 class AlbumSongs(discord.ui.View):
-	def __init__(self,songs_list: typing.List[str], current_play: str,current_album:str,timeout:float|None, *args, **kwargs):
+	def __init__(self,songs_list: typing.List[str], current_play: str,current_album:str,timeout:float|None,timetable: typing.Dict[str,datetime.datetime],next_cycle_time:datetime.datetime, cycle_duration: float, *args, **kwargs):
+		self.cycle_duration = cycle_duration
+		self.next_cycle_time = next_cycle_time
+		self.timetable = timetable
 		self.current_album = current_album
 		self.current_play = current_play
 		self.songs_list = songs_list
@@ -67,9 +70,25 @@ class AlbumSongs(discord.ui.View):
 
 		items_pages = []
 		for album_name in albums_list:
+
+			time_check = False
+
+			if album_name in self.timetable:
+				album_start_time = self.timetable[album_name]
+				time_check = True
+			else:
+				album_start_time = self.next_cycle_time
+
 			items_embed = discord.Embed(title=albums_names[album_name])
 			n = '\n'
 			items_embed.description = f"❤️ | Цей альбом обрали: **{len(album_likes[album_name])}**"
+
+			if time_check:
+				items_embed.add_field(name=f'Наступний альбом:',value=f"<t:{round(album_start_time.timestamp())}:f>")
+			else:
+				items_embed.add_field(name=f'Наступний альбом:',value=f"~ <t:{round(album_start_time.timestamp())}:f> - <t:{round((album_start_time+datetime.timedelta(seconds=self.cycle_duration)).timestamp())}:f> (Цей альбом заграє вже у наступному циклі, тому час лише приблизний)")
+
+
 			if album_name in albums_images_cache:
 				items_embed.set_image(url=albums_images_cache[album_name])
 			items_embed.set_footer(text=album_name)
@@ -373,20 +392,38 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 				for song in songs_list:
 					print(song)
 			print()
+
+			cycle_duration = 0.0
+			for duration in album_durations.values():
+				cycle_duration+=duration
+
+			next_cycle_time = datetime.datetime.now()+datetime.timedelta(seconds=cycle_duration)
+
 			for album_name, songs_list in song_lists:
 				i+=1
 				album_start_time = datetime.datetime.now()
-				skip_offset=0
-				next_index = album_list.index(album_name)+1
-				if next_index==len(album_list):
-					next_index=0
-				with open("other/album_likes.json", 'r') as file:
-					album_likes = json.loads(file.read())
-					for user_like in album_likes[album_list[next_index]]:
-						user=await self.bot.fetch_user(user_like)
-						if user.can_send():
-							next_album_timestamp = (album_start_time+datetime.timedelta(seconds=album_durations[album_name])).timestamp()
-							await user.send(f"Альбом **`{albums_names[album_list[next_index]]}`**, який ви вподобали, буде у <#1208129687231008808> <t:{round(next_album_timestamp)}:R>", view=DislikeAlbum(timeout=None,liked_album=album_name))
+				next_index = album_list.index(album_name)+3
+				if next_index>=len(album_list):
+					pass
+				elif next_index==0:
+					for next_index2 in range(3):
+						with open("other/album_likes.json", 'r') as file:
+							album_likes = json.loads(file.read())
+							for user_like in album_likes[album_list[next_index2]]:
+								user=await self.bot.fetch_user(user_like)
+								if user.can_send():
+									next_album_timestamp = (album_start_time+datetime.timedelta(seconds=album_durations[album_name])).timestamp()
+									album_notification_label = "Сингл" if album_name in singles_names else "Альбом"
+									await user.send(f"{album_notification_label} **`{albums_names[album_list[next_index2]]}`**, який ви вподобали, буде у <#1208129687231008808> <t:{round(next_album_timestamp)}:R>", view=DislikeAlbum(timeout=None,liked_album=album_name))
+				else:
+					with open("other/album_likes.json", 'r') as file:
+						album_likes = json.loads(file.read())
+						for user_like in album_likes[album_list[next_index]]:
+							user=await self.bot.fetch_user(user_like)
+							if user.can_send():
+								next_album_timestamp = (album_start_time+datetime.timedelta(seconds=album_durations[album_name])).timestamp()
+								album_notification_label = "Сингл" if album_name in singles_names else "Альбом"
+								await user.send(f"{album_notification_label} **`{albums_names[album_list[next_index]]}`**, який ви вподобали, буде у <#1208129687231008808> <t:{round(next_album_timestamp)}:R>", view=DislikeAlbum(timeout=None,liked_album=album_name))
 				print("---songs_list---")
 				print(song_lists)
 				print("------")
@@ -428,7 +465,7 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 							print(album_durations)
 							print("----")
 
-							timetable = radio_timetable.get_album_times(jmespath.search("[*][0]", song_lists), album_durations, album_name,album_start_time+ datetime.timedelta(seconds=album_durations[album_name]-skip_offset))
+							timetable = radio_timetable.get_album_times(jmespath.search("[*][0]", song_lists), album_durations, album_name,album_start_time+ datetime.timedelta(seconds=album_durations[album_name]))
 							i=0
 							single_check=True
 							old_emoji = ""
@@ -454,11 +491,13 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 										i+=1
 
 								old_emoji=time_emoji
-
+							if i<6:
+								embed2.description += (
+									f"<t:{round(next_cycle_time.timestamp())}:t> Наступний цикл (довантаження нових альбомів/синглів/плейлистів) {f' (<t:{round(next_cycle_time.timestamp())}:R>)' if (i == 0) and single_check else ''}\n")
 							embed2.set_footer(text='Між кожним альбомом грають 2 випадкових сингла')
 
 							await msg.delete()
-							msg = await voice_channel.send(embeds=[embed_info,embed2],view=AlbumSongs(songs_list=songs_list,current_play=song_name,timeout=None, current_album=album_name))
+							msg = await voice_channel.send(embeds=[embed_info,embed2],view=AlbumSongs(songs_list=songs_list,current_play=song_name,timeout=None, current_album=album_name,timetable=timetable,next_cycle_time=next_cycle_time,cycle_duration=cycle_duration))
 
 							sde_achievement_list = []
 

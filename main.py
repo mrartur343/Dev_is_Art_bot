@@ -10,6 +10,7 @@ intents: discord.Intents = discord.Intents.all()
 bot = commands.Bot(intents=intents,command_prefix='....')
 print(f"cogs: {os.listdir('./cogs')}")
 
+
 bot.add_cog(account_info.Account(bot))
 bot.add_cog(collections.Collections(bot))
 bot.add_cog(event_messages.EventsMessages(bot))
