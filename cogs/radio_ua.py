@@ -367,7 +367,8 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 
 				if st.hour<8 and j==0:
 					if j>=len(playlists_names):
-						song_lists.append([playlists_names[j],get_song_list(albums_url[playlists_names[j]])])
+						j = 0
+					song_lists.append([playlists_names[j],get_song_list(albums_url[playlists_names[j]])])
 					j+=1
 				st += datetime.timedelta(seconds = album_durations[short_name])
 				song_lists.append([short_name, get_song_list(albums_url[short_name])])
