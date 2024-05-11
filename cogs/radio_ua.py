@@ -1,18 +1,15 @@
 import asyncio
-import io
-import os
 import json
 import math
 import datetime
 import random
 
 import jmespath
-import pytz
 import typing
 
 import requests
 from bs4 import BeautifulSoup
-from modules import account_controll, radio_timetable, album_downloader
+from modules import account_controll, radio_timetable
 import discord
 from discord.ext import commands, pages
 from os import listdir
@@ -86,10 +83,19 @@ class AlbumSongs(discord.ui.View):
 			items_embed.description = f"❤️ | Цей альбом обрали: **{len(album_likes[album_name])}**"
 
 			if time_check:
-				items_embed.add_field(name=f'Наступний альбом:',value=f"<t:{round(album_start_time.timestamp())}:f>")
+				items_embed.add_field(name=f'Заграє на радіо:',value=f"<t:{round(album_start_time.timestamp())}:f>")
 			else:
-				items_embed.add_field(name=f'Наступний альбом:',value=f"~ <t:{round(album_start_time.timestamp())}:f> - <t:{round((album_start_time+datetime.timedelta(seconds=self.cycle_duration)).timestamp())}:f> (Цей альбом заграє вже у наступному циклі, тому час лише приблизний)")
+				items_embed.add_field(name=f'Заграє на радіо:',value=f"~ <t:{round(album_start_time.timestamp())}:f> - <t:{round((album_start_time+datetime.timedelta(seconds=self.cycle_duration)).timestamp())}:f> (Цей альбом заграє вже у наступному циклі, тому час лише приблизний)")
 
+			with open('other/notifications_off.json', 'r') as file:
+				notifications_off: typing.Dict[str,typing.List[str]] = json.loads(file.read())
+				if str(interaction.user.id) in notifications_off:
+					if album_name in notifications_off[str(interaction.user.id)]:
+						items_embed.add_field(name='Сповіщення про увімкнення:', value='🌙 Вимкнуто')
+					else:
+						items_embed.add_field(name='Сповіщення про увімкнення:',value='🔔 Увімкнуто')
+				else:
+					items_embed.add_field(name='Сповіщення про увімкнення:',value='🔔 Увімкнуто')
 
 			if album_name in albums_images_cache:
 				items_embed.set_image(url=albums_images_cache[album_name])
@@ -140,10 +146,10 @@ class DislikeAlbumFromList(discord.ui.View):
 	def __init__(self,msg:discord.Message, timeout:float|None=None, *args, **kwargs):
 		super().__init__(timeout=timeout,*args)
 		self.msg = msg
+		self.liked_album = self.msg.embeds[0].footer.text
 
 	@discord.ui.button(label="Зняти з обраних", style=discord.ButtonStyle.gray, emoji="💔") # Create a button with the label "😎 Click me!" with color Blurple
 	async def button_callback(self, button, interaction: discord.Interaction):
-		self.liked_album = self.msg.embeds[0].footer.text
 
 		album_likes = {}
 		with open("other/album_likes.json", 'r') as file:
@@ -153,6 +159,32 @@ class DislikeAlbumFromList(discord.ui.View):
 		with open("other/album_likes.json", 'w') as file:
 			json.dump(album_likes, file)
 		await self.msg.edit(content=f"Успішно видалено 1 альбом з ваших обраних!",embeds=[],view=None) # Send a message when the button is clicked
+	@discord.ui.button(label="", style=discord.ButtonStyle.gray,custom_id='notification_button', emoji="🔔") # Create a button with the label "😎 Click me!" with color Blurple
+	async def button_callback2(self, button, interaction: discord.Interaction):
+		with open('other/notifications_off.json', 'r') as file:
+			album_name = self.liked_album
+			str_id = str(interaction.user.id)
+			not_check = False
+			notifications_off: typing.Dict[str, typing.List[str]] = json.loads(file.read())
+			if str(interaction.user.id) in notifications_off:
+				if album_name in notifications_off[str(interaction.user.id)]:
+					notifications_off[str_id].remove(album_name)
+					not_check=True
+				else:
+					notifications_off[str_id].append(album_name)
+			else:
+				notifications_off[str_id]=[]
+				notifications_off[str_id].append(album_name)
+
+
+		with open('other/notifications_off.json', 'w') as file:
+			json.dump(notifications_off, file)
+
+		if not_check:
+			await self.msg.edit(content=f"🔔 Успішно **увімкнуто** сповіщення для цього альбому!",embeds=[],view=None)
+		else:
+			await self.msg.edit(content=f"🌙 Успішно **вимкнуто** сповіщення для цього альбому!",embeds=[],view=None)
+
 
 with open("other/songs_lists_cache.json", 'r') as file:
 	songs_lists_cache = json.loads(file.read())
@@ -193,57 +225,19 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 
 
 
-	@discord.slash_command(name="album_from_url", description='Лише для адмінів')
+	@discord.slash_command(name="playlist_toggle", description='Лише для адмінів')
 	@commands.has_permissions(administrator=True)
-	async def album_from_url(self,ctx: discord.ApplicationContext,album_url: discord.Option(str),single:discord.Option(bool)):
-		album_name, album_key = get_album_name_and_key(url=album_url)
-		respond = await ctx.respond('wait...')
-		os.mkdir(f"songs/{album_key}")
-		with open("other/albums_data.json", 'r') as file:
-			albums_data = json.loads(file.read())
-		albums_data[album_key]=[album_name,album_url]
-		with open("other/albums_data.json", 'w') as file:
-			json.dump(albums_data,file)
+	async def playlist_toggle(self,ctx: discord.ApplicationContext,key_name:discord.Option(str), toggle: discord.Option(bool)):
 
-		if single:
-			with open("other/singles_names.json", 'r') as file:
-				singles = json.loads(file.read())
-			singles.append(album_key)
-			with open("other/singles_names.json", 'w') as file:
-				json.dump(singles,file)
+		with open('other/playlists_names.json', 'r') as file:
+			playlists_names = json.loads(file.read())
 
-		await respond.edit(content=f"Успішно створено [**{album_name}**]({album_url}) ({album_key})")
+		if toggle and (not key_name in playlists_names):
+			playlists_names.append(key_name)
+		elif (not toggle ) and (key_name in playlists_names):
+			playlists_names.remove(key_name)
 
-
-		album_downloader.download_album(album_url,album_key, ctx.channel)
-
-
-
-	@discord.slash_command(name="album_from_thread", description='Лише для адмінів')
-	@commands.has_permissions(administrator=True)
-	async def album_from_thread(self,ctx, thread: discord.Option(discord.Thread), album_key:discord.Option(str),album_name: discord.Option(str),album_url: discord.Option(str),single:discord.Option(bool)):
-		respond = await ctx.respond('wait...')
-		os.mkdir(f"songs/{album_key}")
-		albums_data= {}
-		with open("other/albums_data.json", 'r') as file:
-			albums_data = json.loads(file.read())
-		albums_data[album_key]=[album_name,album_url]
-		with open("other/albums_data.json", 'w') as file:
-			json.dump(albums_data,file)
-
-		if single:
-			with open("other/singles_names.json", 'r') as file:
-				singles = json.loads(file.read())
-			singles.append(album_key)
-			with open("other/singles_names.json", 'w') as file:
-				json.dump(singles,file)
-
-		thread: discord.Thread
-		async for message in thread.history(limit=100):
-			for attach in message.attachments:
-				await attach.save(f"songs/{album_key}/{attach.filename}")
-
-		await respond.edit(content=f"Успішно додано [**{album_name}**]({album_url}) ({album_key})")
+		await ctx.respond(f'Успішно зміненно {key_name} у  playlists_names на {toggle}')
 
 	@commands.Cog.listener()
 	async def on_voice_state_update(self,member:discord.Member, before, after):
@@ -305,6 +299,9 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 			singles_names = []
 			with open('other/singles_names.json', 'r') as file:
 				singles_names = json.loads(file.read())
+			playlists_names = []
+			with open('other/playlists_names.json', 'r') as file:
+				playlists_names = json.loads(file.read())
 			albums_names={}
 			albums_url={}
 			for short_name, info in album_data_json.items():
@@ -335,27 +332,6 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 				for song_file in song_files[short_name]:
 					audio = TinyTag.get(f"songs/{short_name}/{song_file}")
 					songs[short_name][audio.title] = song_file
-
-			song_lists = []
-			random.shuffle(singles_names)
-			random.shuffle(album_short_names)
-			for single_name in singles_names:
-				if single_name in album_short_names:
-					album_short_names.remove(single_name)
-			i=0
-			album_list = []
-			for short_name in album_short_names:
-
-
-
-				song_lists.append([short_name, get_song_list(albums_url[short_name])])
-				album_list.append(short_name)
-				for _ in range(2):
-					if i>=len(singles_names):
-						i=0
-					song_lists.append([singles_names[i],get_song_list(albums_url[singles_names[i]])])
-					album_list.append(singles_names[i])
-					i+=1
 			album_durations = {}
 			for k, v in songs.items():
 				d = 0
@@ -364,6 +340,40 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 					if audio_info.duration!=None:
 						d += audio_info.duration
 				album_durations[k] = round(d)
+
+			song_lists = []
+			random.shuffle(singles_names)
+			random.shuffle(album_short_names)
+			random.shuffle(playlists_names)
+			for single_name in singles_names:
+				if single_name in album_short_names:
+					album_short_names.remove(single_name)
+			for playlist_name in playlists_names:
+				if playlist_name in album_short_names:
+					album_short_names.remove(playlists_names)
+			i=0
+			album_list = []
+			st = 0.0
+
+			j = 0
+
+
+			for short_name in album_short_names:
+
+				st+=album_durations[short_name]
+				if (st/3600)>8:
+					if j>=len(playlists_names):
+						song_lists.append([playlists_names[j],get_song_list(albums_url[playlists_names[j]])])
+					j+=1
+				song_lists.append([short_name, get_song_list(albums_url[short_name])])
+				album_list.append(short_name)
+				for _ in range(2):
+					if i>=len(singles_names):
+						i=0
+					song_lists.append([singles_names[i],get_song_list(albums_url[singles_names[i]])])
+					album_list.append(singles_names[i])
+					i+=1
+			cycle_duration = 0.0
 			msg = await voice_channel.send(embeds=[discord.Embed(title='load...'), discord.Embed(title='load...')])
 
 			album_likes={}
@@ -392,12 +402,11 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 					print(song)
 			print()
 
-			cycle_duration = 0.0
-			for duration in album_durations.values():
-				cycle_duration+=duration
+			for album_name,_ in song_lists:
+				cycle_duration+=album_durations[album_name]
 
 			next_cycle_time = datetime.datetime.now()+datetime.timedelta(seconds=cycle_duration)
-
+			await admin_logs.send(f'Cycle duration: {math.floor((cycle_duration/60)/60)} h {math.floor((cycle_duration%3600) /60)} m {math.floor(cycle_duration%60)} s (next cycle: <t:{round(next_cycle_time.timestamp())}:F>)')
 			for album_name, songs_list in song_lists:
 				i+=1
 				album_start_time = datetime.datetime.now()
@@ -409,8 +418,15 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 						with open("other/album_likes.json", 'r') as file:
 							album_likes = json.loads(file.read())
 							for user_like in album_likes[album_list[next_index2]]:
+								not_check = True
+								with open('other/notifications_off.json', 'r') as file:
+									notifications_off: typing.Dict[str, typing.List[str]] = json.loads(file.read())
+									if str(user_like) in notifications_off:
+										if album_name in notifications_off[str(user_like)]:
+											not_check=False
+
 								user=await self.bot.fetch_user(user_like)
-								if user.can_send():
+								if user.can_send() and not_check:
 									next_album_timestamp = (album_start_time+datetime.timedelta(seconds=album_durations[album_name])).timestamp()
 									album_notification_label = "Сингл" if album_name in singles_names else "Альбом"
 									await user.send(f"{album_notification_label} **`{albums_names[album_list[next_index2]]}`**, який ви вподобали, буде у <#1208129687231008808> <t:{round(next_album_timestamp)}:R>", view=DislikeAlbum(timeout=None,liked_album=album_name))
@@ -486,14 +502,16 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 										embed2.description+=f"⚡ <t:{round(v.timestamp())}:t> Випадковий сингл (<t:{round(v.timestamp())}:R>)\n"
 										embed2.description+="-----\n"
 									elif (not k in singles_names) and k!=album_name:
-										embed2.description+=(f"<t:{round(v.timestamp())}:t> {albums_names[k]} {f' (<t:{round(v.timestamp())}:R>)' if (i == 0) and single_check else ''}\n")
+										if k in playlists_names:
+											embed2.description +=f'📜 '
+										embed2.description+=(f"<t:{round(v.timestamp())}:t> {albums_names[k]} {f' (<t:{round(v.timestamp())}:R>)' if (i == 0) and single_check else ''}{' (плейлист)' if k in playlists_names else ''}\n")
 										i+=1
 
 								old_emoji=time_emoji
 							if i<6:
 								embed2.description += (
 									f"<t:{round(next_cycle_time.timestamp())}:t> Наступний цикл (довантаження нових альбомів/синглів/плейлистів) {f' (<t:{round(next_cycle_time.timestamp())}:R>)' if (i == 0) and single_check else ''}\n")
-							embed2.set_footer(text='Між кожним альбомом грають 2 випадкових сингла')
+							embed2.set_footer(text='Між кожним альбомом грають 2 випадкових сингла | Раз у ~8 годин грають плейлисти')
 
 							await msg.delete()
 							msg = await voice_channel.send(embeds=[embed_info,embed2],view=AlbumSongs(songs_list=songs_list,current_play=song_name,timeout=None, current_album=album_name,timetable=timetable,next_cycle_time=next_cycle_time,cycle_duration=cycle_duration))
