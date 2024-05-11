@@ -1,3 +1,4 @@
+import asyncio
 import os
 import time
 
@@ -9,6 +10,7 @@ async def download_album(album_url:str,album_key:str,log_channel: discord.TextCh
 	wait_check = True
 	timer = time.time()
 	while wait_check or timer-time.time()>-60:
+		await asyncio.sleep(5)
 		filenames = os.listdir(".")
 		for file in filenames:
 			if file.endswith('.mp3'):
