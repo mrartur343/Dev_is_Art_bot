@@ -354,7 +354,7 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 					album_short_names.remove(single_name)
 			for playlist_name in playlists_names:
 				if playlist_name in album_short_names:
-					album_short_names.remove(playlists_names)
+					album_short_names.remove(playlist_name)
 			i=0
 			album_list = []
 			st = datetime.datetime.now()
