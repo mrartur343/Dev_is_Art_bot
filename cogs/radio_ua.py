@@ -237,6 +237,10 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 		elif (not toggle ) and (key_name in playlists_names):
 			playlists_names.remove(key_name)
 
+
+		with open('other/playlists_names.json', 'w') as file:
+			json.dump(playlists_names,file)
+
 		await ctx.respond(f'Успішно зміненно {key_name} у  playlists_names на {toggle}')
 
 	@commands.Cog.listener()
