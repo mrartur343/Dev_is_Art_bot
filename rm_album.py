@@ -49,7 +49,7 @@ with open('other/singles_names.json', 'r') as file:
 	if album_key in result:
 		result.remove(album_key)
 
-with open('other/songs_lists_cache.json', 'w') as file:
+with open('other/singles_names.json', 'w') as file:
 	json.dump(result,file)
 
 
