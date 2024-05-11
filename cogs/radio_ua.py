@@ -67,14 +67,16 @@ class AlbumSongs(discord.ui.View):
 			if interaction.user.id in members:
 				albums_list.append(album_name)
 
-
+		dict_timetable = {}
+		for line in self.timetable:
+			dict_timetable[line[0]]=line[1]
 		items_pages = []
 		for album_name in albums_list:
 
 			time_check = False
 
-			if album_name in self.timetable.keys():
-				album_start_time = self.timetable[album_name]
+			if album_name in dict_timetable:
+				album_start_time = dict_timetable[album_name]
 				time_check = True
 			else:
 				album_start_time = self.next_cycle_time
