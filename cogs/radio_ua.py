@@ -73,7 +73,7 @@ class AlbumSongs(discord.ui.View):
 
 			time_check = False
 
-			if album_name in self.timetable:
+			if album_name in self.timetable.keys():
 				album_start_time = self.timetable[album_name]
 				time_check = True
 			else:
@@ -342,9 +342,6 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 					album_short_names.remove(single_name)
 			i=0
 			album_list = []
-			for k,v in albums_url.items():
-				print(f"{k} {v}")
-			print(album_short_names)
 			for short_name in album_short_names:
 
 
