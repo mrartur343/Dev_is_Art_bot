@@ -43,7 +43,7 @@ with open('other/songs_lists_cache.json', 'w') as file:
 
 
 
-with open('other/singles_names.json.json', 'r') as file:
+with open('other/singles_names.json', 'r') as file:
 	result: list = json.loads(file.read())
 
 	if album_key in result:
