@@ -123,7 +123,7 @@ class AlbumSongs(discord.ui.View):
 		)
 
 		msg = await paginator.respond(interaction,ephemeral=True)
-		custom_view = DislikeAlbumFromList(msg.id,self.bot)
+		custom_view = DislikeAlbumFromList(msg)
 		await paginator.update(custom_view=custom_view)
 
 class DislikeAlbum(discord.ui.View):
@@ -144,14 +144,12 @@ class DislikeAlbum(discord.ui.View):
 		await interaction.response.send_message(f"Успішно видалено альбом з ваших обраних!",ephemeral=True) # Send a message when the button is clicked
 
 class DislikeAlbumFromList(discord.ui.View):
-	def __init__(self,msg_id:int,radio_channel:discord.TextChannel, timeout:float|None=None, *args, **kwargs):
+	def __init__(self,msg:discord.Message, timeout:float|None=None, *args, **kwargs):
 		super().__init__(timeout=timeout,*args)
-		self.radio_channel = radio_channel
-		self.msg_id = msg_id
+		self.msg = msg
 
 	@discord.ui.button(label="Зняти з обраних", style=discord.ButtonStyle.gray, emoji="💔") # Create a button with the label "😎 Click me!" with color Blurple
 	async def button_callback(self, button:discord.Button, interaction: discord.Interaction):
-		self.msg = self.radio_channel.fetch_message(self.msg_id)
 		self.liked_album = self.msg.embeds[0].footer.text
 		album_likes = {}
 		with open("other/album_likes.json", 'r') as file:
@@ -163,7 +161,6 @@ class DislikeAlbumFromList(discord.ui.View):
 		await self.msg.edit(content=f"Успішно видалено 1 альбом з ваших обраних!",embeds=[],view=None) # Send a message when the button is clicked
 	@discord.ui.button(label="", style=discord.ButtonStyle.gray,custom_id='notification_button', emoji="🔔") # Create a button with the label "😎 Click me!" with color Blurple
 	async def button_callback2(self, button, interaction: discord.Interaction):
-		self.msg = self.radio_channel.fetch_message(self.msg_id)
 		self.liked_album = self.msg.embeds[0].footer.text
 		with open('other/notifications_off.json', 'r') as file:
 			album_name = self.liked_album
