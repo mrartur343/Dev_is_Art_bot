@@ -194,7 +194,7 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 		await respond.edit(content=f"Успішно створено [**{album_name}**]({album_url}) ({album_key})")
 
 
-		await album_downloader.download_album(album_url,album_key, ctx.channel)
+		album_downloader.download_album(album_url,album_key, ctx.channel)
 
 
 
@@ -480,7 +480,7 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 							try:
 								await voice_client.play(audio_source, wait_finish=True)
 							except Exception as error_play:
-								if error_play.__str__()=='Not connected to voice.':
+								if error_play.__str__() in ['Not connected to voice.', "Cannot write to closing transport"]:
 									try:
 										if len(voice_channel.members)>0:
 											voice_client = await voice_channel.connect(reconnect=True)
