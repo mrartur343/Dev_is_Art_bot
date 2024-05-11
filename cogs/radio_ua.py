@@ -122,8 +122,8 @@ class AlbumSongs(discord.ui.View):
 
 		)
 
-		msg = await paginator.respond(interaction,ephemeral=True)
-		custom_view = DislikeAlbumFromList(msg)
+		pmsg = await paginator.respond(interaction,ephemeral=True)
+		custom_view = DislikeAlbumFromList(pmsg)
 		await paginator.update(custom_view=custom_view)
 
 class DislikeAlbum(discord.ui.View):
@@ -144,13 +144,13 @@ class DislikeAlbum(discord.ui.View):
 		await interaction.response.send_message(f"Успішно видалено альбом з ваших обраних!",ephemeral=True) # Send a message when the button is clicked
 
 class DislikeAlbumFromList(discord.ui.View):
-	def __init__(self,msg:discord.Message, timeout:float|None=None, *args, **kwargs):
+	def __init__(self,pmsg:discord.Message, timeout:float|None=None, *args, **kwargs):
 		super().__init__(timeout=timeout,*args)
-		self.msg = msg
+		self.pmsg = pmsg
 
 	@discord.ui.button(label="Зняти з обраних", style=discord.ButtonStyle.gray, emoji="💔") # Create a button with the label "😎 Click me!" with color Blurple
 	async def button_callback(self, button:discord.Button, interaction: discord.Interaction):
-		self.liked_album = self.msg.embeds[0].footer.text
+		self.liked_album = self.pmsg.embeds[0].footer.text
 		album_likes = {}
 		with open("other/album_likes.json", 'r') as file:
 			album_likes = json.loads(file.read())
@@ -158,10 +158,10 @@ class DislikeAlbumFromList(discord.ui.View):
 			album_likes[self.liked_album].remove(interaction.user.id)
 		with open("other/album_likes.json", 'w') as file:
 			json.dump(album_likes, file)
-		await self.msg.edit(content=f"Успішно видалено 1 альбом з ваших обраних!",embeds=[],view=None) # Send a message when the button is clicked
+		await self.pmsg.edit(content=f"Успішно видалено 1 альбом з ваших обраних!",embeds=[],view=None) # Send a message when the button is clicked
 	@discord.ui.button(label="", style=discord.ButtonStyle.gray,custom_id='notification_button', emoji="🔔") # Create a button with the label "😎 Click me!" with color Blurple
 	async def button_callback2(self, button, interaction: discord.Interaction):
-		self.liked_album = self.msg.embeds[0].footer.text
+		self.liked_album = self.pmsg.embeds[0].footer.text
 		with open('other/notifications_off.json', 'r') as file:
 			album_name = self.liked_album
 			str_id = str(interaction.user.id)
@@ -182,9 +182,9 @@ class DislikeAlbumFromList(discord.ui.View):
 			json.dump(notifications_off, file)
 
 		if not_check:
-			await self.msg.edit(content=f"🔔 Успішно **увімкнуто** сповіщення для цього альбому!",embeds=[],view=None)
+			await self.pmsg.edit(content=f"🔔 Успішно **увімкнуто** сповіщення для цього альбому!",embeds=[],view=None)
 		else:
-			await self.msg.edit(content=f"🌙 Успішно **вимкнуто** сповіщення для цього альбому!",embeds=[],view=None)
+			await self.pmsg.edit(content=f"🌙 Успішно **вимкнуто** сповіщення для цього альбому!",embeds=[],view=None)
 
 
 with open("other/songs_lists_cache.json", 'r') as file:
