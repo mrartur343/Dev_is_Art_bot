@@ -19,14 +19,13 @@ from tinytag import TinyTag
 radio_channel_id = 1208129687231008808
 
 class AlbumSongs(discord.ui.View):
-	def __init__(self,songs_list: typing.List[str], current_play: str,current_album:str,timeout:float|None,timetable: typing.Dict[str,datetime.datetime],next_cycle_time:datetime.datetime, cycle_duration: float, bot:discord.Bot, *args, **kwargs):
+	def __init__(self,songs_list: typing.List[str], current_play: str,current_album:str,timeout:float|None,timetable: typing.Dict[str,datetime.datetime],next_cycle_time:datetime.datetime, cycle_duration: float, *args, **kwargs):
 		self.cycle_duration = cycle_duration
 		self.next_cycle_time = next_cycle_time
 		self.timetable = timetable
 		self.current_album = current_album
 		self.current_play = current_play
 		self.songs_list = songs_list
-		self.bot = bot
 		super().__init__(timeout=timeout,*args)
 
 	# Create a class called MyView that subclasses discord.ui.View
