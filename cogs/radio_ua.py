@@ -353,7 +353,7 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 					album_short_names.remove(playlists_names)
 			i=0
 			album_list = []
-			st = 0.0
+			st = datetime.datetime.now()
 
 			j = 0
 
@@ -361,17 +361,17 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 			for short_name in album_short_names:
 
 
-				if (st/3600)>8:
+				if st.hour<8 and j==0:
 					if j>=len(playlists_names):
 						song_lists.append([playlists_names[j],get_song_list(albums_url[playlists_names[j]])])
 					j+=1
-				st += album_durations[short_name]
+				st += datetime.timedelta(seconds = album_durations[short_name])
 				song_lists.append([short_name, get_song_list(albums_url[short_name])])
 				album_list.append(short_name)
 				for _ in range(2):
 					if i>=len(singles_names):
 						i=0
-					st += album_durations[singles_names[i]]
+					st +=datetime.timedelta(seconds = album_durations[singles_names[i]])
 					song_lists.append([singles_names[i],get_song_list(albums_url[singles_names[i]])])
 					album_list.append(singles_names[i])
 					i+=1
@@ -513,7 +513,7 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 							if i<6:
 								embed2.description += (
 									f"<t:{round(next_cycle_time.timestamp())}:t> Наступний цикл (довантаження нових альбомів/синглів/плейлистів) {f' (<t:{round(next_cycle_time.timestamp())}:R>)' if (i == 0) and single_check else ''}\n")
-							embed2.set_footer(text='Між кожним альбомом грають 2 випадкових сингла | Раз у ~8 годин грають плейлисти')
+							embed2.set_footer(text='Між кожним альбомом грають 2 випадкових сингла | На протязі всього цикла увімкнеться лише 1 плейлист й вночі')
 
 							await msg.delete()
 							msg = await voice_channel.send(embeds=[embed_info,embed2],view=AlbumSongs(songs_list=songs_list,current_play=song_name,timeout=None, current_album=album_name,timetable=timetable,next_cycle_time=next_cycle_time,cycle_duration=cycle_duration))
