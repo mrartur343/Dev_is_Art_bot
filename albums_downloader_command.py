@@ -12,7 +12,7 @@ def get_album_name_and_key(url: str):
 
 	album_name = [heading.text for heading in
 						 soup.find_all('h1', class_='Type__TypeElement-sc-goli3j-0 ofaEA gj6rSoF7K4FohS2DJDEm')][0]
-	album_key = url[31:]
+	album_key = url[-22:]
 	return (album_name,album_key)
 
 album_url = sys.argv[1]
