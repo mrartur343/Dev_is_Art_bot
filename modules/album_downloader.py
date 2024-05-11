@@ -6,7 +6,7 @@ import discord
 
 
 async def download_album(album_url:str,album_key:str,log_channel: discord.TextChannel):
-	os.system(f'spotdl {album_url}')
+	os.system(f'spotdl --port 1488 {album_url}')
 	wait_check = True
 	timer = time.time()
 	while wait_check or timer-time.time()>-60:
