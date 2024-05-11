@@ -168,7 +168,6 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 	async def album_from_url(self,ctx: discord.ApplicationContext, album_key:discord.Option(str),album_name: discord.Option(str),album_url: discord.Option(str),single:discord.Option(bool)):
 		respond = await ctx.respond('wait...')
 		os.mkdir(f"songs/{album_key}")
-		albums_data= {}
 		with open("other/albums_data.json", 'r') as file:
 			albums_data = json.loads(file.read())
 		albums_data[album_key]=[album_name,album_url]
@@ -319,6 +318,8 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 			print(album_short_names)
 			for short_name in album_short_names:
 
+
+
 				song_lists.append([short_name, get_song_list(albums_url[short_name])])
 				album_list.append(short_name)
 				for _ in range(2):
@@ -465,7 +466,16 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 									voice_client = await afk_radio.connect(reconnect=True)
 							await self.bot.change_presence(status=discord.Status.streaming,
 								activity=discord.Activity(type=discord.ActivityType.listening,url="https://discord.com/channels/1208129686031310848/1208129687231008808", name=f"{audio_info.title} - {audio_info.artist} | ({albums_names[album_name]})"))
-							await voice_client.play(audio_source, wait_finish=True)
+
+							try:
+								await voice_client.play(audio_source, wait_finish=True)
+							except Exception as error_play:
+								if error_play.__str__()=='Not connected to voice.':
+									if len(voice_channel.members)>0:
+										voice_client = await voice_channel.connect(reconnect=True)
+									else:
+										voice_client = await afk_radio.connect(reconnect=True)
+
 
 
 							if audio_info.title=='Sex, Drugs, Etc.':
