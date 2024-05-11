@@ -289,11 +289,12 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 		start_check = True
 
 		voice_channel: discord.VoiceChannel = await self.bot.fetch_channel(radio_channel_id)
+		radio_info: discord.VoiceChannel = await self.bot.fetch_channel(1238946792297467995)
 		voice_client = await voice_channel.connect(reconnect=True)
 
 
 
-		async for message in voice_channel.history():
+		async for message in radio_info.history():
 			if message.author.id == self.bot.user.id:
 				await message.delete()
 
@@ -386,7 +387,7 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 					album_list.append(singles_names[i])
 					i+=1
 			cycle_duration = 0.0
-			msg = await voice_channel.send(embeds=[discord.Embed(title='load...'), discord.Embed(title='load...')])
+			msg = await radio_info.send(embeds=[discord.Embed(title='load...'), discord.Embed(title='load...')])
 
 			album_likes={}
 			with open("other/album_likes.json", 'r') as file:
@@ -526,7 +527,7 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 							embed2.set_footer(text='Між кожним альбомом грають 2 випадкових сингла | На протязі всього цикла увімкнеться лише 1 плейлист й вночі')
 
 							await msg.delete()
-							msg = await voice_channel.send(embeds=[embed_info,embed2],view=AlbumSongs(songs_list=songs_list,current_play=song_name,timeout=None, current_album=album_name,timetable=timetable,next_cycle_time=next_cycle_time,cycle_duration=cycle_duration))
+							msg = await radio_info.send(embeds=[embed_info,embed2],view=AlbumSongs(songs_list=songs_list,current_play=song_name,timeout=None, current_album=album_name,timetable=timetable,next_cycle_time=next_cycle_time,cycle_duration=cycle_duration))
 
 							sde_achievement_list = []
 
