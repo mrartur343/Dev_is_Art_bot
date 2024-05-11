@@ -161,7 +161,7 @@ def get_album_name_and_key(url: str):
 
 	album_name = [heading.text for heading in
 						 soup.find_all('h1', class_='Type__TypeElement-sc-goli3j-0 ofaEA gj6rSoF7K4FohS2DJDEm')][0]
-	album_key = url[8:]
+	album_key = url[31:]
 	return (album_name,album_key)
 
 class RadioUa(commands.Cog):  # create a class for our cog that inherits from commands.Cog
