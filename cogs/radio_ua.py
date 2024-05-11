@@ -46,7 +46,7 @@ class AlbumSongs(discord.ui.View):
 			album_likes[self.current_album].append(interaction.user.id)
 		with open("other/album_likes.json", 'w') as file:
 			json.dump(album_likes, file)
-		await interaction.response.send_message(f"Успішно додано альбом до ваших обраних, тепер вам буде приходити оповіщення за 30 хв. до початку цього альбому!",ephemeral=True,view=DislikeAlbum(liked_album=self.current_album,timeout=None)) # Send a message when the button is clicked
+		await interaction.response.send_message(f"Успішно додано альбом до ваших обраних, тепер вам буде приходити оповіщення за деякий час до початку цього альбому!",ephemeral=True,view=DislikeAlbum(liked_album=self.current_album,timeout=None)) # Send a message when the button is clicked
 	@discord.ui.button(label="Список обраних", style=discord.ButtonStyle.gray, emoji="💕") # Create a button with the label "😎 Click me!" with color Blurple
 	async def button_callback3(self, button, interaction: discord.Interaction):
 
@@ -159,7 +159,6 @@ class DislikeAlbumFromList(discord.ui.View):
 			album_likes[self.liked_album].remove(interaction.user.id)
 		with open("other/album_likes.json", 'w') as file:
 			json.dump(album_likes, file)
-		await self.pmsg.delete()
 		await interaction.respond(content=f"Успішно видалено 1 альбом з ваших обраних!",ephemeral=True) # Send a message when the button is clicked
 	@discord.ui.button(label="", style=discord.ButtonStyle.gray,custom_id='notification_button', emoji="🔔") # Create a button with the label "😎 Click me!" with color Blurple
 	async def button_callback2(self, button, interaction: discord.Interaction):
@@ -185,7 +184,6 @@ class DislikeAlbumFromList(discord.ui.View):
 			json.dump(notifications_off, file)
 
 
-		await self.pmsg.delete()
 
 		if not_check:
 			await interaction.respond(content=f"🔔 Успішно **увімкнуто** сповіщення для цього альбому!",ephemeral=True)
