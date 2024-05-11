@@ -471,12 +471,23 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 								await voice_client.play(audio_source, wait_finish=True)
 							except Exception as error_play:
 								if error_play.__str__()=='Not connected to voice.':
-									if len(voice_channel.members)>0:
-										voice_client = await voice_channel.connect(reconnect=True)
-									else:
-										voice_client = await afk_radio.connect(reconnect=True)
-
-
+									try:
+										if len(voice_channel.members)>0:
+											voice_client = await voice_channel.connect(reconnect=True)
+										else:
+											voice_client = await afk_radio.connect(reconnect=True)
+									except Exception as error_connect:
+										if error_connect.__str__()=="Cannot write to closing transport":
+											connect_check = True
+											while connect_check:
+												await admin_logs.send('Try to connect....')
+												await asyncio.sleep(5)
+												if len(voice_channel.members) > 0:
+													voice_client = await voice_channel.connect(reconnect=True)
+													connect_check=False
+												else:
+													voice_client = await afk_radio.connect(reconnect=True)
+													connect_check=False
 
 							if audio_info.title=='Sex, Drugs, Etc.':
 								for member in voice_channel.members:
