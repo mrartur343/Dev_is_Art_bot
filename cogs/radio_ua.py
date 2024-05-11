@@ -360,16 +360,18 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 
 			for short_name in album_short_names:
 
-				st+=album_durations[short_name]
+
 				if (st/3600)>8:
 					if j>=len(playlists_names):
 						song_lists.append([playlists_names[j],get_song_list(albums_url[playlists_names[j]])])
 					j+=1
+				st += album_durations[short_name]
 				song_lists.append([short_name, get_song_list(albums_url[short_name])])
 				album_list.append(short_name)
 				for _ in range(2):
 					if i>=len(singles_names):
 						i=0
+					st += album_durations[singles_names[i]]
 					song_lists.append([singles_names[i],get_song_list(albums_url[singles_names[i]])])
 					album_list.append(singles_names[i])
 					i+=1
