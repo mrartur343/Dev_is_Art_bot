@@ -474,6 +474,7 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 							file_name = songs[album_name][song_name]
 
 							bitrate= 128
+							print(len(voice_channel.members))
 
 							if len(voice_channel.members)<2:
 								bitrate=64
