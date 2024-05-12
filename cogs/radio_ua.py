@@ -462,7 +462,15 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 							await admin_logs.send(f'Play {song_name} ({album_name}) ({datetime.datetime.now().strftime(format="%c")})')
 							print(voice_channel.members)
 							file_name = songs[album_name][song_name]
-							audio_source = discord.FFmpegPCMAudio(f"songs/{album_name}/{file_name}")
+
+							bitrate= 128
+
+							if len(voice_channel.members)<1:
+								bitrate=32
+
+							print(f"Bitrate: {bitrate} kb/s")
+
+							audio_source = discord.FFmpegOpusAudio(f"songs/{album_name}/{file_name}", bitrate=bitrate)
 							audio_info = TinyTag.get(f"songs/{album_name}/{file_name}", image=True)
 
 							if not album_name in albums_imgs:

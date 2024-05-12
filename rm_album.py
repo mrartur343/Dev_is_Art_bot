@@ -53,4 +53,4 @@ with open('other/singles_names.json', 'w') as file:
 	json.dump(result,file)
 
 
-os.rmdir(f'songs/{album_key}')
+os.system(f'rm -r songs/{album_key}')
