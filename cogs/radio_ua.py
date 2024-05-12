@@ -476,7 +476,7 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 							bitrate= 128
 
 							if len(voice_channel.members)<1:
-								bitrate=32
+								bitrate=64
 
 							print(f"Bitrate: {bitrate} kb/s")
 
