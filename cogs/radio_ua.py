@@ -473,15 +473,8 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 							print(voice_channel.members)
 							file_name = songs[album_name][song_name]
 
-							bitrate= 128
-							print(len(voice_channel.members))
 
-							if len(voice_channel.members)<2:
-								bitrate=64
-
-							print(f"Bitrate: {bitrate} kb/s")
-
-							audio_source = discord.FFmpegOpusAudio(f"songs/{album_name}/{file_name}", bitrate=bitrate)
+							audio_source = discord.FFmpegOpusAudio(f"songs/{album_name}/{file_name}")
 							audio_info = TinyTag.get(f"songs/{album_name}/{file_name}", image=True)
 
 							if not album_name in albums_imgs:
