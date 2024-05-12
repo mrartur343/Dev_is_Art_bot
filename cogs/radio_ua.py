@@ -247,6 +247,16 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 			json.dump(playlists_names,file)
 
 		await ctx.respond(f'Успішно зміненно {key_name} у  playlists_names на {toggle}')
+	@discord.slash_command(name="change_channel", description='Лише для адмінів')
+	@commands.has_permissions(administrator=True)
+	async def change_channel(self,ctx: discord.ApplicationContext,key_name:discord.Option(str), channel: discord.Option(discord.VoiceChannel)):
+		global radio_channel_id
+		channel: discord.VoiceChannel
+
+		await channel.guild.me.move_to(channel)
+		radio_channel_id = channel.id
+
+		await ctx.respond(f"Успішно змінено радіо канал на {channel.mention}")
 
 	@commands.Cog.listener()
 	async def on_voice_state_update(self,member:discord.Member, before, after):
