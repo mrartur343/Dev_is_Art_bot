@@ -17,7 +17,7 @@ from os.path import isfile, join
 from tinytag import TinyTag
 
 radio_channel_id = 1208129687231008808
-
+radio_sleep_timers = {'song_end':[], 'album_end':[]}
 class AlbumSongs(discord.ui.View):
 	def __init__(self,songs_list: typing.List[str], current_play: str,current_album:str,timeout:float|None,timetable: typing.Dict[str,datetime.datetime],next_cycle_time:datetime.datetime, cycle_duration: float, *args, **kwargs):
 		self.cycle_duration = cycle_duration
@@ -124,6 +124,42 @@ class AlbumSongs(discord.ui.View):
 		pmsg = await paginator.respond(interaction,ephemeral=True)
 		custom_view = DislikeAlbumFromList(pmsg.id,pmsg.channel)
 		await paginator.update(custom_view=custom_view)
+	@discord.ui.button(label="Таймер сну", style=discord.ButtonStyle.gray, emoji="🌙") # Create a button with the label "😎 Click me!" with color Blurple
+	async def button_callback4(self, button, interaction: discord.Interaction):
+		await interaction.respond("Таймер сну автоматично від'єднає вас з голосового каналу тоді, коли вам потрібно:", view=SleepTimer(), ephemeral=True)
+
+class SleepTimer(discord.ui.View):
+
+
+
+	options = []
+	options.append(discord.SelectOption(label='15 хв', value='15m'))
+	options.append(discord.SelectOption(label='30 хв', value='30m'))
+	options.append(discord.SelectOption(label='45 хв', value='45m'))
+	options.append(discord.SelectOption(label='60 хв', value='60m'))
+	options.append(discord.SelectOption(label='По закінченню трека', value='song_end'))
+	options.append(discord.SelectOption(label='По закінченню альбому', value='album_end'))
+
+
+	@discord.ui.select(  # the decorator that lets you specify the properties of the select menu
+		placeholder="Вибрати дію",  # the placeholder text that will be displayed if nothing is selected
+		min_values=1,  # the minimum number of values that must be selected by the users
+		max_values=1,  # the maximum number of values that can be selected by the users
+		options=options
+	)
+	async def select_callback(self, select: discord.ui.Select, interaction: discord.Interaction):  # the function called when the user is done selecting options
+		global radio_sleep_timers
+		radio_sleep_timers: typing.Dict[str, typing.List[int]]
+		if select.values[0].endswith('m'):
+			await interaction.respond(f"Вас автоматично від'єднає <t:{(datetime.datetime.now()+datetime.timedelta(minutes=int(select.values[0][:-1]))).timestamp()}:R>", ephemeral=True)
+			await asyncio.sleep(int(select.values[0][:-1])*60)
+			if interaction.user.voice.channel != None:
+				if interaction.user.voice.channel.id==radio_channel_id:
+					await interaction.user.move_to(None)
+			await interaction.respond(f"Надобраніч!", ephemeral=True)
+		else:
+			radio_sleep_timers[select.values[0]].append(interaction.user.id)
+			await interaction.respond(f"Вас автоматично від'єднає з войса по завершенню {'альбому' if select.values[0]=='album_end' else 'треку'}", ephemeral=True)
 
 class DislikeAlbum(discord.ui.View):
 	def __init__(self, liked_album:str, timeout:float|None=None, *args, **kwargs):
@@ -431,7 +467,9 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 
 			next_cycle_time = datetime.datetime.now()+datetime.timedelta(seconds=cycle_duration)
 			await admin_logs.send(f'Cycle duration: {math.floor((cycle_duration/60)/60)} h {math.floor((cycle_duration%3600) /60)} m {math.floor(cycle_duration%60)} s (next cycle: <t:{round(next_cycle_time.timestamp())}:F>)')
+			album_count = -1
 			for album_name, songs_list in song_lists:
+				album_count+=1
 				i+=1
 				album_start_time = datetime.datetime.now()
 				next_index = album_list.index(album_name)+3
@@ -493,7 +531,7 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 
 							embed_info.add_field(name="🎵 Назва:", value=audio_info.title)
 							embed_info.add_field(name="🧑‍🎤 Виконавець: ", value=audio_info.artist)
-							embed_info.add_field(name="⌛ Рік випуску: ", value=audio_info.year)
+							embed_info.add_field(name="⌛ Рік випуску: ", value=audio_info.year if str(audio_info.year)!='1970' else '???')
 							embed_info.add_field(name="💿 Альбом: " if (not album_name in singles_names) else "Сингл ⚡:", value=albums_names[album_name] if (not album_name in singles_names) else "Між кожним альбомом грають 2 випадкових сингла")
 							embed_info.add_field(name="⏲️ Тривалість: ",
 												 value=f"{math.floor(audio_info.duration / 60)}m {math.floor(audio_info.duration) % 60}s")
@@ -506,7 +544,7 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 							print(album_durations)
 							print("----")
 
-							timetable = radio_timetable.get_album_times(jmespath.search("[*][0]", song_lists), album_durations, album_name,album_start_time+ datetime.timedelta(seconds=album_durations[album_name]))
+							timetable = radio_timetable.get_album_times(jmespath.search("[*][0]", song_lists), album_durations, album_count,album_start_time+ datetime.timedelta(seconds=album_durations[album_name]))
 							i=0
 							single_check=True
 							old_emoji = ""
