@@ -66,7 +66,12 @@ class AlbumSongs(discord.ui.View):
 
 		dict_timetable = {}
 		for line in self.timetable:
-			dict_timetable[line[0]]=line[1]
+			if not line[0] in dict_timetable:
+				dict_timetable[line[0]]=line[1]
+		def sort_albums(album_key):
+			return dict_timetable[album_key].timestamp()
+
+		albums_list.sort(key=sort_albums)
 		items_pages = []
 		for album_name in albums_list:
 
@@ -638,6 +643,7 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 									if user.voice != None:
 										if user.voice.channel.id == radio_channel_id:
 											await user.move_to(None)
+											radio_sleep_timers['song_end'].remove(member_id)
 									try:
 										await user.send(f"Надобраніч!")
 									except:
@@ -651,6 +657,7 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 						if user.voice != None:
 							if user.voice.channel.id == radio_channel_id:
 								await user.move_to(None)
+								radio_sleep_timers['album_end'].remove(member_id)
 						try:
 							await user.send(f"Надобраніч!")
 						except:
