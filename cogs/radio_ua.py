@@ -69,7 +69,10 @@ class AlbumSongs(discord.ui.View):
 			if not line[0] in dict_timetable:
 				dict_timetable[line[0]]=line[1]
 		def sort_albums(album_key):
-			return dict_timetable[album_key].timestamp()
+			if album_key in dict_timetable:
+				return dict_timetable[album_key].timestamp()
+			else:
+				return 9999999999
 
 		albums_list.sort(key=sort_albums)
 		items_pages = []
