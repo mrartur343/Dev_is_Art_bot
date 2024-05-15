@@ -17,7 +17,7 @@ from os.path import isfile, join
 from tinytag import TinyTag
 
 radio_channel_id = 1208129687231008808
-radio_sleep_timers = {'song_end':[], 'album_end':[]}
+radio_sleep_timers: typing.Dict[str, typing.List[int]] = {'song_end':[], 'album_end':[]}
 class AlbumSongs(discord.ui.View):
 	def __init__(self,songs_list: typing.List[str], current_play: str,current_album:str,timeout:float|None,timetable: typing.Dict[str,datetime.datetime],next_cycle_time:datetime.datetime, cycle_duration: float, *args, **kwargs):
 		self.cycle_duration = cycle_duration
@@ -150,7 +150,7 @@ class SleepTimer(discord.ui.View):
 	)
 	async def select_callback(self, select: discord.ui.Select, interaction: discord.Interaction):  # the function called when the user is done selecting options
 		global radio_sleep_timers
-		radio_sleep_timers: typing.Dict[str, typing.List[int]]
+
 		if select.values[0].endswith('m'):
 			await interaction.respond(f"Вас автоматично від'єднає <t:{(datetime.datetime.now()+datetime.timedelta(minutes=int(select.values[0][:-1]))).timestamp()}:R>", ephemeral=True)
 			await asyncio.sleep(int(select.values[0][:-1])*60)
