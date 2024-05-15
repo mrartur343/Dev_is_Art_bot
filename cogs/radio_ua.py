@@ -129,7 +129,7 @@ class AlbumSongs(discord.ui.View):
 		await interaction.respond("Таймер сну автоматично від'єднає вас з голосового каналу тоді, коли вам потрібно:", view=SleepTimer(), ephemeral=True)
 
 class SleepTimer(discord.ui.View):
-	global radio_sleep_timers
+
 
 
 
@@ -149,6 +149,7 @@ class SleepTimer(discord.ui.View):
 		options=options
 	)
 	async def select_callback(self, select: discord.ui.Select, interaction: discord.Interaction):  # the function called when the user is done selecting options
+		global radio_sleep_timers
 		radio_sleep_timers: typing.Dict[str, typing.List[int]]
 		if select.values[0].endswith('m'):
 			await interaction.respond(f"Вас автоматично від'єднає <t:{(datetime.datetime.now()+datetime.timedelta(minutes=int(select.values[0][:-1]))).timestamp()}:R>", ephemeral=True)
