@@ -129,6 +129,7 @@ class AlbumSongs(discord.ui.View):
 		await interaction.respond("Таймер сну автоматично від'єднає вас з голосового каналу тоді, коли вам потрібно:", view=SleepTimer(), ephemeral=True)
 
 class SleepTimer(discord.ui.View):
+	global radio_sleep_timers
 
 
 
