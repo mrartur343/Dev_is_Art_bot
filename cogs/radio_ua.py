@@ -152,7 +152,7 @@ class SleepTimer(discord.ui.View):
 		if select.values[0].endswith('m'):
 			await interaction.respond(f"Вас автоматично від'єднає <t:{(datetime.datetime.now()+datetime.timedelta(minutes=int(select.values[0][:-1]))).timestamp()}:R>", ephemeral=True)
 			await asyncio.sleep(int(select.values[0][:-1])*60)
-			if interaction.user.voice.channel != None:
+			if interaction.user.voice != None:
 				if interaction.user.voice.channel.id==radio_channel_id:
 					await interaction.user.move_to(None)
 			await interaction.respond(f"Надобраніч!", ephemeral=True)
@@ -627,9 +627,32 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 									account_controll.add_to_member('sde', member.id)
 									if member.can_send() and member.id != 1221403700115800164:
 										await member.send(f"Адміністрація серверу Dev is Art додала вам 1 нових ачівок:\n- **`{achievements['sde']['name']}`**\n> {achievements['sde']['description']}")
+
+
+
+							for member_id in radio_sleep_timers['song_end']:
+								user = await voice_channel.guild.fetch_member(member_id)
+								if user!=None:
+									if user.voice != None:
+										if user.voice.channel.id == radio_channel_id:
+											await user.move_to(None)
+									try:
+										await user.send(f"Надобраніч!")
+									except:
+										pass
 						except Exception as error:
 							await admin_logs.send(f"Помилка при завантажені трека: {song_name} ({albums_names[album_name]})\n{error}")
 							continue
+				for member_id in radio_sleep_timers['album_end']:
+					user = await voice_channel.guild.fetch_member(member_id)
+					if user!=None:
+						if user.voice != None:
+							if user.voice.channel.id == radio_channel_id:
+								await user.move_to(None)
+						try:
+							await user.send(f"Надобраніч!")
+						except:
+							pass
 
 async def setup(bot):  # this is called by Pycord to setup the cog
 	await bot.add_cog(RadioUa(bot))  # add the cog to the bot
