@@ -5,10 +5,9 @@ from skimage import io
 
 
 def get_avarage_color(key_str: str):
-	cache={}
 	with open("other/average_color_cache.json", 'r') as file:
-		if key_str in json.loads(file.read()).keys():
-			cache=json.loads(file.read())
+		cache = json.loads(file.read())
+		if key_str in cache.keys():
 			return cache[key_str]
 	img = io.imread("a.png")[:, :, :-1]
 
