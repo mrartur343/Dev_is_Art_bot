@@ -477,7 +477,7 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 				radio_channels.append([radio_channel_queue,radio_channel_names])
 
 			radio_channel_vote_names = ['Alpha', 'Beta', "Gamma"]
-			i=0
+			l=0
 			for radio_channel in radio_channels:
 				votetimetable = radio_timetable.get_album_times(jmespath.search("[*][0]", radio_channel[0]), album_durations,
 															0, datetime.datetime.now())
@@ -506,8 +506,8 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 							i += 1
 
 					old_emoji = time_emoji
-				vote_embed.add_field(name=f'Radio {radio_channel_vote_names[i]}', value=timetable_str)
-				i+=1
+				vote_embed.add_field(name=f'Radio {radio_channel_vote_names[l]}', value=timetable_str)
+				l+=1
 
 			if radio_vote_send_message is None:
 				radio_vote_send_message=await voice_channel.send(embed = discord.Embed(title='load...'))
