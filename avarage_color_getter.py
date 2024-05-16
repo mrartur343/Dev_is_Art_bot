@@ -23,4 +23,6 @@ def get_avarage_color(key_str: str):
 	with open('other/average_color_cache.json', 'w') as file:
 		cache[key_str]=result
 		json.dump(cache,file)
-	return result
+	return result\
+
+#
