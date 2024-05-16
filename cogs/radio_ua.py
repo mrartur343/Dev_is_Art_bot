@@ -523,20 +523,19 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 
 							audio_source = discord.FFmpegOpusAudio(f"songs/{album_name}/{file_name}")
 							audio_info = TinyTag.get(f"songs/{album_name}/{file_name}", image=True)
-							dcolor = [0,0,0]
 							if not album_name in albums_imgs:
 								image_data: bytes = audio_info.get_image()
 								with open('a.png', 'wb') as file:
 									file.write(image_data)
 
-								dcolor = avarage_color_getter.get_avarage_color(album_name)
+
 
 								file = discord.File(fp='a.png')
 								imgmsg = await admin_logs.send(content=".",file=file)
 								albums_imgs[album_name] = imgmsg.attachments[0].url
 								with open('other/albums_images_cache.json', 'w') as file:
 									json.dump(albums_imgs, file)
-
+							dcolor = avarage_color_getter.get_avarage_color(album_name)
 							embed_info = discord.Embed(title='Зараз грає:',color=discord.Color.from_rgb(r=dcolor[0],g=dcolor[1],b=dcolor[2]))
 							embed_info.set_thumbnail(url=albums_imgs[album_name])
 
