@@ -346,14 +346,28 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 		voice_channel: discord.VoiceChannel = await self.bot.fetch_channel(radio_channel_id)
 		radio_info: discord.VoiceChannel = await self.bot.fetch_channel(1238946792297467995)
 		voice_client = await voice_channel.connect(reconnect=True)
+		radio_channel_index=0
 
-
-
-		async for message in radio_info.history():
-			if message.author.id == self.bot.user.id:
-				await message.delete()
 
 		while True:
+			radio_vote = {}
+
+			radio_vote_send_message =None
+
+
+
+			async for message in radio_info.history():
+				if message.author.id == self.bot.user.id:
+					if len(message.embeds)==0:
+						await message.delete()
+					elif message.embeds[0].title!='Вибрати радіо':
+						await message.delete()
+					else:
+						for reaction in message.reactions:
+							radio_vote_send_message = message
+
+							radio_vote[reaction.emoji.__str__()]=reaction.count
+
 
 
 			album_short_names = [f for f in listdir('songs')]
@@ -367,6 +381,15 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 			playlists_names = []
 			with open('other/playlists_names.json', 'r') as file:
 				playlists_names = json.loads(file.read())
+
+
+
+
+
+
+
+
+
 			albums_names={}
 			albums_url={}
 			for short_name, info in album_data_json.items():
@@ -406,39 +429,98 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 						d += audio_info.duration
 				album_durations[k] = round(d)
 
-			song_lists = []
-			random.shuffle(singles_names)
-			random.shuffle(album_short_names)
-			random.shuffle(playlists_names)
 			for single_name in singles_names:
 				if single_name in album_short_names:
 					album_short_names.remove(single_name)
 			for playlist_name in playlists_names:
 				if playlist_name in album_short_names:
 					album_short_names.remove(playlist_name)
+
+
+			vote_embed = discord.Embed(title='Вибрати радіо')
+			vote_embed.description = "Часто на радіо зустрічалась проблема того, що на радіо грають альбоми які мало подобаються людям в день та які подобаються - вночі.\nЩоб це вирішити ми даємо вам можливість вибрати 1 з 3 варіантів того, які альбоми й у який час будуть грати. Вибране радіо заграє по завершенню попереднього\n"
+
+			radio_channels = []
+			for i in range(3):
+
+				i = 0
+				st = datetime.datetime.now()
+
+				j = 0
+
+
+				radio_channel_lists = {'singles': [], 'albums': [], 'playlists': []}
+				random.shuffle(singles_names)
+				random.shuffle(album_short_names)
+				random.shuffle(playlists_names)
+
+				radio_channel_lists['singles'] = singles_names[:10]
+				radio_channel_lists['albums'] = album_short_names[:10]
+				radio_channel_lists['playlists'] = playlists_names[:10]
+
+				radio_channel_queue = []
+				radio_channel_names = []
+
+				for short_name in album_short_names:
+
+					st += datetime.timedelta(seconds=album_durations[short_name])
+					radio_channel_queue.append([short_name, get_song_list(albums_url[short_name])])
+					radio_channel_names.append(short_name)
+					for _ in range(2):
+						if i >= len(singles_names):
+							i = 0
+						st += datetime.timedelta(seconds=album_durations[singles_names[i]])
+						radio_channel_queue.append([singles_names[i], get_song_list(albums_url[singles_names[i]])])
+						radio_channel_names.append(singles_names[i])
+						i += 1
+
+				radio_channels.append([radio_channel_queue,radio_channel_names])
+
+			radio_channel_vote_names = ['Alpha', 'Beta', "Gamma"]
 			i=0
-			album_list = []
-			st = datetime.datetime.now()
+			for radio_channel in radio_channels:
+				votetimetable = radio_timetable.get_album_times(jmespath.search("[*][0]", radio_channel[0]), album_durations,
+															0, datetime.datetime.now())
+				timetable_str = ''
+				old_emoji=''
+				single_check = True
+				for k, v in votetimetable:
+					if i < 6:
+						v: datetime.datetime
 
-			j = 0
+						kyiv_h = v.hour
+						print(kyiv_h)
 
+						time_emoji = "🏙️ " if 12 <= kyiv_h < 18 else (
+							"🌇" if 18 <= kyiv_h < 24 else ('🌇' if 6 <= kyiv_h < 12 else "🌃"))
+						if time_emoji != old_emoji:
+							timetable_str += f"\n- {time_emoji}\n"
+						print(f'k: {k}, v: {v} s: {k in singles_names}')
+						if i == 0 and (k in singles_names) and single_check:
+							single_check = False
+							timetable_str += f"⚡ <t:{round(v.timestamp())}:t> Випадковий сингл (<t:{round(v.timestamp())}:R>)\n"
+							timetable_str += "-----\n"
+						elif (not k in singles_names):
+							timetable_str += (
+								f"<t:{round(v.timestamp())}:t> {albums_names[k]} {f' (<t:{round(v.timestamp())}:R>)' if (i == 0) and single_check else ''}\n")
+							i += 1
 
-			for short_name in album_short_names:
+					old_emoji = time_emoji
+				vote_embed.add_field(name=f'Radio {radio_channel_vote_names[i]}', value=timetable_str)
+				i+=1
 
-
-				st += datetime.timedelta(seconds = album_durations[short_name])
-				song_lists.append([short_name, get_song_list(albums_url[short_name])])
-				album_list.append(short_name)
-				for _ in range(2):
-					if i>=len(singles_names):
-						i=0
-					st +=datetime.timedelta(seconds = album_durations[singles_names[i]])
-					song_lists.append([singles_names[i],get_song_list(albums_url[singles_names[i]])])
-					album_list.append(singles_names[i])
-					i+=1
+			if radio_vote_send_message is None:
+				radio_vote_send_message=await voice_channel.send(embed = discord.Embed(title='load...'))
+			await radio_vote_send_message.edit(embed=vote_embed)
+			await radio_vote_send_message.clear_reactions()
+			vote_emojies = [':regional_indicator_a:',':regional_indicator_b:',':regional_indicator_g:']
+			for vote_e in vote_emojies:
+				await radio_vote_send_message.add_reaction(vote_e)
 			cycle_duration = 0.0
 			msg = await radio_info.send(embeds=[discord.Embed(title='load...'), discord.Embed(title='load...')])
 
+			song_lists = radio_channels[radio_channel_index][0]
+			album_list = radio_channels[radio_channel_index][1]
 			album_likes={}
 			with open("other/album_likes.json", 'r') as file:
 				album_likes = json.loads(file.read())
@@ -471,6 +553,12 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 			next_cycle_time = datetime.datetime.now()+datetime.timedelta(seconds=cycle_duration)
 			await admin_logs.send(f'Cycle duration: {math.floor((cycle_duration/60)/60)} h {math.floor((cycle_duration%3600) /60)} m {math.floor(cycle_duration%60)} s (next cycle: <t:{round(next_cycle_time.timestamp())}:F>)')
 			album_count = -1
+
+
+
+
+
+
 			for album_name, songs_list in song_lists:
 				album_count+=1
 				i+=1
@@ -560,7 +648,7 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 									print(kyiv_h)
 
 
-									time_emoji = "🏙️" if 12 <= kyiv_h < 18 else (
+									time_emoji = "🏙️ " if 12 <= kyiv_h < 18 else (
 										"🌇" if 18 <= kyiv_h < 24 else ('🌇' if 6 <= kyiv_h < 12 else "🌃"))
 									if time_emoji!=old_emoji:
 										embed2.description += f"\n- {time_emoji}\n"
@@ -599,7 +687,8 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 								activity=discord.Activity(type=discord.ActivityType.listening,url="https://discord.com/channels/1208129686031310848/1208129687231008808", name=f"{audio_info.title} - {audio_info.artist} | ({albums_names[album_name]})"))
 
 							try:
-								await voice_client.play(audio_source, wait_finish=True)
+								pass
+								#await voice_client.play(audio_source, wait_finish=True)
 							except Exception as error_play:
 								if error_play.__str__() in ['Not connected to voice.', "Cannot write to closing transport"]:
 									try:
@@ -658,6 +747,12 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 							await user.send(f"Надобраніч!")
 						except:
 							pass
+
+			def sort_r(a: discord.Reaction):
+				return a.count
+			reacts_votes = radio_vote_send_message.reactions
+			reacts_votes.sort(key=sort_r)
+			radio_channel_index = vote_emojies.index(reacts_votes[0].emoji.__str__())
 
 async def setup(bot):  # this is called by Pycord to setup the cog
 	await bot.add_cog(RadioUa(bot))  # add the cog to the bot
