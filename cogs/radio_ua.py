@@ -426,12 +426,6 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 			for short_name in album_short_names:
 
 
-				if st.hour<8 and j==0:
-					if j>=len(playlists_names):
-						j = 0
-					song_lists.append([playlists_names[j],get_song_list(albums_url[playlists_names[j]])])
-					album_list.append(playlists_names[j])
-					j+=1
 				st += datetime.timedelta(seconds = album_durations[short_name])
 				song_lists.append([short_name, get_song_list(albums_url[short_name])])
 				album_list.append(short_name)
@@ -576,16 +570,14 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 										embed2.description+=f"⚡ <t:{round(v.timestamp())}:t> Випадковий сингл (<t:{round(v.timestamp())}:R>)\n"
 										embed2.description+="-----\n"
 									elif (not k in singles_names) and k!=album_name:
-										if k in playlists_names:
-											embed2.description +=f'📜 '
-										embed2.description+=(f"<t:{round(v.timestamp())}:t> {albums_names[k]} {f' (<t:{round(v.timestamp())}:R>)' if (i == 0) and single_check else ''}{' (плейлист)' if k in playlists_names else ''}\n")
+										embed2.description+=(f"<t:{round(v.timestamp())}:t> {albums_names[k]} {f' (<t:{round(v.timestamp())}:R>)' if (i == 0) and single_check else ''}\n")
 										i+=1
 
 								old_emoji=time_emoji
 							if i<6:
 								embed2.description += (
 									f"<t:{round(next_cycle_time.timestamp())}:t> Наступний цикл (довантаження нових альбомів/синглів/плейлистів) {f' (<t:{round(next_cycle_time.timestamp())}:R>)' if (i == 0) and single_check else ''}\n")
-							embed2.set_footer(text='Між кожним альбомом грають 2 випадкових сингла | На протязі всього цикла увімкнеться лише 1 плейлист й вночі')
+							embed2.set_footer(text='Між кожним альбомом грають 2 випадкових сингла')
 
 							await msg.edit(embeds=[embed_info,embed2],view=AlbumSongs(songs_list=songs_list,current_play=song_name,timeout=None, current_album=album_name,timetable=timetable,next_cycle_time=next_cycle_time,cycle_duration=cycle_duration))
 
