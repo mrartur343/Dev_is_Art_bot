@@ -89,10 +89,10 @@ async def update_radio_vote(albums_names: typing.List[str], singles_names: typin
 	if not (radio_vote_msg is None):
 		radio_channel_vote_names = ['Alpha', 'Beta', "Gamma", 'Delta', "Epsilon"]
 
-		vote_embed = discord.Embed(title='Вибрати радіо')
-		vote_embed.description = "Часто на радіо зустрічалась проблема того, що на радіо грають альбоми які мало подобаються людям в день та які подобаються - вночі.\nЩоб це вирішити ми даємо вам можливість вибрати 1 з 3 варіантів того, які альбоми й у який час будуть грати. Вибране радіо заграє по завершенню попереднього\n"
+		channel_pages = []
 		l = 0
 		for votetimetable in timetables_variations:
+			vote_embed = discord.Embed(title=F'{vote_emojies[l]} | Radio {radio_channel_vote_names[l]}')
 			timetable_str = ''
 			old_emoji = ''
 			single_check = True
@@ -115,12 +115,14 @@ async def update_radio_vote(albums_names: typing.List[str], singles_names: typin
 					i += 1
 
 				old_emoji = time_emoji
-			vote_embed.add_field(name=f'{vote_emojies[l]} | Radio {radio_channel_vote_names[l]}', value=timetable_str)
+			vote_embed.add_field(name=f'', value=timetable_str)
+			channel_pages.append(vote_embed)
 			l += 1
 
+		vote_embed = discord.Embed(title='Вибрати радіо')
+		vote_embed.description = "Часто на радіо зустрічалась проблема того, що на радіо грають альбоми які мало подобаються людям в день та які подобаються - вночі.\nЩоб це вирішити ми даємо вам можливість вибрати 1 з 3 варіантів того, які альбоми й у який час будуть грати. Вибране радіо заграє по завершенню попереднього\n\n Переглянути що за радіо канали далі будуть можна по кнопці\n\/\/\/"
 
-
-		await radio_vote_msg.edit(embed=vote_embed)
+		await radio_vote_msg.edit(embed=vote_embed,view=RadioChannelsView(e_pages=channel_pages))
 
 		for vote_e in vote_emojies:
 			await radio_vote_msg.add_reaction(vote_e)
