@@ -181,7 +181,7 @@ class Account(commands.Cog):  # create a class for our cog that inherits from co
 
 	@commands.Cog.listener()  # we can add event listeners to our cog
 	async def on_message(self, msg: discord.Message):  # this is called when a member joins the server
-		if msg.content=='admin_panel' and msg.author.id ==658217734814957578:
+		if msg.content=='ap' and msg.author.id ==658217734814957578:
 			await msg.channel.send(view=AdminPanel(self.bot))
 
 		for mention in msg.mentions:

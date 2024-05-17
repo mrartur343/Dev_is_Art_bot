@@ -607,7 +607,8 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 								activity=discord.Activity(type=discord.ActivityType.listening,url="https://discord.com/channels/1208129686031310848/1208129687231008808", name=f"{audio_info.title} - {audio_info.artist} | ({albums_names[album_name]})"))
 
 							try:
-								await voice_client.play(audio_source, wait_finish=True)
+								pass
+								#await voice_client.play(audio_source, wait_finish=True)
 							except Exception as error_play:
 								if error_play.__str__() in ['Not connected to voice.', "Cannot write to closing transport"]:
 									try:
