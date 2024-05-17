@@ -601,7 +601,7 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 									f"<t:{round(next_cycle_time.timestamp())}:t> Наступний цикл (довантаження нових альбомів/синглів/плейлистів) {f' (<t:{round(next_cycle_time.timestamp())}:R>)' if (i == 0) and single_check else ''}\n")
 							embed2.set_footer(text='Між кожним альбомом грають 5 випадкових синглів')
 							if len(jmespath.search("[*][0]", song_lists))==1:
-								embed2 = discord.Embed(description='Цей сингл є початком циклу музики на радіо, за нею піде черга пісень з обранного вище радіо канала (Альфа, Бета або Гамма)', colour=discord.Color.from_rgb(r=dcolor[0],g=dcolor[1],b=dcolor[2]))
+								embed2 = discord.Embed(description='Цей сингл є початком циклу музики на радіо, за ним піде черга пісень з обранного вище радіо канала (Alpha, Beta, Gamma, Delta або Epsilon)', colour=discord.Color.from_rgb(r=dcolor[0],g=dcolor[1],b=dcolor[2]))
 							await msg.edit(embeds=[embed_info,embed2],view=AlbumSongs(songs_list=songs_list,current_play=song_name,timeout=None, current_album=album_name,timetable=timetable,next_cycle_time=next_cycle_time,cycle_duration=cycle_duration))
 
 							sde_achievement_list = []
