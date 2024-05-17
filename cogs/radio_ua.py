@@ -546,7 +546,7 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 								with open('other/albums_images_cache.json', 'w') as file:
 									json.dump(albums_imgs, file)
 							dcolor = avarage_color_getter.get_avarage_color(album_name)
-							await radio_voting.change_color(discord.Color.from_rgb(r=dcolor[0],g=dcolor[1],b=dcolor[2]))
+							await radio_voting.change_color(discord.Color.from_rgb(r=dcolor[0],g=dcolor[1],b=dcolor[2]),radio_info)
 							embed_info = discord.Embed(title='Зараз грає:',color=discord.Color.from_rgb(r=dcolor[0],g=dcolor[1],b=dcolor[2]))
 							embed_info.set_thumbnail(url=albums_imgs[album_name])
 
