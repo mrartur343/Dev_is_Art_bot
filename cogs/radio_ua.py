@@ -456,6 +456,7 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 
 			i=0
 			song_lists = []
+			album_list= radio_songs_channels[radio_index]
 			for album_name in radio_songs_channels[radio_index]:
 				song_lists.append([album_name, get_song_list(albums_url[album_name])])
 			def members_ids(members):
