@@ -667,7 +667,7 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 						except:
 							pass
 
-			radio_songs_channels = await radio_voting.update_radio_vote(album_short_names,singles_names,album_durations,)
+			radio_songs_channels = await radio_voting.update_radio_vote(album_short_names,singles_names,album_durations,albums_names)
 
 async def setup(bot):  # this is called by Pycord to setup the cog
 	await bot.add_cog(RadioUa(bot))  # add the cog to the bot

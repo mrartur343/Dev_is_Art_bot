@@ -15,7 +15,7 @@ async def create_radio_vote(radio_info: discord.VoiceChannel):
 
 
 async def update_radio_vote(albums_names: typing.List[str], singles_names: typing.List[str],
-							durations: typing.Dict[str, int]):
+							durations: typing.Dict[str, int], albums_full_names: typing.Dict[str,str]):
 	global radio_vote_msg
 
 	albums_names_variations = []
@@ -80,7 +80,7 @@ async def update_radio_vote(albums_names: typing.List[str], singles_names: typin
 						timetable_str += "-----\n"
 					elif (not k in singles_names):
 						timetable_str += (
-							f"<t:{round(v.timestamp())}:t> {albums_names[k]} {f' (<t:{round(v.timestamp())}:R>)' if (i == 0) and single_check else ''}\n")
+							f"<t:{round(v.timestamp())}:t> {albums_full_names[k]} {f' (<t:{round(v.timestamp())}:R>)' if (i == 0) and single_check else ''}\n")
 						i += 1
 
 				old_emoji = time_emoji
