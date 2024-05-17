@@ -360,7 +360,7 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 			async for message in radio_info.history():
 				if message.author.id == self.bot.user.id:
 					if len(message.embeds)>0:
-						if not (message.embeds[0] in ['load...', "Вибрати радіо"]):
+						if not (message.embeds[0].title in ['load...', "Вибрати радіо"]):
 							await message.delete()
 					else:
 						await message.delete()
