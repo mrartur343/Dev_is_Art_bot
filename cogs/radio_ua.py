@@ -349,17 +349,19 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 
 
 
-		async for message in radio_info.history():
-			if message.author.id == self.bot.user.id:
-				await message.delete()
 
-		await radio_voting.create_radio_vote(radio_info)
+
 
 		radio_songs_channels =  [["4rCEFiZweXnbHwrh7sHemZ"]]
 
 
 
 		while True:
+
+			async for message in radio_info.history():
+				if message.author.id == self.bot.user.id:
+					await message.delete()
+					await radio_voting.create_radio_vote(radio_info)
 
 
 			album_short_names = [f for f in listdir('songs')]
@@ -500,7 +502,7 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 								if user.can_send() and not_check:
 									next_album_timestamp = (album_start_time+datetime.timedelta(seconds=album_durations[album_name])).timestamp()
 									album_notification_label = "Сингл" if album_name in singles_names else "Альбом"
-									await user.send(f"{album_notification_label} **`{albums_names[album_list[next_index2]]}`**, який ви вподобали, буде у <#1208129687231008808> <t:{round(next_album_timestamp)}:R>", view=DislikeAlbum(timeout=None,liked_album=album_name))
+									#await user.send(f"{album_notification_label} **`{albums_names[album_list[next_index2]]}`**, який ви вподобали, буде у <#1208129687231008808> <t:{round(next_album_timestamp)}:R>", view=DislikeAlbum(timeout=None,liked_album=album_name))
 				else:
 					with open("other/album_likes.json", 'r') as file:
 						album_likes = json.loads(file.read())
@@ -509,7 +511,7 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 							if user.can_send():
 								next_album_timestamp = (album_start_time+datetime.timedelta(seconds=album_durations[album_name])).timestamp()
 								album_notification_label = "Сингл" if album_name in singles_names else "Альбом"
-								await user.send(f"{album_notification_label} **`{albums_names[album_list[next_index]]}`**, який ви вподобали, буде у <#1208129687231008808> <t:{round(next_album_timestamp)}:R>", view=DislikeAlbum(timeout=None,liked_album=album_name))
+								#await user.send(f"{album_notification_label} **`{albums_names[album_list[next_index]]}`**, який ви вподобали, буде у <#1208129687231008808> <t:{round(next_album_timestamp)}:R>", view=DislikeAlbum(timeout=None,liked_album=album_name))
 				print("---songs_list---")
 				print(song_lists)
 				print("------")
@@ -668,7 +670,8 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 						except:
 							pass
 
-			radio_songs_channels = await radio_voting.update_radio_vote(album_short_names,singles_names,album_durations,albums_names)
+
+			radio_songs_channels = await radio_voting.update_radio_vote(album_short_names,singles_names,album_durations,albums_names,next_cycle_time)
 
 async def setup(bot):  # this is called by Pycord to setup the cog
 	await bot.add_cog(RadioUa(bot))  # add the cog to the bot

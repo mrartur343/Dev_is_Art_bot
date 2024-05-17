@@ -15,7 +15,7 @@ async def create_radio_vote(radio_info: discord.VoiceChannel):
 
 
 async def update_radio_vote(albums_names: typing.List[str], singles_names: typing.List[str],
-							durations: typing.Dict[str, int], albums_full_names: typing.Dict[str,str]):
+							durations: typing.Dict[str, int], albums_full_names: typing.Dict[str,str],next_cycle_time: datetime.datetime):
 	global radio_vote_msg
 
 	albums_names_variations = []
@@ -30,12 +30,12 @@ async def update_radio_vote(albums_names: typing.List[str], singles_names: typin
 		albums_names_variations.append(albums_names[:10])
 		singles_names_variations.append(singles_names[:10])
 
-	st = datetime.datetime.now()
 	i = 0
-	album_list = []
+
 
 	for albums_names, singles_names in zip(albums_names_variations, singles_names_variations):
-
+		album_list = []
+		st = datetime.datetime.now()
 		for short_name in albums_names:
 
 			st += datetime.timedelta(seconds=durations[short_name])
@@ -47,7 +47,7 @@ async def update_radio_vote(albums_names: typing.List[str], singles_names: typin
 				album_list.append(singles_names[i])
 				i += 1
 		radio_channels.append(album_list)
-		timetable = radio_timetable.get_album_times(album_list, durations, 0, st)
+		timetable = radio_timetable.get_album_times(album_list, durations, -1, next_cycle_time)
 		timetables_variations.append(timetable)
 
 	if not (radio_vote_msg is None):
