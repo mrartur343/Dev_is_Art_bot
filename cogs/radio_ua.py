@@ -355,7 +355,7 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 			singles_names = json.loads(file.read())
 
 
-		radio_songs_channels =  random.choice(singles_names)
+		radio_songs_channels =  [random.choice(singles_names)]
 
 
 		async for message in radio_info.history():
