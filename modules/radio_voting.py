@@ -2,7 +2,7 @@ import datetime
 import random
 import jmespath
 import typing
-import radio_timetable
+from modules import radio_timetable
 
 import discord
 
