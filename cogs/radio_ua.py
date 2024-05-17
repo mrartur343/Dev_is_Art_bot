@@ -484,7 +484,9 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 				timetable_str = ''
 				old_emoji=''
 				single_check = True
+				i=0
 				for k, v in votetimetable:
+
 					if i < 6:
 						v: datetime.datetime
 
