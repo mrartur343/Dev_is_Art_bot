@@ -11,7 +11,7 @@ vote_emojies = ['🇦', '🇧', '🇬']
 
 async def create_radio_vote(radio_info: discord.VoiceChannel):
 	global radio_vote_msg
-	radio_vote_msg: discord.Message = await radio_info.send(embed=discord.Embed(title='load...'))
+	radio_vote_msg= await radio_info.send(embed=discord.Embed(title='load...'))
 
 
 async def update_radio_vote(albums_names: typing.List[str], singles_names: typing.List[str],
