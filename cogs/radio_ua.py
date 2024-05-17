@@ -2,6 +2,7 @@ import asyncio
 import json
 import math
 import datetime
+import os
 import random
 import avarage_color_getter
 import jmespath
@@ -275,26 +276,27 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 
 
 
-	@discord.slash_command(name="playlist_toggle", description='Лише для адмінів')
+	@discord.slash_command(name="spotdl", description='Лише для адмінів')
 	@commands.has_permissions(administrator=True)
-	async def playlist_toggle(self,ctx: discord.ApplicationContext,key_name:discord.Option(str), toggle: discord.Option(bool)):
+	async def spotdl(self,ctx: discord.ApplicationContext, url: discord.Option(str), single: discord.Option(bool)=False):
+		os.system(f"""python albums_downloader_command.py {url} {int(single)}""")
+		await ctx.respond("Успішно розпочато створення альбому!")
+		download_checker = False
+		while not download_checker:
+			with open("other/albums_data.json", 'r') as file:
+				a_data = json.loads(file.read())
+				urls = []
+				for k, v in a_data.items():
+					urls.append(v[1])
+			if url in urls:
+				download_checker=True
 
-		with open('other/playlists_names.json', 'r') as file:
-			playlists_names = json.loads(file.read())
-
-		if toggle and (not key_name in playlists_names):
-			playlists_names.append(key_name)
-		elif (not toggle ) and (key_name in playlists_names):
-			playlists_names.remove(key_name)
+		await ctx.respond("Альбом успішно створено!")
 
 
-		with open('other/playlists_names.json', 'w') as file:
-			json.dump(playlists_names,file)
-
-		await ctx.respond(f'Успішно зміненно {key_name} у  playlists_names на {toggle}')
 	@discord.slash_command(name="change_channel", description='Лише для адмінів')
 	@commands.has_permissions(administrator=True)
-	async def change_channel(self,ctx: discord.ApplicationContext,key_name:discord.Option(str), channel: discord.Option(discord.VoiceChannel)):
+	async def change_channel(self,ctx: discord.ApplicationContext, channel: discord.Option(discord.VoiceChannel)):
 		global radio_channel_id
 		channel: discord.VoiceChannel
 
@@ -553,7 +555,7 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 							embed_info.add_field(name="🎵 Назва:", value=audio_info.title)
 							embed_info.add_field(name="🧑‍🎤 Виконавець: ", value=audio_info.artist)
 							embed_info.add_field(name="⌛ Рік випуску: ", value=audio_info.year if str(audio_info.year)!='1970' else '???')
-							embed_info.add_field(name="💿 Альбом: " if (not album_name in singles_names) else "Сингл ⚡:", value=albums_names[album_name] if (not album_name in singles_names) else "Між кожним альбомом грають 2 випадкових сингла")
+							embed_info.add_field(name="💿 Альбом: " if (not album_name in singles_names) else "Сингл ⚡:", value=albums_names[album_name] if (not album_name in singles_names) else "Між кожним альбомом грають 5 випадкових синглів")
 							embed_info.add_field(name="⏲️ Тривалість: ",
 												 value=f"{math.floor(audio_info.duration / 60)}m {math.floor(audio_info.duration) % 60}s")
 							embed_info.add_field(name="📻 Наступний трек: ",
@@ -596,9 +598,9 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 							if i<6:
 								embed2.description += (
 									f"<t:{round(next_cycle_time.timestamp())}:t> Наступний цикл (довантаження нових альбомів/синглів/плейлистів) {f' (<t:{round(next_cycle_time.timestamp())}:R>)' if (i == 0) and single_check else ''}\n")
-							embed2.set_footer(text='Між кожним альбомом грають 2 випадкових сингла')
+							embed2.set_footer(text='Між кожним альбомом грають 5 випадкових синглів')
 							if len(jmespath.search("[*][0]", song_lists))==1:
-								embed2 = discord.Embed(description='Цей сингл є початком циклу музики на радіо, за нею піде черга пісень з обранного вище радіо канала (Альфа, Бета або Гамма)')
+								embed2 = discord.Embed(description='Цей сингл є початком циклу музики на радіо, за нею піде черга пісень з обранного вище радіо канала (Альфа, Бета або Гамма)', colour=discord.Color.from_rgb(r=dcolor[0],g=dcolor[1],b=dcolor[2]))
 							await msg.edit(embeds=[embed_info,embed2],view=AlbumSongs(songs_list=songs_list,current_play=song_name,timeout=None, current_album=album_name,timetable=timetable,next_cycle_time=next_cycle_time,cycle_duration=cycle_duration))
 
 							sde_achievement_list = []

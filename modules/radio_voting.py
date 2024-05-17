@@ -7,7 +7,7 @@ from modules import radio_timetable
 import discord
 
 radio_vote_msg: None | discord.Message = None
-vote_emojies = ['🇦', '🇧', '🇬']
+vote_emojies = ['🇦', '🇧', '🇬','🇩','🇪']
 
 async def create_radio_vote(radio_info: discord.VoiceChannel):
 	global radio_vote_msg
@@ -30,10 +30,10 @@ async def update_radio_vote(albums_names: typing.List[str], singles_names: typin
 	timetables_variations = []
 	radio_channels = []
 
-	for i in range(3):
+	for i in range(5):
 		random.shuffle(albums_names)
 		random.shuffle(singles_names)
-		albums_names_variations.append(albums_names[:8])
+		albums_names_variations.append(albums_names[:5])
 		singles_names_variations.append(singles_names)
 
 	i = 0
@@ -46,7 +46,7 @@ async def update_radio_vote(albums_names: typing.List[str], singles_names: typin
 
 			st += datetime.timedelta(seconds=durations[short_name])
 			album_list.append(short_name)
-			for _ in range(2):
+			for _ in range(5):
 				if i >= len(singles_names):
 					i = 0
 				st += datetime.timedelta(seconds=durations[singles_names[i]])
@@ -57,7 +57,7 @@ async def update_radio_vote(albums_names: typing.List[str], singles_names: typin
 		timetables_variations.append(timetable)
 
 	if not (radio_vote_msg is None):
-		radio_channel_vote_names = ['Alpha', 'Beta', "Gamma"]
+		radio_channel_vote_names = ['Alpha', 'Beta', "Gamma", 'Delta', "Epsilon"]
 
 		vote_embed = discord.Embed(title='Вибрати радіо')
 		vote_embed.description = "Часто на радіо зустрічалась проблема того, що на радіо грають альбоми які мало подобаються людям в день та які подобаються - вночі.\nЩоб це вирішити ми даємо вам можливість вибрати 1 з 3 варіантів того, які альбоми й у який час будуть грати. Вибране радіо заграє по завершенню попереднього\n"
@@ -81,11 +81,11 @@ async def update_radio_vote(albums_names: typing.List[str], singles_names: typin
 				print(f'k: {k}, v: {v} s: {k in singles_names}')
 				if i == 0 and (k in singles_names) and single_check:
 					single_check = False
-					timetable_str += f"⚡ <t:{round(v.timestamp())}:t> Випадковий сингл (<t:{round(v.timestamp())}:R>)\n"
+					timetable_str += f"⚡ <t:{round(v.timestamp())}:t> Випадковий сингл\n"
 					timetable_str += "-----\n"
 				elif (not k in singles_names):
 					timetable_str += (
-						f"<t:{round(v.timestamp())}:t> {albums_full_names[k]} {f' (<t:{round(v.timestamp())}:R>)' if (i == 0) and single_check else ''}\n")
+						f"<t:{round(v.timestamp())}:t> {albums_full_names[k]}\n")
 					i += 1
 
 				old_emoji = time_emoji
