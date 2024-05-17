@@ -362,8 +362,6 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 					if len(message.embeds)>0:
 						if not (message.embeds[0] in ['load...', "Вибрати радіо"]):
 							await message.delete()
-						else:
-							await message.delete()
 					else:
 						await message.delete()
 
