@@ -446,6 +446,7 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 
 
 
+
 			cycle_duration = 0.0
 			msg = await radio_info.send(embeds=[discord.Embed(title='load...'), discord.Embed(title='load...')])
 
@@ -484,6 +485,9 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 			next_cycle_time = datetime.datetime.now()+datetime.timedelta(seconds=cycle_duration)
 			await admin_logs.send(f'Cycle duration: {math.floor((cycle_duration/60)/60)} h {math.floor((cycle_duration%3600) /60)} m {math.floor(cycle_duration%60)} s (next cycle: <t:{round(next_cycle_time.timestamp())}:F>)')
 			album_count = -1
+
+			radio_songs_channels = await radio_voting.update_radio_vote(album_short_names, singles_names,
+																		album_durations, albums_names, next_cycle_time)
 			for album_name, songs_list in song_lists:
 				album_count+=1
 				i+=1
@@ -676,7 +680,7 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 							pass
 
 
-			radio_songs_channels = await radio_voting.update_radio_vote(album_short_names,singles_names,album_durations,albums_names,next_cycle_time)
+
 
 async def setup(bot):  # this is called by Pycord to setup the cog
 	await bot.add_cog(RadioUa(bot))  # add the cog to the bot
