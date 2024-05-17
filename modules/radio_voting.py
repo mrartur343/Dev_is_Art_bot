@@ -102,6 +102,8 @@ async def get_vote_results(channel_info: discord.VoiceChannel):
 	if radio_vote_msg is not None:
 		react_msg = await channel_info.fetch_message(radio_vote_msg.id)
 		reactions = react_msg.reactions
+		if len(reactions)==0:
+			return None
 		print('Reactions not sorted')
 		print(reactions)
 		reactions.sort(key = sort_r)
