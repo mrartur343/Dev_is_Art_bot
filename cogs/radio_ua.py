@@ -453,9 +453,9 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 				random.shuffle(album_short_names)
 				random.shuffle(playlists_names)
 
-				radio_channel_lists['singles'] = singles_names[:2]
-				radio_channel_lists['albums'] = album_short_names[:2]
-				radio_channel_lists['playlists'] = playlists_names[:2]
+				radio_channel_lists['singles'] = singles_names[:1]
+				radio_channel_lists['albums'] = album_short_names[:1]
+				radio_channel_lists['playlists'] = playlists_names[:1]
 
 				radio_channel_queue = []
 				radio_channel_names = []
@@ -751,6 +751,7 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 			def sort_r(a: discord.Reaction):
 				return a.count
 			reacts_votes = radio_vote_send_message.reactions
+			print(reacts_votes)
 			reacts_votes.sort(key=sort_r)
 			radio_channel_index = vote_emojies.index(reacts_votes[0].emoji.__str__())
 			await radio_vote_send_message.clear_reactions()
