@@ -429,7 +429,7 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 			j = 0
 
 
-			songs_queue = radio_voting.get_vote_results(radio_info)
+			songs_queue = await  radio_voting.get_vote_results(radio_info)
 
 			if songs_queue is None:
 				radio_index = 0
