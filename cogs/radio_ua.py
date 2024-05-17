@@ -513,7 +513,6 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 			if radio_vote_send_message is None:
 				radio_vote_send_message=await radio_info.send(embed = discord.Embed(title='load...'))
 			await radio_vote_send_message.edit(embed=vote_embed)
-			await radio_vote_send_message.clear_reactions()
 			vote_emojies = ['🇦','🇧','🇬']
 			for vote_e in vote_emojies:
 				await radio_vote_send_message.add_reaction(vote_e)
@@ -752,6 +751,7 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 			def sort_r(a: discord.Reaction):
 				return a.count
 			reacts_votes = radio_vote_send_message.reactions
+			await radio_vote_send_message.clear_reactions()
 			reacts_votes.sort(key=sort_r)
 			radio_channel_index = vote_emojies.index(reacts_votes[0].emoji.__str__())
 
