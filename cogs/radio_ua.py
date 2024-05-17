@@ -486,7 +486,7 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 			album_count = -1
 
 			radio_songs_channels = await radio_voting.update_radio_vote(album_short_names, singles_names,
-																		album_durations, albums_names, next_cycle_time,)
+																		album_durations, albums_names, next_cycle_time)
 			for album_name, songs_list in song_lists:
 				album_count+=1
 				i+=1

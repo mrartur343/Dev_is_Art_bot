@@ -13,11 +13,12 @@ async def create_radio_vote(radio_info: discord.VoiceChannel):
 	global radio_vote_msg
 	radio_vote_msg= await radio_info.send(embed=discord.Embed(title='load...'))
 
-async def change_color(color: discord.Colour):
+async def change_color(color: discord.Colour,channel_info: discord.VoiceChannel):
 	if radio_vote_msg != None:
-		em = radio_vote_msg.embeds[0]
+		react_msg = await channel_info.fetch_message(radio_vote_msg.id)
+		em = react_msg.embeds[0]
 		em.colour=color
-		await radio_vote_msg.edit(embed=em)
+		await react_msg.edit(embed=em)
 
 async def update_radio_vote(albums_names: typing.List[str], singles_names: typing.List[str],
 							durations: typing.Dict[str, int], albums_full_names: typing.Dict[str,str],next_cycle_time: datetime.datetime):
