@@ -106,7 +106,7 @@ async def get_vote_results(channel_info: discord.VoiceChannel):
 			return None
 		print('Reactions not sorted')
 		print(reactions)
-		reactions.sort(key = sort_r)
+		reactions.sort(key = sort_r,reverse=True)
 		print('Reactions sorted')
 		print(reactions)
 
