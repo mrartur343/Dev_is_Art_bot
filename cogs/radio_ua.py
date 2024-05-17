@@ -354,17 +354,14 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 
 		radio_songs_channels =  [["4rCEFiZweXnbHwrh7sHemZ"]]
 
+
+		async for message in radio_info.history():
+			if message.author.id == self.bot.user.id:
+				await message.delete()
 		await radio_voting.create_radio_vote(radio_info)
+		msg = await radio_info.send(embeds=[discord.Embed(title='load...'), discord.Embed(title='load...')])
+
 		while True:
-
-			async for message in radio_info.history():
-				if message.author.id == self.bot.user.id:
-					if len(message.embeds)>0:
-						if not (message.embeds[0].title in ['load...', "Вибрати радіо"]):
-							await message.delete()
-					else:
-						await message.delete()
-
 
 
 
@@ -448,7 +445,6 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 
 
 			cycle_duration = 0.0
-			msg = await radio_info.send(embeds=[discord.Embed(title='load...'), discord.Embed(title='load...')])
 
 			album_likes={}
 			with open("other/album_likes.json", 'r') as file:
