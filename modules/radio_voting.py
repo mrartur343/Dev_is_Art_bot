@@ -123,7 +123,7 @@ async def update_radio_vote(albums_names: typing.List[str], singles_names: typin
 		vote_embed.description = "Часто на радіо зустрічалась проблема того, що на радіо грають альбоми які мало подобаються людям в день та які подобаються - вночі.\nЩоб це вирішити ми даємо вам можливість вибрати 1 з 3 варіантів того, які альбоми й у який час будуть грати. Вибране радіо заграє по завершенню попереднього\n\n Переглянути що за радіо канали далі будуть можна по кнопці\n\/\/\/"
 
 		await radio_vote_msg.edit(embed=vote_embed,view=RadioChannelsView(e_pages=channel_pages))
-
+		await radio_vote_msg.clear_reactions()
 		for vote_e in vote_emojies:
 			await radio_vote_msg.add_reaction(vote_e)
 
