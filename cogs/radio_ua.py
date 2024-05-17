@@ -350,9 +350,12 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 
 
 
+		singles_names = []
+		with open('other/singles_names.json', 'r') as file:
+			singles_names = json.loads(file.read())
 
 
-		radio_songs_channels =  [["4rCEFiZweXnbHwrh7sHemZ"]]
+		radio_songs_channels =  random.choice(singles_names)
 
 
 		async for message in radio_info.history():
@@ -483,7 +486,7 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 			album_count = -1
 
 			radio_songs_channels = await radio_voting.update_radio_vote(album_short_names, singles_names,
-																		album_durations, albums_names, next_cycle_time)
+																		album_durations, albums_names, next_cycle_time,)
 			for album_name, songs_list in song_lists:
 				album_count+=1
 				i+=1
@@ -543,6 +546,7 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 								with open('other/albums_images_cache.json', 'w') as file:
 									json.dump(albums_imgs, file)
 							dcolor = avarage_color_getter.get_avarage_color(album_name)
+							await radio_voting.change_color(discord.Color.from_rgb(r=dcolor[0],g=dcolor[1],b=dcolor[2]))
 							embed_info = discord.Embed(title='Зараз грає:',color=discord.Color.from_rgb(r=dcolor[0],g=dcolor[1],b=dcolor[2]))
 							embed_info.set_thumbnail(url=albums_imgs[album_name])
 
@@ -592,8 +596,9 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 							if i<6:
 								embed2.description += (
 									f"<t:{round(next_cycle_time.timestamp())}:t> Наступний цикл (довантаження нових альбомів/синглів/плейлистів) {f' (<t:{round(next_cycle_time.timestamp())}:R>)' if (i == 0) and single_check else ''}\n")
-							embed2.set_footer(text='Між кожним альбомом грають 2 випадкових сингла | На протязі всього цикла увімкнеться лише 1 плейлист й вночі')
-
+							embed2.set_footer(text='Між кожним альбомом грають 2 випадкових сингла')
+							if len(jmespath.search("[*][0]", song_lists))==1:
+								embed2 = discord.Embed(description='Цей сингл є початком циклу музики на радіо, за нею піде черга пісень з обранного вище радіо канала (Альфа, Бета або Гамма)')
 							await msg.edit(embeds=[embed_info,embed2],view=AlbumSongs(songs_list=songs_list,current_play=song_name,timeout=None, current_album=album_name,timetable=timetable,next_cycle_time=next_cycle_time,cycle_duration=cycle_duration))
 
 							sde_achievement_list = []
