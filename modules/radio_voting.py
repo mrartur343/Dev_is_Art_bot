@@ -34,7 +34,7 @@ class RadioChannelsView(discord.ui.View):
 			show_indicator=True,
 			use_default_buttons=False,
 			custom_buttons=buttons,
-			timeout=None
+			timeout=900
 		)
 
 		await paginator.respond(interaction,ephemeral=True)
