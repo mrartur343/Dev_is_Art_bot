@@ -31,6 +31,12 @@ albums_data[album_key]=[album_name,album_url]
 with open("other/albums_data.json", 'w') as file:
 	json.dump(albums_data,file)
 
+with open("other/album_likes.json", 'r') as file:
+	album_likes = json.loads(file.read())
+album_likes[album_key]=[]
+with open("other/album_likes.json", 'w') as file:
+	json.dump(album_likes,file)
+
 if single_check:
 	with open("other/singles_names.json", 'r') as file:
 		singles = json.loads(file.read())
