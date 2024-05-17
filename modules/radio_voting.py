@@ -1,6 +1,8 @@
 import datetime
 import random
 import jmespath
+import json
+from discord.ext import pages
 import typing
 from modules import radio_timetable
 
@@ -8,6 +10,34 @@ import discord
 
 radio_vote_msg: None | discord.Message = None
 vote_emojies = ['🇦', '🇧', '🇬','🇩','🇪']
+
+class RadioChannelsView(discord.ui.View):
+	def __init__(self,e_pages:typing.List[discord.Embed], *args, **kwargs):
+
+		super().__init__(timeout=None,*args)
+		self.e_pages = e_pages
+
+	# Create a class called MyView that subclasses discord.ui.View
+	@discord.ui.button(label="Переглянути радіо канали", style=discord.ButtonStyle.gray, emoji="📻") # Create a button with the label "😎 Click me!" with color Blurple
+	async def button_callback3(self, button, interaction: discord.Interaction):
+
+		buttons = [
+			pages.PaginatorButton("first", label="<<-", style=discord.ButtonStyle.green),
+			pages.PaginatorButton("prev", label="<-", style=discord.ButtonStyle.green),
+			pages.PaginatorButton("page_indicator", style=discord.ButtonStyle.gray, disabled=True),
+			pages.PaginatorButton("next", label="->", style=discord.ButtonStyle.green),
+			pages.PaginatorButton("last", label="->>", style=discord.ButtonStyle.green),
+		]
+
+		paginator: pages.Paginator = pages.Paginator(
+			pages=self.e_pages,
+			show_indicator=True,
+			use_default_buttons=False,
+			custom_buttons=buttons,
+			timeout=None
+		)
+
+		await paginator.respond(interaction,ephemeral=True)
 
 async def create_radio_vote(radio_info: discord.VoiceChannel):
 	global radio_vote_msg
@@ -76,21 +106,19 @@ async def update_radio_vote(albums_names: typing.List[str], singles_names: typin
 
 				time_emoji = "🏙️ " if 12 <= kyiv_h < 18 else (
 					"🌇" if 18 <= kyiv_h < 24 else ('🌇' if 6 <= kyiv_h < 12 else "🌃"))
-				if time_emoji != old_emoji:
+				if time_emoji != old_emoji and i!=(len(votetimetable)-1):
 					timetable_str += f"\n- {time_emoji}\n"
 				print(f'k: {k}, v: {v} s: {k in singles_names}')
-				if i == 0 and (k in singles_names) and single_check:
-					single_check = False
-					timetable_str += f"⚡ <t:{round(v.timestamp())}:t> Випадковий сингл\n"
-					timetable_str += "-----\n"
-				elif (not k in singles_names):
+				if (not k in singles_names):
 					timetable_str += (
 						f"<t:{round(v.timestamp())}:t> {albums_full_names[k]}\n")
 					i += 1
 
 				old_emoji = time_emoji
-			vote_embed.add_field(name=f'Radio {radio_channel_vote_names[l]}', value=timetable_str)
+			vote_embed.add_field(name=f'{vote_emojies[l]} | Radio {radio_channel_vote_names[l]}', value=timetable_str)
 			l += 1
+
+
 
 		await radio_vote_msg.edit(embed=vote_embed)
 
