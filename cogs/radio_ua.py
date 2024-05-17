@@ -354,14 +354,21 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 
 		radio_songs_channels =  [["4rCEFiZweXnbHwrh7sHemZ"]]
 
-
-
+		await radio_voting.create_radio_vote(radio_info)
 		while True:
 
 			async for message in radio_info.history():
 				if message.author.id == self.bot.user.id:
-					await message.delete()
-			await radio_voting.create_radio_vote(radio_info)
+					if len(message.embeds)>0:
+						if message.embeds[0]!="Вибрати радіо":
+							await message.delete()
+						else:
+							await message.delete()
+					else:
+						await message.delete()
+
+
+
 
 
 			album_short_names = [f for f in listdir('songs')]
