@@ -279,8 +279,9 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 	@discord.slash_command(name="spotdl", description='Лише для адмінів')
 	@commands.has_permissions(administrator=True)
 	async def spotdl(self,ctx: discord.ApplicationContext, url: discord.Option(str), single: discord.Option(bool)=False):
-		os.system(f"""python albums_downloader_command.py {url} {int(single)}""")
+
 		await ctx.respond("Успішно розпочато створення альбому!")
+		os.system(f"""python albums_downloader_command.py {url} {int(single)}""")
 		download_checker = False
 		while not download_checker:
 			with open("other/albums_data.json", 'r') as file:
