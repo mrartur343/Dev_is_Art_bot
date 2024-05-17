@@ -515,7 +515,7 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 				radio_vote_send_message=await voice_channel.send(embed = discord.Embed(title='load...'))
 			await radio_vote_send_message.edit(embed=vote_embed)
 			await radio_vote_send_message.clear_reactions()
-			vote_emojies = ['<:regional_indicator_a:>','<:regional_indicator_b:>','<:regional_indicator_g:>']
+			vote_emojies = ['regional_indicator_a','regional_indicator_b','regional_indicator_g']
 			for vote_e in vote_emojies:
 				await radio_vote_send_message.add_reaction(vote_e)
 			cycle_duration = 0.0
