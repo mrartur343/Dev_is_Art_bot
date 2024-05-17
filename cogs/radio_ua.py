@@ -454,9 +454,9 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 				random.shuffle(album_short_names)
 				random.shuffle(playlists_names)
 
-				radio_channel_lists['singles'] = singles_names[:10]
-				radio_channel_lists['albums'] = album_short_names[:10]
-				radio_channel_lists['playlists'] = playlists_names[:10]
+				radio_channel_lists['singles'] = singles_names[:2]
+				radio_channel_lists['albums'] = album_short_names[:2]
+				radio_channel_lists['playlists'] = playlists_names[:2]
 
 				radio_channel_queue = []
 				radio_channel_names = []
