@@ -364,9 +364,8 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 						await message.delete()
 					else:
 						for reaction in message.reactions:
-							radio_vote_send_message = message
-
 							radio_vote[reaction.emoji.__str__()]=reaction.count
+							await message.delete()
 
 
 
@@ -449,29 +448,29 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 				j = 0
 
 
+				radio_channel_lists = {'singles': [], 'albums': [], 'playlists': []}
 				random.shuffle(singles_names)
 				random.shuffle(album_short_names)
 				random.shuffle(playlists_names)
 
-				singles_names = singles_names[:2]
-				album_short_names = album_short_names[:2]
-				playlists_names = playlists_names[:2]
-
+				radio_channel_lists['singles'] = singles_names[:2]
+				radio_channel_lists['albums'] = album_short_names[:2]
+				radio_channel_lists['playlists'] = playlists_names[:2]
 
 				radio_channel_queue = []
 				radio_channel_names = []
 
-				for short_name in album_short_names:
+				for short_name in radio_channel_lists['albums']:
 
 					st += datetime.timedelta(seconds=album_durations[short_name])
 					radio_channel_queue.append([short_name, get_song_list(albums_url[short_name])])
 					radio_channel_names.append(short_name)
 					for _ in range(2):
-						if i >= len(singles_names):
+						if i >= len(radio_channel_lists['singles']):
 							i = 0
-						st += datetime.timedelta(seconds=album_durations[singles_names[i]])
-						radio_channel_queue.append([singles_names[i], get_song_list(albums_url[singles_names[i]])])
-						radio_channel_names.append(singles_names[i])
+						st += datetime.timedelta(seconds=album_durations[radio_channel_lists['singles'][i]])
+						radio_channel_queue.append([radio_channel_lists['singles'][i], get_song_list(albums_url[radio_channel_lists['singles'][i]])])
+						radio_channel_names.append(radio_channel_lists['singles'][i])
 						i += 1
 
 				radio_channels.append([radio_channel_queue,radio_channel_names])
@@ -584,7 +583,7 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 								if user.can_send() and not_check:
 									next_album_timestamp = (album_start_time+datetime.timedelta(seconds=album_durations[album_name])).timestamp()
 									album_notification_label = "Сингл" if album_name in singles_names else "Альбом"
-									await user.send(f"{album_notification_label} **`{albums_names[album_list[next_index2]]}`**, який ви вподобали, буде у <#1208129687231008808> <t:{round(next_album_timestamp)}:R>", view=DislikeAlbum(timeout=None,liked_album=album_name))
+									#await user.send(f"{album_notification_label} **`{albums_names[album_list[next_index2]]}`**, який ви вподобали, буде у <#1208129687231008808> <t:{round(next_album_timestamp)}:R>", view=DislikeAlbum(timeout=None,liked_album=album_name))
 				else:
 					with open("other/album_likes.json", 'r') as file:
 						album_likes = json.loads(file.read())
@@ -593,7 +592,7 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 							if user.can_send():
 								next_album_timestamp = (album_start_time+datetime.timedelta(seconds=album_durations[album_name])).timestamp()
 								album_notification_label = "Сингл" if album_name in singles_names else "Альбом"
-								await user.send(f"{album_notification_label} **`{albums_names[album_list[next_index]]}`**, який ви вподобали, буде у <#1208129687231008808> <t:{round(next_album_timestamp)}:R>", view=DislikeAlbum(timeout=None,liked_album=album_name))
+								#await user.send(f"{album_notification_label} **`{albums_names[album_list[next_index]]}`**, який ви вподобали, буде у <#1208129687231008808> <t:{round(next_album_timestamp)}:R>", view=DislikeAlbum(timeout=None,liked_album=album_name))
 				print("---songs_list---")
 				print(song_lists)
 				print("------")
