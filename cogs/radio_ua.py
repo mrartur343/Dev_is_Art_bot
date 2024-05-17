@@ -750,12 +750,14 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 
 			def sort_r(a: discord.Reaction):
 				return a.count
-			reacts_votes = radio_vote_send_message.reactions
+
+			cache_msg = discord.utils.get(self.bot.cached_messages, id=radio_vote_send_message.id)
+			reacts_votes = cache_msg.reactions
 			print("Reactions")
 			print(reacts_votes)
 			reacts_votes.sort(key=sort_r)
 			radio_channel_index = vote_emojies.index(reacts_votes[0].emoji.__str__())
-			await radio_vote_send_message.clear_reactions()
+			await cache_msg.clear_reactions()
 
 async def setup(bot):  # this is called by Pycord to setup the cog
 	await bot.add_cog(RadioUa(bot))  # add the cog to the bot
