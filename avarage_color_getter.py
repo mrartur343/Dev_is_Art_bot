@@ -26,7 +26,7 @@ def get_avarage_color(key_str: str):
 	_, labels, palette = cv.kmeans(pixels, n_colors, None, criteria, 10, flags)
 	_, counts = np.unique(labels, return_counts=True)
 
-	result = palette[np.argmax(counts)]
+	result = list(palette[np.argmax(counts)])
 	with open('other/average_color_cache.json', 'w') as file:
 		cache[key_str]=result
 		json.dump(cache,file)
