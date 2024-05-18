@@ -27,8 +27,8 @@ bot.add_cog(store.Store(bot))
 bot.add_cog(without_category.WithoutCategory(bot))
 
 
-bot_b.add_cog(radio_ua.RadioUa(bot, 'Beta'))
-bot_g.add_cog(radio_ua.RadioUa(bot, 'Gamma'))
+bot_b.add_cog(radio_ua.RadioUa(bot_b, 'Beta'))
+bot_g.add_cog(radio_ua.RadioUa(bot_g, 'Gamma'))
 
 print("run bot!")
 
