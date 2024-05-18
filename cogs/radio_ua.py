@@ -575,7 +575,7 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 							file_name = songs[album_name][song_name]
 
 
-							audio_source = discord.FFmpegOpusAudio(f"songs/{album_name}/{file_name}", bitrate=64, pipe=True,options={'options': '-vn'})
+							audio_source = discord.FFmpegOpusAudio(f"songs/{album_name}/{file_name}", bitrate=64, pipe=True,options='-vn')
 							audio_info = TinyTag.get(f"songs/{album_name}/{file_name}", image=True)
 							if not album_name in albums_imgs:
 								image_data: bytes = audio_info.get_image()
