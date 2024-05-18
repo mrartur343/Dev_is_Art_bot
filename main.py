@@ -8,7 +8,7 @@ from cogs import account_info,collections,event_messages,radio_ua,store,without_
 Token = "MTIyMTQwMzcwMDExNTgwMDE2NA.GPXNpX.5KvYcN1WfswDQ5Z0oJqjoT4FLUo_wMnL4uqgRs"
 
 
-TokenBeta = "MTI0MTQwMTg0NTU4NzM3ODIzNw.GdmYNv.5a_FWy0YMO595ZKURWYcyluyMAZS7eH-4nUG4g"
+TokenBeta = "MTI0MTQwMTg0NTU4NzM3ODIzNw.G_Ety0.cKSf83Si70DljbTYtY6SL5gYBrFLpQYMkMWDG4"
 TokenGamma = "MTI0MTQwMjM4MTAzMjM1ODEyMA.GY8aZi.G5ahHzdu0gJH_dSU9e3cTFjDQvlBYTaQlf-Z90"
 
 

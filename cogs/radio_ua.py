@@ -17,7 +17,7 @@ from os import listdir
 from os.path import isfile, join
 from tinytag import TinyTag
 
-radio_channel_id = 1208129687231008808
+
 radio_sleep_timers: typing.Dict[str, typing.List[int]] = {'song_end':[], 'album_end':[]}
 class AlbumSongs(discord.ui.View):
 	def __init__(self,songs_list: typing.List[str], current_play: str,current_album:str,timeout:float|None,timetable: typing.Dict[str,datetime.datetime],next_cycle_time:datetime.datetime, cycle_duration: float,e_pages = typing.List[discord.Embed], *args, **kwargs):
@@ -293,20 +293,19 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 	# this class is used to create a cog, which is a module that can be added to the bot
 
 	def __init__(self, bot, radio_name:str):  # this is a special method that is called when the cog is loaded
-		global radio_channel_id
 		self.bot: discord.Bot = bot
 		self.radio_name = radio_name
 
 		if radio_name=='Alpha':
-			radio_channel_id=1208129687231008808
+			self.radio_channel_id=1208129687231008808
 		elif radio_name=='Beta':
-			radio_channel_id=1241401097034268702
+			self.radio_channel_id=1241401097034268702
 			for command	in self.bot.commands:
 				if command.name=='spotdl':
 					self.bot.remove_application_command(command)
 					break
 		else:
-			radio_channel_id=1241401134170640455
+			self.radio_channel_id=1241401134170640455
 			for command	in self.bot.commands:
 				if command.name=='spotdl':
 					self.bot.remove_application_command(command)
@@ -354,11 +353,11 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 				bchannel_id = 0
 
 			if member.id!=self.bot.user.id:
-				if achannel_id == radio_channel_id:
+				if achannel_id == self.radio_channel_id:
 					guild: discord.Guild = achannel.guild
-					normal_radio = await guild.fetch_channel(radio_channel_id)
+					normal_radio = await guild.fetch_channel(self.radio_channel_id)
 					await (await guild.fetch_member(self.bot.user.id)).move_to(normal_radio)
-				elif bchannel_id == radio_channel_id and achannel_id != radio_channel_id:
+				elif bchannel_id == self.radio_channel_id and achannel_id != self.radio_channel_id:
 					guild: discord.Guild = bchannel.guild
 					afk_radio = await guild.fetch_channel(1235991951547961478)
 					await (await guild.fetch_member(self.bot.user.id)).move_to(afk_radio)
@@ -375,7 +374,7 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 		albums_imgs=albums_images_cache
 		start_check = True
 
-		voice_channel: discord.VoiceChannel = await self.bot.fetch_channel(radio_channel_id)
+		voice_channel: discord.VoiceChannel = await self.bot.fetch_channel(self.radio_channel_id)
 		radio_forum: discord.ForumChannel = await self.bot.fetch_channel(1241408420284989494)
 
 		if self.radio_name=='Alpha':
@@ -586,7 +585,7 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 
 							quality = 320
 
-							updated_channel: discord.VoiceChannel = await voice_channel.guild.fetch_channel(radio_channel_id)
+							updated_channel: discord.VoiceChannel = await voice_channel.guild.fetch_channel(self.radio_channel_id)
 							print(len(updated_channel.members))
 							if len(updated_channel.members)<2:
 								await admin_logs.send("LOW QUALITY")
@@ -728,7 +727,7 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 								user = await voice_channel.guild.fetch_member(member_id)
 								if user!=None:
 									if user.voice != None:
-										if user.voice.channel.id == radio_channel_id:
+										if user.voice.channel.id == self.radio_channel_id:
 											await user.move_to(None)
 											radio_sleep_timers['song_end'].remove(member_id)
 									try:
@@ -743,7 +742,7 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 											user = await voice_channel.guild.fetch_member(m_id)
 											if user != None:
 												if user.voice != None:
-													if user.voice.channel.id == radio_channel_id:
+													if user.voice.channel.id == self.radio_channel_id:
 														await user.move_to(None)
 														radio_sleep_timers[timer_str].remove(m_id)
 												try:
@@ -758,7 +757,7 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 					user = await voice_channel.guild.fetch_member(member_id)
 					if user!=None:
 						if user.voice != None:
-							if user.voice.channel.id == radio_channel_id:
+							if user.voice.channel.id == self.radio_channel_id:
 								await user.move_to(None)
 								radio_sleep_timers['album_end'].remove(member_id)
 						try:
