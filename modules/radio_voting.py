@@ -1,7 +1,5 @@
 import datetime
 import random
-import jmespath
-import json
 from discord.ext import pages
 import typing
 from modules import radio_timetable
@@ -40,16 +38,10 @@ class RadioChannelsView(discord.ui.View):
 
 		await paginator.respond(interaction,ephemeral=True)
 
-async def create_radio_vote(radio_info: discord.VoiceChannel):
+async def create_radio_vote(radio_info_message: discord.Message):
 	global radio_vote_msg
-	radio_vote_msg= await radio_info.send(embed=discord.Embed(title='load...'))
+	radio_vote_msg= radio_info_message
 
-async def change_color(color: discord.Colour,channel_info: discord.VoiceChannel):
-	if radio_vote_msg != None:
-		react_msg = await channel_info.fetch_message(radio_vote_msg.id)
-		em = react_msg.embeds[0]
-		em.colour=color
-		await react_msg.edit(embed=em)
 
 async def update_radio_vote(albums_names: typing.List[str], singles_names: typing.List[str],
 							durations: typing.Dict[str, int], albums_full_names: typing.Dict[str,str],next_cycle_time: datetime.datetime):
@@ -125,12 +117,12 @@ async def update_radio_vote(albums_names: typing.List[str], singles_names: typin
 		vote_embed = discord.Embed(title='Вибрати радіо')
 		vote_embed.description = "Часто на радіо зустрічалась проблема того, що на радіо грають альбоми які мало подобаються людям в день та які подобаються - вночі.\nЩоб це вирішити ми даємо вам можливість вибрати 1 з 3 варіантів того, які альбоми й у який час будуть грати. Вибране радіо заграє по завершенню попереднього\n\n Переглянути що за радіо канали далі будуть можна по кнопці\n\/\/\/"
 
-		await radio_vote_msg.edit(embed=vote_embed,view=RadioChannelsView(e_pages=channel_pages))
+
 		await radio_vote_msg.clear_reactions()
 		for vote_e in vote_emojies:
 			await radio_vote_msg.add_reaction(vote_e)
 
-		return radio_channels
+		return radio_channels, channel_pages
 
 
 async def get_vote_results(channel_info: discord.VoiceChannel):

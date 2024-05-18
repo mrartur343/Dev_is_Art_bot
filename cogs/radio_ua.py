@@ -20,13 +20,14 @@ from tinytag import TinyTag
 radio_channel_id = 1208129687231008808
 radio_sleep_timers: typing.Dict[str, typing.List[int]] = {'song_end':[], 'album_end':[]}
 class AlbumSongs(discord.ui.View):
-	def __init__(self,songs_list: typing.List[str], current_play: str,current_album:str,timeout:float|None,timetable: typing.Dict[str,datetime.datetime],next_cycle_time:datetime.datetime, cycle_duration: float, *args, **kwargs):
+	def __init__(self,songs_list: typing.List[str], current_play: str,current_album:str,timeout:float|None,timetable: typing.Dict[str,datetime.datetime],next_cycle_time:datetime.datetime, cycle_duration: float,e_pages = typing.List[discord.Embed], *args, **kwargs):
 		self.cycle_duration = cycle_duration
 		self.next_cycle_time = next_cycle_time
 		self.timetable = timetable
 		self.current_album = current_album
 		self.current_play = current_play
 		self.songs_list = songs_list
+		self.e_pages = e_pages
 		super().__init__(timeout=timeout,*args)
 
 	# Create a class called MyView that subclasses discord.ui.View
@@ -145,6 +146,29 @@ class AlbumSongs(discord.ui.View):
 			view.options.insert(0, discord.SelectOption(label='Вимкнути таймер', value='stop'))
 		await interaction.respond("Таймер сну автоматично від'єднає вас з голосового каналу тоді, коли вам потрібно:", view=view, ephemeral=True)
 
+
+
+	# Create a class called MyView that subclasses discord.ui.View
+	@discord.ui.button(label="Радіо канали (5)", style=discord.ButtonStyle.gray, emoji="📻") # Create a button with the label "😎 Click me!" with color Blurple
+	async def button_callback5(self, button, interaction: discord.Interaction):
+
+		buttons = [
+			pages.PaginatorButton("first", label="<<-", style=discord.ButtonStyle.green),
+			pages.PaginatorButton("prev", label="<-", style=discord.ButtonStyle.green),
+			pages.PaginatorButton("page_indicator", style=discord.ButtonStyle.gray, disabled=True),
+			pages.PaginatorButton("next", label="->", style=discord.ButtonStyle.green),
+			pages.PaginatorButton("last", label="->>", style=discord.ButtonStyle.green),
+		]
+
+		paginator: pages.Paginator = pages.Paginator(
+			pages=self.e_pages,
+			show_indicator=True,
+			use_default_buttons=False,
+			custom_buttons=buttons,
+			timeout=600
+		)
+
+		await paginator.respond(interaction,ephemeral=True)
 class SleepTimer(discord.ui.View):
 
 
@@ -186,6 +210,8 @@ class SleepTimer(discord.ui.View):
 			radio_sleep_timers[select.values[0]].append(interaction.user.id)
 			await interaction.respond(f"Вас автоматично від'єднає з войса по завершенню {'альбому' if select.values[0]=='album_end' else 'треку'}", ephemeral=True)
 
+		self.disable_all_items()
+		await self.message.delete()
 class DislikeAlbum(discord.ui.View):
 	def __init__(self, liked_album:str, timeout:float|None=None, *args, **kwargs):
 		self.liked_album = liked_album
@@ -379,9 +405,9 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 		async for message in radio_info.history():
 			if message.author.id == self.bot.user.id:
 				await message.delete()
-		await radio_voting.create_radio_vote(radio_info)
 		msg = await radio_info.send(embeds=[discord.Embed(title='load...'), discord.Embed(title='load...')])
 
+		await radio_voting.create_radio_vote(msg)
 		while True:
 
 
@@ -503,7 +529,7 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 			await admin_logs.send(f'Cycle duration: {math.floor((cycle_duration/60)/60)} h {math.floor((cycle_duration%3600) /60)} m {math.floor(cycle_duration%60)} s (next cycle: <t:{round(next_cycle_time.timestamp())}:F>)')
 			album_count = -1
 
-			radio_songs_channels = await radio_voting.update_radio_vote(album_short_names, singles_names,
+			radio_songs_channels, radio_channels_embeds = await radio_voting.update_radio_vote(album_short_names, singles_names,
 																		album_durations, albums_names, next_cycle_time)
 			for album_name, songs_list in song_lists:
 				album_count+=1
@@ -564,7 +590,6 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 								with open('other/albums_images_cache.json', 'w') as file:
 									json.dump(albums_imgs, file)
 							dcolor = avarage_color_getter.get_avarage_color(album_name)
-							await radio_voting.change_color(discord.Color.from_rgb(r=dcolor[0],g=dcolor[1],b=dcolor[2]),radio_info)
 							embed_info = discord.Embed(title='Зараз грає:',color=discord.Color.from_rgb(r=dcolor[0],g=dcolor[1],b=dcolor[2]))
 							embed_info.set_thumbnail(url=albums_imgs[album_name])
 
@@ -617,7 +642,7 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 							embed2.set_footer(text='Між кожним альбомом грають 5 випадкових синглів')
 							if len(jmespath.search("[*][0]", song_lists))==1:
 								embed2 = discord.Embed(description='Цей сингл є початком циклу музики на радіо, за ним піде черга пісень з обранного вище радіо канала (Alpha, Beta, Gamma, Delta або Epsilon)', colour=discord.Color.from_rgb(r=dcolor[0],g=dcolor[1],b=dcolor[2]))
-							await msg.edit(embeds=[embed_info,embed2],view=AlbumSongs(songs_list=songs_list,current_play=song_name,timeout=None, current_album=album_name,timetable=timetable,next_cycle_time=next_cycle_time,cycle_duration=cycle_duration))
+							await msg.edit(embeds=[embed_info,embed2],view=AlbumSongs(songs_list=songs_list,current_play=song_name,timeout=None, current_album=album_name,timetable=timetable,next_cycle_time=next_cycle_time,cycle_duration=cycle_duration,e_pages=radio_channels_embeds))
 
 							sde_achievement_list = []
 
@@ -698,6 +723,7 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 													await user.send(f"Надобраніч!")
 												except:
 													pass
+
 						except Exception as error:
 							await admin_logs.send(f"Помилка при завантажені трека: {song_name} ({albums_names[album_name]})\n{error}")
 							continue
