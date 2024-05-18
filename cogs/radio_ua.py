@@ -574,10 +574,20 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 							print(voice_channel.members)
 							file_name = songs[album_name][song_name]
 
-							FFMPEG_OPTIONS = {
-								'options': '-vn -b:a 64k'}
+							quality = 320
 
-							audio_source = discord.FFmpegPCMAudio(f"songs/{album_name}/{file_name}", **FFMPEG_OPTIONS)
+							updated_channel: discord.VoiceChannel = await voice_channel.guild.fetch_channel(radio_channel_id)
+
+							if len(updated_channel.members)<2:
+								quality = 32
+
+
+							FFMPEG_OPTIONS = {
+								'options': f'-vn -b:a {quality}k'}
+							if quality!=32:
+								audio_source = discord.FFmpegPCMAudio(f"songs/{album_name}/{file_name}", **FFMPEG_OPTIONS)
+							else:
+								audio_source = discord.FFmpegOpusAudio(f"songs/{album_name}/{file_name}", options="-vn -b:a 32k")
 							audio_info = TinyTag.get(f"songs/{album_name}/{file_name}", image=True)
 							if not album_name in albums_imgs:
 								image_data: bytes = audio_info.get_image()
@@ -599,6 +609,8 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 							embed_info.add_field(name="🧑‍🎤 Виконавець: ", value=audio_info.artist)
 							embed_info.add_field(name="⌛ Рік випуску: ", value=audio_info.year if str(audio_info.year)!='1970' else '???')
 							embed_info.add_field(name="💿 Альбом: " if (not album_name in singles_names) else "Сингл ⚡:", value=albums_names[album_name] if (not album_name in singles_names) else "Між кожним альбомом грають 5 випадкових синглів")
+
+							embed_info.add_field(name="📡 Якість: ", value='Висока (96 kb/s)' if round(audio_info.bitrate)>=96 else ('Середня (32-96 kb/s)' if quality!=32 else 'Низька (32 kb/s) (Поки нікого немає у войсі вмикається низька якість аудіо, дочекайтесь наступної композиції для кращої якості)'))
 							embed_info.add_field(name="⏲️ Тривалість: ",
 												 value=f"{math.floor(audio_info.duration / 60)}m {math.floor(audio_info.duration) % 60}s")
 							embed_info.add_field(name="📻 Наступний трек: ",
