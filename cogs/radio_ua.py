@@ -10,7 +10,7 @@ import typing
 
 import requests
 from bs4 import BeautifulSoup
-from modules import account_controll, radio_timetable, radio_voting
+from modules import account_controll, radio_timetable
 import discord
 from discord.ext import commands, pages
 from os import listdir
@@ -27,7 +27,6 @@ class AlbumSongs(discord.ui.View):
 		self.current_album = current_album
 		self.current_play = current_play
 		self.songs_list = songs_list
-		self.e_pages = e_pages
 		super().__init__(timeout=timeout,*args)
 
 	# Create a class called MyView that subclasses discord.ui.View
@@ -148,27 +147,7 @@ class AlbumSongs(discord.ui.View):
 
 
 
-	# Create a class called MyView that subclasses discord.ui.View
-	@discord.ui.button(label="Радіо канали (5)", style=discord.ButtonStyle.gray, emoji="📻") # Create a button with the label "😎 Click me!" with color Blurple
-	async def button_callback5(self, button, interaction: discord.Interaction):
 
-		buttons = [
-			pages.PaginatorButton("first", label="<<-", style=discord.ButtonStyle.green),
-			pages.PaginatorButton("prev", label="<-", style=discord.ButtonStyle.green),
-			pages.PaginatorButton("page_indicator", style=discord.ButtonStyle.gray, disabled=True),
-			pages.PaginatorButton("next", label="->", style=discord.ButtonStyle.green),
-			pages.PaginatorButton("last", label="->>", style=discord.ButtonStyle.green),
-		]
-
-		paginator: pages.Paginator = pages.Paginator(
-			pages=self.e_pages,
-			show_indicator=True,
-			use_default_buttons=False,
-			custom_buttons=buttons,
-			timeout=600
-		)
-
-		await paginator.respond(interaction,ephemeral=True)
 class SleepTimer(discord.ui.View):
 
 
@@ -234,6 +213,7 @@ class DislikeAlbumFromList(discord.ui.View):
 		super().__init__(timeout=timeout,*args)
 		self.radio_channel = radio_channel
 		self.msg_id = msg_id
+
 
 	@discord.ui.button(label="Зняти з обраних", style=discord.ButtonStyle.gray, emoji="💔") # Create a button with the label "😎 Click me!" with color Blurple
 	async def button_callback(self, button:discord.Button, interaction: discord.Interaction):
@@ -312,8 +292,26 @@ def get_album_name_and_key(url: str):
 class RadioUa(commands.Cog):  # create a class for our cog that inherits from commands.Cog
 	# this class is used to create a cog, which is a module that can be added to the bot
 
-	def __init__(self, bot):  # this is a special method that is called when the cog is loaded
+	def __init__(self, bot, radio_name:str):  # this is a special method that is called when the cog is loaded
+		global radio_channel_id
 		self.bot: discord.Bot = bot
+		self.radio_name = radio_name
+
+		if radio_name=='Alpha':
+			radio_channel_id=1208129687231008808
+		elif radio_name=='Beta':
+			radio_channel_id=1241401097034268702
+			for command	in self.bot.commands:
+				if command.name=='spotdl':
+					self.bot.remove_application_command(command)
+					break
+		else:
+			radio_channel_id=1241401134170640455
+			for command	in self.bot.commands:
+				if command.name=='spotdl':
+					self.bot.remove_application_command(command)
+					break
+
 
 
 
@@ -336,16 +334,6 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 		await ctx.respond("Альбом успішно створено!")
 
 
-	@discord.slash_command(name="change_channel", description='Лише для адмінів')
-	@commands.has_permissions(administrator=True)
-	async def change_channel(self,ctx: discord.ApplicationContext, channel: discord.Option(discord.VoiceChannel)):
-		global radio_channel_id
-		channel: discord.VoiceChannel
-
-		await channel.guild.me.move_to(channel)
-		radio_channel_id = channel.id
-
-		await ctx.respond(f"Успішно змінено радіо канал на {channel.mention}")
 
 	@commands.Cog.listener()
 	async def on_voice_state_update(self,member:discord.Member, before, after):
@@ -388,7 +376,14 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 		start_check = True
 
 		voice_channel: discord.VoiceChannel = await self.bot.fetch_channel(radio_channel_id)
-		radio_info: discord.VoiceChannel = await self.bot.fetch_channel(1238946792297467995)
+		radio_forum: discord.ForumChannel = await self.bot.fetch_channel(1241408420284989494)
+
+		if self.radio_name=='Alpha':
+			radio_info = radio_forum.get_thread(1241410735268167810)
+		elif self.radio_name=='Beta':
+			radio_info = radio_forum.get_thread(1241410819560968243)
+		else:
+			radio_info = radio_forum.get_thread(1241410866138841188)
 		voice_client = await voice_channel.connect(reconnect=True)
 
 
@@ -407,7 +402,6 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 				await message.delete()
 		msg = await radio_info.send(embeds=[discord.Embed(title='load...'), discord.Embed(title='load...')])
 
-		await radio_voting.create_radio_vote(msg)
 		while True:
 
 
@@ -480,12 +474,6 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 			j = 0
 
 
-			songs_queue = await  radio_voting.get_vote_results(radio_info)
-
-			if songs_queue is None:
-				radio_index = 0
-			else:
-				radio_index = songs_queue
 
 
 
@@ -507,8 +495,31 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 
 			i=0
 			song_lists = []
-			album_list= radio_songs_channels[radio_index]
-			for album_name in radio_songs_channels[radio_index]:
+
+			#######
+
+
+
+			radio_album_list = []
+			i = 0
+
+
+			st = datetime.datetime.now()
+			for short_name in albums_names:
+
+				st += datetime.timedelta(seconds=album_durations[short_name])
+				radio_album_list.append(short_name)
+				for _ in range(5):
+					if i >= len(singles_names):
+						i = 0
+					st += datetime.timedelta(seconds=album_durations[singles_names[i]])
+					radio_album_list.append(singles_names[i])
+					i += 1
+
+			#####
+
+			album_list= radio_album_list
+			for album_name in radio_album_list:
 				song_lists.append([album_name, get_song_list(albums_url[album_name])])
 			def members_ids(members):
 				r = [m.id for m in members]
@@ -529,8 +540,7 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 			await admin_logs.send(f'Cycle duration: {math.floor((cycle_duration/60)/60)} h {math.floor((cycle_duration%3600) /60)} m {math.floor(cycle_duration%60)} s (next cycle: <t:{round(next_cycle_time.timestamp())}:F>)')
 			album_count = -1
 
-			radio_songs_channels, radio_channels_embeds = await radio_voting.update_radio_vote(album_short_names, singles_names,
-																		album_durations, albums_names, next_cycle_time)
+
 			for album_name, songs_list in song_lists:
 				album_count+=1
 				i+=1
@@ -613,7 +623,7 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 							embed_info.add_field(name="🧑‍🎤 Виконавець: ", value=audio_info.artist)
 							embed_info.add_field(name="⌛ Рік випуску: ", value=audio_info.year if str(audio_info.year)!='1970' else '???')
 							embed_info.add_field(name="💿 Альбом: " if (not album_name in singles_names) else "Сингл ⚡:", value=albums_names[album_name] if (not album_name in singles_names) else "Між кожним альбомом грають 5 випадкових синглів")
-							embed_info.add_field(name="📡 Якість: ", value=f'Висока (96 kb/s) (Файл {round(audio_info.bitrate)} kb/s)' if (round(audio_info.bitrate)>=96 and quality!=32) else ('Середня (32-96 kb/s)' if quality!=32 else 'Низька (32 kb/s) (Поки нікого немає у войсі вмикається низька якість аудіо, якість автоматично стане високою на наступній композиції)'))
+							embed_info.add_field(name="📡 Якість: ", value=f'Висока (96 kb/s) (Файл {round(audio_info.bitrate)} kb/s)' if (round(audio_info.bitrate)>=96 and quality!=32) else ('Середня (32-96 kb/s)' if quality!=32 else 'Низька (32 kb/s) (Поки нікого немає у войсі вмикається низька якість аудіо, дочекайтесь наступної композиції для кращої якості)'))
 							embed_info.add_field(name="⏲️ Тривалість: ",
 												 value=f"{math.floor(audio_info.duration / 60)}m {math.floor(audio_info.duration) % 60}s")
 							embed_info.add_field(name="📻 Наступний трек: ",
@@ -658,8 +668,8 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 									f"<t:{round(next_cycle_time.timestamp())}:t> Наступний цикл (довантаження нових альбомів/синглів/плейлистів) {f' (<t:{round(next_cycle_time.timestamp())}:R>)' if (i == 0) and single_check else ''}\n")
 							embed2.set_footer(text='Між кожним альбомом грають 5 випадкових синглів')
 							if len(jmespath.search("[*][0]", song_lists))==1:
-								embed2 = discord.Embed(description='Цей сингл є початком циклу музики на радіо, за ним піде черга пісень з обранного вище радіо канала (Alpha, Beta, Gamma, Delta або Epsilon)', colour=discord.Color.from_rgb(r=dcolor[0],g=dcolor[1],b=dcolor[2]))
-							await msg.edit(embeds=[embed_info,embed2],view=AlbumSongs(songs_list=songs_list,current_play=song_name,timeout=None, current_album=album_name,timetable=timetable,next_cycle_time=next_cycle_time,cycle_duration=cycle_duration,e_pages=radio_channels_embeds))
+								embed2 = discord.Embed(description='Цей сингл є початком циклу музики на радіо', colour=discord.Color.from_rgb(r=dcolor[0],g=dcolor[1],b=dcolor[2]))
+							await msg.edit(embeds=[embed_info,embed2],view=AlbumSongs(songs_list=songs_list,current_play=song_name,timeout=None, current_album=album_name,timetable=timetable,next_cycle_time=next_cycle_time,cycle_duration=cycle_duration))
 
 							sde_achievement_list = []
 

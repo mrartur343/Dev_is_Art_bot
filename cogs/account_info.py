@@ -1,5 +1,6 @@
 import json
 import os.path
+import sys
 import typing
 import discord
 from discord.ext import commands
@@ -63,6 +64,7 @@ class AdminPanel(discord.ui.View):
 		elif select.values[0] == 'poweroff':
 			await interaction.respond("Вимкнення бота!")
 			await self.bot.close()
+			sys.exit(0)
 
 class CreateAchievement(discord.ui.Modal):
 	def __init__(self, *args, **kwargs) -> None:
