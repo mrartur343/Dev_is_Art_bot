@@ -1,7 +1,9 @@
+import asyncio
+
 import discord
 from discord.ext import commands
 import os
-import asyncio
+from threading import Thread
 from cogs import account_info,collections,event_messages,radio_ua,store,without_category
 Token = "MTIyMTQwMzcwMDExNTgwMDE2NA.GPXNpX.5KvYcN1WfswDQ5Z0oJqjoT4FLUo_wMnL4uqgRs"
 
@@ -32,9 +34,13 @@ bot_g.add_cog(radio_ua.RadioUa(bot_g, 'Gamma'))
 
 print("run bot!")
 
-asyncio.run(bot.start(Token))
-asyncio.run(bot_b.start(TokenBeta))
-asyncio.run(bot_g.start(TokenGamma))
+e_loop = asyncio.get_event_loop()
+
+e_loop.create_task(bot.start(Token))
+e_loop.create_task(bot_b.start(TokenBeta))
+e_loop.create_task(bot_g.start(TokenGamma))
+
+e_loop.run_forever()
 
 
 
