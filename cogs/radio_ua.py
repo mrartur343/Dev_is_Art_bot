@@ -502,9 +502,11 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 			radio_album_list = []
 			i = 0
 
+			random.shuffle(album_short_names)
+			random.shuffle(singles_names)
 
 			st = datetime.datetime.now()
-			for short_name in albums_names:
+			for short_name in album_short_names:
 
 				st += datetime.timedelta(seconds=album_durations[short_name])
 				radio_album_list.append(short_name)
