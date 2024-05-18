@@ -554,7 +554,7 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 								if user.can_send() and not_check:
 									next_album_timestamp = (album_start_time+datetime.timedelta(seconds=album_durations[album_name])).timestamp()
 									album_notification_label = "Сингл" if album_name in singles_names else "Альбом"
-									await user.send(f"{album_notification_label} **`{albums_names[album_list[next_index2]]}`**, який ви вподобали, буде у <#1208129687231008808> <t:{round(next_album_timestamp)}:R>", view=DislikeAlbum(timeout=None,liked_album=album_name))
+									#await user.send(f"{album_notification_label} **`{albums_names[album_list[next_index2]]}`**, який ви вподобали, буде у <#1208129687231008808> <t:{round(next_album_timestamp)}:R>", view=DislikeAlbum(timeout=None,liked_album=album_name))
 				else:
 					with open("other/album_likes.json", 'r') as file:
 						album_likes = json.loads(file.read())
@@ -563,7 +563,7 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 							if user.can_send():
 								next_album_timestamp = (album_start_time+datetime.timedelta(seconds=album_durations[album_name])).timestamp()
 								album_notification_label = "Сингл" if album_name in singles_names else "Альбом"
-								await user.send(f"{album_notification_label} **`{albums_names[album_list[next_index]]}`**, який ви вподобали, буде у <#1208129687231008808> <t:{round(next_album_timestamp)}:R>", view=DislikeAlbum(timeout=None,liked_album=album_name))
+								#await user.send(f"{album_notification_label} **`{albums_names[album_list[next_index]]}`**, який ви вподобали, буде у <#1208129687231008808> <t:{round(next_album_timestamp)}:R>", view=DislikeAlbum(timeout=None,liked_album=album_name))
 				print("---songs_list---")
 				print(song_lists)
 				print("------")
@@ -575,7 +575,7 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 							file_name = songs[album_name][song_name]
 
 
-							audio_source = discord.FFmpegOpusAudio(f"songs/{album_name}/{file_name}")
+							audio_source = discord.FFmpegOpusAudio(f"songs/{album_name}/{file_name}", bitrate=64, pipe=True)
 							audio_info = TinyTag.get(f"songs/{album_name}/{file_name}", image=True)
 							if not album_name in albums_imgs:
 								image_data: bytes = audio_info.get_image()
