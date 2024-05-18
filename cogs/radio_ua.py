@@ -135,7 +135,15 @@ class AlbumSongs(discord.ui.View):
 		await paginator.update(custom_view=custom_view)
 	@discord.ui.button(label="Таймер сну", style=discord.ButtonStyle.gray, emoji="🌙") # Create a button with the label "😎 Click me!" with color Blurple
 	async def button_callback4(self, button, interaction: discord.Interaction):
-		await interaction.respond("Таймер сну автоматично від'єднає вас з голосового каналу тоді, коли вам потрібно:", view=SleepTimer(), ephemeral=True)
+		view = SleepTimer()
+		cancel_check = False
+		for k, v in radio_sleep_timers.items():
+			if interaction.user.id in v:
+				cancel_check = True
+
+		if cancel_check:
+			view.options.insert(0, discord.SelectOption(label='Вимкнути таймер', value='stop'))
+		await interaction.respond("Таймер сну автоматично від'єднає вас з голосового каналу тоді, коли вам потрібно:", view=view, ephemeral=True)
 
 class SleepTimer(discord.ui.View):
 
@@ -159,14 +167,21 @@ class SleepTimer(discord.ui.View):
 	)
 	async def select_callback(self, select: discord.ui.Select, interaction: discord.Interaction):  # the function called when the user is done selecting options
 		global radio_sleep_timers
+		for k, v in radio_sleep_timers.items():
+			if interaction.user.id in v:
+				radio_sleep_timers[k].remove(interaction.user.id)
+				if k.endswith('m'):
+					if len(v)==0:
+						del(radio_sleep_timers[k])
+		if select.values[0]=='stop':
+			await interaction.respond(f"Успішно вимкнено таймер сну ☀️", ephemeral=True)
 
-		if select.values[0].endswith('m'):
-			await interaction.respond(f"Вас автоматично від'єднає <t:{(datetime.datetime.now()+datetime.timedelta(minutes=int(select.values[0][:-1]))).timestamp()}:R>", ephemeral=True)
-			await asyncio.sleep(int(select.values[0][:-1])*60)
-			if interaction.user.voice != None:
-				if interaction.user.voice.channel.id==radio_channel_id:
-					await interaction.user.move_to(None)
-			await interaction.respond(f"Надобраніч!", ephemeral=True)
+
+		elif select.values[0].endswith('m'):
+			r_timestamp = round((datetime.datetime.now()+datetime.timedelta(minutes=int(select.values[0][:-1]))).timestamp())
+			radio_sleep_timers[f"{r_timestamp}m"] = []
+			radio_sleep_timers[f"{r_timestamp}m"].append(interaction.user.id)
+			await interaction.respond(f"Вас автоматично від'єднає <t:{r_timestamp}:R> (по завершенню трека після закінчення аймеру)", ephemeral=True)
 		else:
 			radio_sleep_timers[select.values[0]].append(interaction.user.id)
 			await interaction.respond(f"Вас автоматично від'єднає з войса по завершенню {'альбому' if select.values[0]=='album_end' else 'треку'}", ephemeral=True)
@@ -668,6 +683,21 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 										await user.send(f"Надобраніч!")
 									except:
 										pass
+							for timer_str, st_members_ids in radio_sleep_timers.items():
+								if timer_str.endswith('m'):
+									r_timestamp = int(timer_str.split('m')[0])
+									if r_timestamp<datetime.datetime.now().timestamp():
+										for m_id in st_members_ids:
+											user = await voice_channel.guild.fetch_member(m_id)
+											if user != None:
+												if user.voice != None:
+													if user.voice.channel.id == radio_channel_id:
+														await user.move_to(None)
+														radio_sleep_timers[timer_str].remove(m_id)
+												try:
+													await user.send(f"Надобраніч!")
+												except:
+													pass
 						except Exception as error:
 							await admin_logs.send(f"Помилка при завантажені трека: {song_name} ({albums_names[album_name]})\n{error}")
 							continue

@@ -64,6 +64,7 @@ async def update_radio_vote(albums_names: typing.List[str], singles_names: typin
 		random.shuffle(albums_names)
 		random.shuffle(singles_names)
 		albums_names_variations.append(albums_names[:5])
+		albums_names = albums_names[5:]
 		singles_names_variations.append(singles_names)
 
 	i = 0

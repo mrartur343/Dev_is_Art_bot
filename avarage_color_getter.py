@@ -17,12 +17,19 @@ def get_avarage_color(key_str: str):
 	# resize image
 	img = cv.resize(img, dim, interpolation=cv.INTER_AREA)
 
-	result = []
-	for i,d in enumerate(list(np.average(img, axis=(0, 1)))):
-		result.append(round(d))
+	pixels = np.float32(img.reshape(-1, 3))
+
+	n_colors = 5
+	criteria = (cv.TERM_CRITERIA_EPS + cv.TERM_CRITERIA_MAX_ITER, 200, .1)
+	flags = cv.KMEANS_RANDOM_CENTERS
+
+	_, labels, palette = cv.kmeans(pixels, n_colors, None, criteria, 10, flags)
+	_, counts = np.unique(labels, return_counts=True)
+
+	result = palette[np.argmax(counts)]
 	with open('other/average_color_cache.json', 'w') as file:
 		cache[key_str]=result
 		json.dump(cache,file)
-	return result\
+	return result
 
 #
