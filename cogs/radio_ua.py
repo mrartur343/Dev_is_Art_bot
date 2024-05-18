@@ -579,10 +579,10 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 							updated_channel: discord.VoiceChannel = await voice_channel.guild.fetch_channel(radio_channel_id)
 							print(len(updated_channel.members))
 							if len(updated_channel.members)<2:
-								print("LOW QUALITY")
+								await admin_logs.send("LOW QUALITY")
 								quality = 32
 							else:
-								print("HIGH QUALITY")
+								await admin_logs.send("HIGH QUALITY")
 
 
 
