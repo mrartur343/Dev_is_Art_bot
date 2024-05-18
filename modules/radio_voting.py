@@ -10,6 +10,7 @@ import discord
 
 radio_vote_msg: None | discord.Message = None
 vote_emojies = ['🇦', '🇧', '🇬','🇩','🇪']
+vote_embeds_colors = [discord.Colour.red(), discord.Colour.green(),discord.Colour.blue(),discord.Colour.yellow(),discord.Colour.purple()]
 
 class RadioChannelsView(discord.ui.View):
 	def __init__(self,e_pages:typing.List[discord.Embed], *args, **kwargs):
@@ -117,6 +118,7 @@ async def update_radio_vote(albums_names: typing.List[str], singles_names: typin
 
 				old_emoji = time_emoji
 			vote_embed.add_field(name=f'', value=timetable_str)
+			vote_embed.colour = vote_embeds_colors[l]
 			channel_pages.append(vote_embed)
 			l += 1
 
