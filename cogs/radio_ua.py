@@ -575,7 +575,6 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 							file_name = songs[album_name][song_name]
 
 							FFMPEG_OPTIONS = {
-								'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5',
 								'options': '-vn -b:a 64k'}
 
 							audio_source = discord.FFmpegPCMAudio(f"songs/{album_name}/{file_name}", **FFMPEG_OPTIONS)
