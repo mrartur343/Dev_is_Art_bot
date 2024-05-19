@@ -546,7 +546,7 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 				album_count+=1
 				i+=1
 				album_start_time = datetime.datetime.now()
-				next_index = album_list.index(album_name)+3
+				next_index = album_count+3
 				if next_index>=len(album_list):
 					pass
 				elif next_index==0:
@@ -571,7 +571,13 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 						album_likes = json.loads(file.read())
 						for user_like in album_likes[album_list[next_index]]:
 							user=await self.bot.fetch_user(user_like)
-							if user.can_send():
+							not_check = True
+							with open('other/notifications_off.json', 'r') as file:
+								notifications_off: typing.Dict[str, typing.List[str]] = json.loads(file.read())
+								if str(user_like) in notifications_off:
+									if album_name in notifications_off[str(user_like)]:
+										not_check = False
+							if user.can_send() and not_check:
 								next_album_timestamp = (album_start_time+datetime.timedelta(seconds=album_durations[album_name])).timestamp()
 								album_notification_label = "Сингл" if album_name in singles_names else "Альбом"
 								await user.send(f"{album_notification_label} **`{albums_names[album_list[next_index]]}`**, який ви вподобали, буде у <#{self.radio_channel_id}> <t:{round(next_album_timestamp)}:R>", view=DislikeAlbum(timeout=None,liked_album=album_name))
