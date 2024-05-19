@@ -319,7 +319,7 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 	async def spotdl(self,ctx: discord.ApplicationContext, url: discord.Option(str), single: discord.Option(bool)=False):
 
 		await ctx.respond("Успішно розпочато створення альбому!")
-		os.system(f"""python albums_downloader_command.py {url} {int(single)}""")
+		os.system(f"""python albums_downloader_command.py {url.split('?')[0]} {int(single)}""")
 		download_checker = False
 		while not download_checker:
 			with open("other/albums_data.json", 'r') as file:
@@ -668,7 +668,7 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 							if i<6:
 								embed2.description += (
 									f"<t:{round(next_cycle_time.timestamp())}:t> Наступний цикл (довантаження нових альбомів/синглів/плейлистів) {f' (<t:{round(next_cycle_time.timestamp())}:R>)' if (i == 0) and single_check else ''}\n")
-							embed2.set_footer(text='Між кожним альбомом грають 5 випадкових синглів')
+							embed2.set_footer(text='Між кожним альбомом грають 2 випадкових синглів')
 							if len(jmespath.search("[*][0]", song_lists))==1:
 								embed2 = discord.Embed(description='Цей сингл є початком циклу музики на радіо', colour=discord.Color.from_rgb(r=dcolor[0],g=dcolor[1],b=dcolor[2]))
 							await msg.edit(embeds=[embed_info,embed2],view=AlbumSongs(songs_list=songs_list,current_play=song_name,timeout=None, current_album=album_name,timetable=timetable,next_cycle_time=next_cycle_time,cycle_duration=cycle_duration))
