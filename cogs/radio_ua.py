@@ -510,7 +510,7 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 
 				st += datetime.timedelta(seconds=album_durations[short_name])
 				radio_album_list.append(short_name)
-				for _ in range(5):
+				for _ in range(2):
 					if i >= len(singles_names):
 						i = 0
 					st += datetime.timedelta(seconds=album_durations[singles_names[i]])
