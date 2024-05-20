@@ -564,9 +564,9 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 									if album_list[next_album_index] in notifications_off[str(user_like)]:
 										not_check = False
 							if user.can_send() and not_check and ((next_album_index-album_count)-1)<len(timetable):
+								print(timetable)
 								next_album_timestamp = timetable[(next_album_index-album_count)-1].timestamp()
-								album_notification_label = "Сингл" if album_list[
-									                                      next_album_index] in singles_names else "Альбом"
+								album_notification_label = "Сингл" if album_list[next_album_index] in singles_names else "Альбом"
 								await user.send(
 									f"{album_notification_label} **`{albums_names[album_list[next_album_index]]}`**, який ви вподобали, буде у <#{self.radio_channel_id}> <t:{round(next_album_timestamp)}:R>",
 									view=DislikeAlbum(timeout=None, liked_album=album_list[next_album_index]))
