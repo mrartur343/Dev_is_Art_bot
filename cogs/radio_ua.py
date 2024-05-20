@@ -547,6 +547,10 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 				i += 1
 				album_start_time = datetime.datetime.now()
 				next_index = album_count + 3
+				timetable = radio_timetable.get_album_times(jmespath.search("[*][0]", song_lists),
+				                                            album_durations, album_count,
+				                                            album_start_time + datetime.timedelta(
+					                                            seconds=album_durations[album_name]))
 
 				async def send_album_not(next_album_index: int):
 					with open("other/album_likes.json", 'r') as file:
@@ -559,10 +563,10 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 								if str(user_like) in notifications_off.keys():
 									if album_list[next_album_index] in notifications_off[str(user_like)]:
 										not_check = False
-							if user.can_send() and not_check:
-								next_album_timestamp = (album_start_time + datetime.timedelta(
-									seconds=album_durations[album_list[next_album_index]])).timestamp()
-								album_notification_label = "Сингл" if album_list[next_album_index] in singles_names else "Альбом"
+							if user.can_send() and not_check and ((next_album_index-album_count)-1)<len(timetable):
+								next_album_timestamp = (timetable[(next_album_index-album_count)-1]).timestamp()
+								album_notification_label = "Сингл" if album_list[
+									                                      next_album_index] in singles_names else "Альбом"
 								await user.send(
 									f"{album_notification_label} **`{albums_names[album_list[next_album_index]]}`**, який ви вподобали, буде у <#{self.radio_channel_id}> <t:{round(next_album_timestamp)}:R>",
 									view=DislikeAlbum(timeout=None, liked_album=album_list[next_album_index]))
@@ -631,8 +635,8 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 							if audio_info.bitrate != None:
 								embed_info.add_field(name="📡 Якість: ",
 								                     value=f'Висока (96 kb/s) (Файл {round(audio_info.bitrate)} kb/s)' if (
-											                     round(
-												                     audio_info.bitrate) >= 96 and quality != 32) else (
+										                     round(
+											                     audio_info.bitrate) >= 96 and quality != 32) else (
 									                     'Середня (32-96 kb/s)' if quality != 32 else 'Низька (32 kb/s) (Поки нікого немає у войсі вмикається низька якість аудіо, дочекайтесь наступної композиції для кращої якості)'))
 							embed_info.add_field(name="⏲️ Тривалість: ",
 							                     value=f"{math.floor(audio_info.duration / 60)}m {math.floor(audio_info.duration) % 60}s")
@@ -646,10 +650,6 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 							print(album_durations)
 							print("----")
 
-							timetable = radio_timetable.get_album_times(jmespath.search("[*][0]", song_lists),
-							                                            album_durations, album_count,
-							                                            album_start_time + datetime.timedelta(
-								                                            seconds=album_durations[album_name]))
 							i = 0
 							single_check = True
 							old_emoji = ""
