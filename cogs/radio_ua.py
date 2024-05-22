@@ -600,14 +600,8 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 							else:
 								await admin_logs.send("HIGH QUALITY")
 
-							FFMPEG_OPTIONS = {
-								'options': f'-vn -b:a {quality}k'}
-							if quality != 32:
-								audio_source = discord.FFmpegPCMAudio(f"songs/{album_name}/{file_name}",
-								                                      **FFMPEG_OPTIONS)
-							else:
-								audio_source = discord.FFmpegOpusAudio(f"songs/{album_name}/{file_name}", bitrate=32,
-								                                       options="-vn")
+
+
 							audio_info = TinyTag.get(f"songs/{album_name}/{file_name}", image=True)
 							if not album_name in albums_imgs:
 								image_data: bytes = audio_info.get_image()
@@ -710,8 +704,22 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 								                               name=f"{audio_info.title} - {audio_info.artist} | ({albums_names[album_name]})"))
 
 							try:
-								#await asyncio.sleep(1)
+								song_wait_time = 0
+								while quality==32:
+									await asyncio.sleep(1)
+									song_wait_time+=1
+
+									if len(updated_channel.members) >= 2:
+										quality = 320
+								FFMPEG_OPTIONS = {
+									'options': f'-vn -b:a {quality}k -ss {song_wait_time}'}
+								audio_source = discord.FFmpegPCMAudio(f"songs/{album_name}/{file_name}",
+								                                      **FFMPEG_OPTIONS)
+
 								await voice_client.play(audio_source, wait_finish=True)
+
+								#await asyncio.sleep(1)
+
 							except Exception as error_play:
 								if error_play.__str__() in ['Not connected to voice.',
 								                            "Cannot write to closing transport"]:
@@ -790,4 +798,4 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 
 
 async def setup(bot):  # this is called by Pycord to setup the cog
-	await bot.add_cog(RadioUa(bot))  # add the cog to the bot
+	pass  # add the cog to the bot
