@@ -4,6 +4,8 @@ import math
 import datetime
 import os
 import random
+import time
+
 import avarage_color_getter
 import jmespath
 import typing
@@ -704,15 +706,16 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 								                               name=f"{audio_info.title} - {audio_info.artist} | ({albums_names[album_name]})"))
 
 							try:
-								song_wait_time = 0
+								waiting_start_time = time.time()
 								while quality==32:
 									await asyncio.sleep(1)
-									song_wait_time+=1
+									updated_channel: discord.VoiceChannel = await voice_channel.guild.fetch_channel(
+								self.radio_channel_id)
 
 									if len(updated_channel.members) >= 2:
 										quality = 320
 								FFMPEG_OPTIONS = {
-									'options': f'-vn -b:a {quality}k -ss {song_wait_time}'}
+									'options': f'-vn -b:a {quality}k -ss {time.time()-waiting_start_time}'}
 								audio_source = discord.FFmpegPCMAudio(f"songs/{album_name}/{file_name}",
 								                                      **FFMPEG_OPTIONS)
 
