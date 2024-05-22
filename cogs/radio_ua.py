@@ -715,7 +715,7 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 									if len(updated_channel.members) >= 2:
 										quality = 320
 								FFMPEG_OPTIONS = {
-									'options': f'-vn -b:a {quality}k -ss {time.time()-waiting_start_time}'}
+									'options': f'-vn -b:a {quality}k -ss {round(time.time()-waiting_start_time)}'}
 								audio_source = discord.FFmpegPCMAudio(f"songs/{album_name}/{file_name}",
 								                                      **FFMPEG_OPTIONS)
 
