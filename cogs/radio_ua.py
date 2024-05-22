@@ -707,7 +707,8 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 
 							try:
 								waiting_start_time = time.time()
-								while quality==32:
+								wait_duration = audio_info.duration
+								while quality==32 and time.time()-waiting_start_time<wait_duration:
 									await asyncio.sleep(1)
 									updated_channel: discord.VoiceChannel = await voice_channel.guild.fetch_channel(
 								self.radio_channel_id)
@@ -718,8 +719,8 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 									'options': f'-vn -b:a {quality}k -ss {round(time.time()-waiting_start_time)}'}
 								audio_source = discord.FFmpegPCMAudio(f"songs/{album_name}/{file_name}",
 								                                      **FFMPEG_OPTIONS)
-
-								await voice_client.play(audio_source, wait_finish=True)
+								if time.time()-waiting_start_time<wait_duration:
+									await voice_client.play(audio_source, wait_finish=True)
 
 								#await asyncio.sleep(1)
 
