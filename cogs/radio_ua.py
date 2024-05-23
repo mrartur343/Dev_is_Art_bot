@@ -445,7 +445,7 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 			afk_radio: discord.VoiceChannel = await self.bot.fetch_channel(1235991951547961478)
 			await admin_logs.send(f'Cycle {datetime.datetime.now().strftime(format="%c")}')
 			if start_check:
-				await admin_logs.send("## (start)")
+				await admin_logs.send(f"## (start {self.radio_name})")
 				start_check = False
 
 			for short_name in album_short_names:
