@@ -628,9 +628,11 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 							                     value=f"{math.floor(audio_info.duration / 60)}m {math.floor(audio_info.duration) % 60}s")
 							embed_info.add_field(name="📻 Наступний трек: ",
 							                     value=f"{songs_list[songs_list.index(song_name)+1] if songs_list.index(song_name)+1<len(songs_list) else (song_lists[album_count+1][0] if album_count+1<len(song_lists) else '???')}  <t:{round((datetime.datetime.now() + datetime.timedelta(seconds=audio_info.duration)).timestamp())}:R>")
+							embed_info.set_image(url='https://cdn.discordapp.com/attachments/1208129686572638214/1243063638340669461/line.png?ex=66501cba&is=664ecb3a&hm=b136ad98ee75d5d8917f62075a3d0b9ebd286561ea49157bd1400858234bd606&')
 							embed2 = discord.Embed(title='Розпорядок наступних альбомів',
 							                       color=discord.Color.from_rgb(r=dcolor[0], g=dcolor[1], b=dcolor[2]))
 							embed2.description = ''
+							embed2.set_image(url='https://cdn.discordapp.com/attachments/1208129686572638214/1243063638340669461/line.png?ex=66501cba&is=664ecb3a&hm=b136ad98ee75d5d8917f62075a3d0b9ebd286561ea49157bd1400858234bd606&')
 							print('Albums durations\n----')
 							print(album_durations)
 							print("----")
