@@ -592,6 +592,8 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 				img1 = ImageDraw.Draw(img)
 				img1.rectangle(shape, fill='#%02x%02x%02x' % (dcolor[0], dcolor[1], dcolor[2]))
 
+				img.save('b_line.png')
+
 				file = discord.File(fp='b_line.png')
 				imgmsg = await admin_logs.send(content=".", file=file)
 				line_img_url = imgmsg.attachments[0].url
