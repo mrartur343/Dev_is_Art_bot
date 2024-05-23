@@ -5,6 +5,7 @@ import datetime
 import os
 import random
 import time
+from PIL import Image, ImageDraw
 
 import avarage_color_getter
 import jmespath
@@ -578,6 +579,23 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 				print("---songs_list---")
 				print(song_lists)
 				print("------")
+
+				dcolor = avarage_color_getter.get_avarage_color(album_name)
+
+				w, h = 8192, 64
+				shape = [(0, 0), (w, h)]
+
+				# creating new Image object
+				img = Image.new("RGB", (w, h))
+
+				# create  rectangleimage
+				img1 = ImageDraw.Draw(img)
+				img1.rectangle(shape, fill='#%02x%02x%02x' % (dcolor[0], dcolor[1], dcolor[2]))
+
+				file = discord.File(fp='b_line.png')
+				imgmsg = await admin_logs.send(content=".", file=file)
+				line_img_url = imgmsg.attachments[0].url
+
 				for song_name in songs_list:
 					if song_name in songs[album_name]:
 						try:
@@ -610,7 +628,8 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 								albums_imgs[album_name] = imgmsg.attachments[0].url
 								with open('other/albums_images_cache.json', 'w') as file:
 									json.dump(albums_imgs, file)
-							dcolor = avarage_color_getter.get_avarage_color(album_name)
+
+
 							embed_info = discord.Embed(title='Зараз грає:',
 							                           color=discord.Color.from_rgb(r=dcolor[0], g=dcolor[1],
 							                                                        b=dcolor[2]))
@@ -628,11 +647,11 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 							                     value=f"{math.floor(audio_info.duration / 60)}m {math.floor(audio_info.duration) % 60}s")
 							embed_info.add_field(name="📻 Наступний трек: ",
 							                     value=f"{songs_list[songs_list.index(song_name)+1] if songs_list.index(song_name)+1<len(songs_list) else (song_lists[album_count+1][0] if album_count+1<len(song_lists) else '???')}  <t:{round((datetime.datetime.now() + datetime.timedelta(seconds=audio_info.duration)).timestamp())}:R>")
-							embed_info.set_image(url='https://cdn.discordapp.com/attachments/1208129686572638214/1243063638340669461/line.png?ex=66501cba&is=664ecb3a&hm=b136ad98ee75d5d8917f62075a3d0b9ebd286561ea49157bd1400858234bd606&')
+							embed_info.set_image(url=line_img_url)
 							embed2 = discord.Embed(title='Розпорядок наступних альбомів',
 							                       color=discord.Color.from_rgb(r=dcolor[0], g=dcolor[1], b=dcolor[2]))
 							embed2.description = ''
-							embed2.set_image(url='https://cdn.discordapp.com/attachments/1208129686572638214/1243063638340669461/line.png?ex=66501cba&is=664ecb3a&hm=b136ad98ee75d5d8917f62075a3d0b9ebd286561ea49157bd1400858234bd606&')
+							embed2.set_image(url=line_img_url)
 							print('Albums durations\n----')
 							print(album_durations)
 							print("----")
