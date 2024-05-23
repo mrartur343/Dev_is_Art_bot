@@ -403,11 +403,6 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 			radio_info = radio_forum.get_thread(1241410866138841188)
 		voice_client = await voice_channel.connect(reconnect=True)
 
-		singles_names = []
-		with open('other/singles_names.json', 'r') as file:
-			singles_names = json.loads(file.read())
-
-		radio_songs_channels = [[random.choice(singles_names)]]
 
 		async for message in radio_info.history():
 			if message.author.id == self.bot.user.id:
@@ -628,17 +623,11 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 							embed_info.add_field(name="💿 Альбом: " if (not album_name in singles_names) else "Сингл ⚡:",
 							                     value=albums_names[album_name] if (
 								                     not album_name in singles_names) else "Між кожним альбомом грають 5 випадкових синглів")
-							if audio_info.bitrate != None:
-								embed_info.add_field(name="📡 Якість: ",
-								                     value=f'Висока (96 kb/s) (Файл {round(audio_info.bitrate)} kb/s)' if (
-										                     round(
-											                     audio_info.bitrate) >= 96 and quality != 32) else (
-									                     'Середня (32-96 kb/s)' if quality != 32 else 'Низька (32 kb/s) (Поки нікого немає у войсі вмикається низька якість аудіо, дочекайтесь наступної композиції для кращої якості)'))
+
 							embed_info.add_field(name="⏲️ Тривалість: ",
 							                     value=f"{math.floor(audio_info.duration / 60)}m {math.floor(audio_info.duration) % 60}s")
 							embed_info.add_field(name="📻 Наступний трек: ",
-							                     value=f"<t:{round((datetime.datetime.now() + datetime.timedelta(seconds=audio_info.duration)).timestamp())}:R>")
-
+							                     value=f"{songs_list[songs_list.index(song_name)+1] if songs_list.index(song_name)+1<len(songs_list) else (song_lists[album_count+1][0] if album_count+1<len(song_lists) else '???')}  <t:{round((datetime.datetime.now() + datetime.timedelta(seconds=audio_info.duration)).timestamp())}:R>")
 							embed2 = discord.Embed(title='Розпорядок наступних альбомів',
 							                       color=discord.Color.from_rgb(r=dcolor[0], g=dcolor[1], b=dcolor[2]))
 							embed2.description = ''
