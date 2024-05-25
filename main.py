@@ -5,6 +5,7 @@ from discord.ext import commands
 import os
 import asyncio
 from cogs import account_info,collections,event_messages,radio_ua,store,without_category
+os.system('pip install psutil')
 Token = "MTIyMTQwMzcwMDExNTgwMDE2NA.GPXNpX.5KvYcN1WfswDQ5Z0oJqjoT4FLUo_wMnL4uqgRs"
 intents: discord.Intents = discord.Intents.all()
 

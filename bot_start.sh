@@ -1,1 +1,1 @@
-pkill python3 ;git pull;screen python3 main.py;screen python3 mainBeta.py;screen python3 mainGamma.py
+pkill python3;git pull;nohup python3 main.py &;nohup python3 mainBeta.py &;nohup python3 mainGamma.py &
