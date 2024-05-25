@@ -1,4 +1,4 @@
-import cv2 as cv
+import cv
 import numpy as np
 import json
 from skimage import io
