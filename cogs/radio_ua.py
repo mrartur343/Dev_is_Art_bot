@@ -204,6 +204,7 @@ class GeneralRadioInfo(discord.ui.View):
 			for t in format_tuple[:25]:
 				embed.add_field(name=album_line(t), value='')
 			format_tuple = format_tuple[25:]
+			embeds.append(embed)
 
 		embeds[-1].set_footer(text=f'A: {len(format_tuple)-len(singles_names)}, S: {len(singles_names)}, Всього {math.floor((all_time / 60) / 60)} h {math.floor((all_time % 3600) / 60)} m {math.floor(all_time % 60)} s')
 		await interaction.respond(embeds=embeds, ephemeral=True)
