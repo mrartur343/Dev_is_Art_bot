@@ -13,6 +13,6 @@ print(f"cogs: {os.listdir('./cogs')}")
 
 bot.add_cog(radio_ua.RadioUa(bot, 'Gamma'))
 
-print("run Alpha bot!")
+print("run Gamma bot!")
 
 bot.run(TokenGamma)

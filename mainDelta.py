@@ -4,15 +4,15 @@ import discord
 from discord.ext import commands
 import os
 from cogs import radio_ua
-TokenBeta = "MTI0MTQwMTg0NTU4NzM3ODIzNw.G_Ety0.cKSf83Si70DljbTYtY6SL5gYBrFLpQYMkMWDG4"
+TokenDelta = "MTI0Njk0MzcyOTUxMjc0MzAwNQ.G5z7CR.R5-A0uZ9IdcnKlqjtHZoXs8zjncLqsZ-IzqfmY"
 intents: discord.Intents = discord.Intents.all()
 
 bot = commands.Bot(intents=intents,command_prefix='....')
 print(f"cogs: {os.listdir('./cogs')}")
 
 
-bot.add_cog(radio_ua.RadioUa(bot, 'Beta'))
+bot.add_cog(radio_ua.RadioUa(bot, 'Delta'))
 
-print("run Beta bot!")
+print("run Delta bot!")
 
-bot.run(TokenBeta)
+bot.run(TokenDelta)

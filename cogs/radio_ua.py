@@ -370,16 +370,11 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 			self.radio_channel_id = 1208129687231008808
 		elif radio_name == 'Beta':
 			self.radio_channel_id = 1241401097034268702
-			for command in self.bot.application_commands:
-				if command.name == 'spotdl':
-					self.bot.remove_application_command(command)
-					break
-		else:
+		elif radio_name == 'Gamma':
 			self.radio_channel_id = 1241401134170640455
-			for command in self.bot.application_commands:
-				if command.name == 'spotdl':
-					self.bot.remove_application_command(command)
-					break
+		else:
+			self.radio_channel_id = 1246941666045198367
+
 
 	@commands.Cog.listener()
 	async def on_ready(self):
@@ -392,19 +387,34 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 		radio_forum: discord.ForumChannel = await self.bot.fetch_channel(1241408420284989494)
 
 		if self.radio_name == 'Alpha':
-			radio_info = radio_forum.get_thread(1241410735268167810)
+			radio_info = radio_forum.get_thread(1246944941721260092)
 			general_radio_info = radio_forum.get_thread(1241410417985720411)
 			async for message in general_radio_info.history():
 				if message.author.id == self.bot.user.id:
 					await message.delete()
-
-
-
-
 		elif self.radio_name == 'Beta':
-			radio_info = radio_forum.get_thread(1241410819560968243)
+			radio_info = radio_forum.get_thread(1246944795897626726)
+		elif self.radio_name == 'Gamma':
+			radio_info = radio_forum.get_thread(1246944747621322782)
 		else:
-			radio_info = radio_forum.get_thread(1241410866138841188)
+			radio_info = radio_forum.get_thread(1246944596961919027)
+
+
+
+		if self.radio_name == 'Alpha':
+			with open('other/radio_playlists.json', 'r') as file:
+				radio_playlist = json.loads(file.read())['1']
+		elif self.radio_name == 'Beta':
+			with open('other/radio_playlists.json', 'r') as file:
+				radio_playlist = json.loads(file.read())['2']
+		elif self.radio_name == 'Gamma':
+			with open('other/radio_playlists.json', 'r') as file:
+				radio_playlist = json.loads(file.read())['3']
+		else:
+			with open('other/radio_playlists.json', 'r') as file:
+				radio_playlist = json.loads(file.read())['4']
+
+
 		voice_client = await voice_channel.connect(reconnect=True)
 
 
@@ -419,13 +429,18 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 
 			songs = {}
 			with open('other/albums_data.json', 'r') as file:
-				album_data_json = json.loads(file.read())
+				album_data_json_nf = json.loads(file.read())
+				album_data_json = {}
+				for ak, ad in album_data_json_nf.items():
+					if ak in radio_playlist:
+						album_data_json[ak] = ad
 			singles_names = []
 			with open('other/singles_names.json', 'r') as file:
-				singles_names = json.loads(file.read())
-			playlists_names = []
-			with open('other/playlists_names.json', 'r') as file:
-				playlists_names = json.loads(file.read())
+				singles_names_nf = json.loads(file.read())
+				singles_names = []
+				for s_name in singles_names_nf:
+					if s_name in radio_playlist:
+						singles_names.append(s_name)
 			albums_names = {}
 			albums_url = {}
 			for short_name, info in album_data_json.items():
@@ -474,13 +489,9 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 			song_lists = []
 			random.shuffle(singles_names)
 			random.shuffle(album_short_names)
-			random.shuffle(playlists_names)
 			for single_name in singles_names:
 				if single_name in album_short_names:
 					album_short_names.remove(single_name)
-			for playlist_name in playlists_names:
-				if playlist_name in album_short_names:
-					album_short_names.remove(playlist_name)
 			i = 0
 			album_list = []
 			st = datetime.datetime.now()
@@ -688,10 +699,8 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 										embed2.description += f"⚡ <t:{round(v.timestamp())}:t> Випадковий сингл (<t:{round(v.timestamp())}:R>)\n"
 										embed2.description += "-----\n"
 									elif (not k in singles_names) and k != album_name:
-										if k in playlists_names:
-											embed2.description += f'📜 '
 										embed2.description += (
-											f"<t:{round(v.timestamp())}:t> {albums_names[k]} {f' (<t:{round(v.timestamp())}:R>)' if (i == 0) and single_check else ''}{' (плейлист)' if k in playlists_names else ''}\n")
+											f"<t:{round(v.timestamp())}:t> {albums_names[k]} {f' (<t:{round(v.timestamp())}:R>)' if (i == 0) and single_check else ''}\n")
 										i += 1
 
 								old_emoji = time_emoji
