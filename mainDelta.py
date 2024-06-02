@@ -4,7 +4,7 @@ import discord
 from discord.ext import commands
 import os
 from cogs import radio_ua
-TokenDelta = "MTI0Njk0MzcyOTUxMjc0MzAwNQ.G5z7CR.R5-A0uZ9IdcnKlqjtHZoXs8zjncLqsZ-IzqfmY"
+TokenDelta = "MTI0Njk0MzcyOTUxMjc0MzAwNQ.G2K42w.jBuL0fvHyn0bhJFPSEEJScjQV09F2OqBHfm8-w"
 intents: discord.Intents = discord.Intents.all()
 
 bot = commands.Bot(intents=intents,command_prefix='....')
