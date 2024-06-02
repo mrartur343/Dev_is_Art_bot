@@ -1,5 +1,6 @@
 pkill python3
 git pull
-nohup python3 main.py &
-nohup python3 mainBeta.py &
-python3 mainGamma.py
+screen python3 main.py
+screen python3 mainBeta.py
+screen python3 mainGamma.py
+screen python3 mainDelta.py
