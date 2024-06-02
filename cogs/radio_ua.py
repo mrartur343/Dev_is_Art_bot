@@ -168,8 +168,9 @@ class AlbumSongs(discord.ui.View):
 
 class GeneralRadioInfo(discord.ui.View):
 
-	def __init__(self, *items):
+	def __init__(self,all_radio_time, *items):
 		super().__init__(timeout=None, *items)
+		self.all_radio_time = all_radio_time
 
 	@discord.ui.button(label="Всі альбоми/сингли", style=discord.ButtonStyle.gray, emoji="📜")
 	async def all_albums_singles(self, button, interaction: discord.Interaction):
@@ -177,14 +178,12 @@ class GeneralRadioInfo(discord.ui.View):
 			album_data_json: typing.Dict = json.loads(file.read())
 
 		format_tuple = []
-		all_time = 0.0
+		all_time = self.all_radio_time
 		for k,v in album_data_json.items():
 			format_tuple.append((k,v))
 
 
 		def sort_alg(t):
-			nonlocal all_time
-			all_time += TinyTag.get(f'songs/{t[0]}',image=False).duration
 			return os.path.getctime(f'songs/{t[0]}')
 
 
@@ -391,7 +390,7 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 				if message.author.id == self.bot.user.id:
 					await message.delete()
 
-			await general_radio_info.send("Додаткова інформація:", view=GeneralRadioInfo())
+
 
 
 		elif self.radio_name == 'Beta':
@@ -456,6 +455,13 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 					if audio_info.duration != None:
 						d += audio_info.duration
 				album_durations[k] = round(d)
+
+			all_radio_time=0.0
+
+			for duration in  album_durations.values():
+				all_radio_time+=duration
+			if self.radio_name=='Alpha':
+				await general_radio_info.send("Додаткова інформація:", view=GeneralRadioInfo(all_radio_time=all_radio_time))
 
 			song_lists = []
 			random.shuffle(singles_names)
