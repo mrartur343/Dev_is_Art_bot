@@ -374,17 +374,6 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 					self.bot.remove_application_command(command)
 					break
 
-	async def web_radio_play(self):
-		with open('radio_play_info.json', 'r') as file:
-			radio_play_info = json.loads(file.read())
-
-		if not self.radio_name in radio_play_info:
-			radio_play_info[self.radio_name]={
-				'song_path': '',
-				'start_timestamp ': '',
-			}
-
-
 	@commands.Cog.listener()
 	async def on_ready(self):
 		print("Radio: ON")
