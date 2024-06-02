@@ -17,6 +17,7 @@ def get_album_name_and_key(url: str):
 
 album_url = sys.argv[1]
 single_check = bool(int(sys.argv[2]))
+radio_playlist = sys.argv[3]
 
 print(album_url)
 
@@ -44,6 +45,11 @@ if single_check:
 	with open("other/singles_names.json", 'w') as file:
 		json.dump(singles,file)
 
+with open("other/radio_playlists.json", 'r') as file:
+	radio_playlists = json.loads(file.read())
+radio_playlists[radio_playlist].append(album_key)
+with open("other/radio_playlists.json", 'w') as file:
+	json.dump(radio_playlists,file)
 print(f"Успішно створено [**{album_name}**]({album_url}) ({album_key})")
 
 
