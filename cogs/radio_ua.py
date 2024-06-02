@@ -425,7 +425,11 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 
 		while True:
 
-			album_short_names = [f for f in listdir('songs')]
+			album_short_names_nf = [f for f in listdir('songs')]
+			album_short_names=[]
+			for asn_nf in album_short_names_nf:
+				if asn_nf in radio_playlist:
+					album_short_names.append(asn_nf)
 
 			songs = {}
 			with open('other/albums_data.json', 'r') as file:
