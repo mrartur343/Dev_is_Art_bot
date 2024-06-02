@@ -197,7 +197,7 @@ class GeneralRadioInfo(discord.ui.View):
 		embed.description=''
 
 		def album_line(t):
-			return f"\n{t[1][0]} ({'s' if t[0] in singles_names else 'a'})"
+			return (f"\n{t[1][0]} ({'s' if t[0] in singles_names else 'a'})")[:25]
 
 		for t in format_tuple[:50]:
 			embed.add_field(name =album_line(t),value='')
