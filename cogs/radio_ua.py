@@ -23,6 +23,9 @@ from tinytag import TinyTag
 radio_sleep_timers: typing.Dict[str, typing.List[int]] = {'song_end': [], 'album_end': []}
 
 
+
+
+
 class AlbumSongs(discord.ui.View):
 	def __init__(self, songs_list: typing.List[str], current_play: str, current_album: str, timeout: float | None,
 	             timetable: typing.Dict[str, datetime.datetime], next_cycle_time: datetime.datetime,
@@ -163,6 +166,41 @@ class AlbumSongs(discord.ui.View):
 		await interaction.respond("Таймер сну автоматично від'єднає вас з голосового каналу тоді, коли вам потрібно:",
 		                          view=view, ephemeral=True)
 
+class GeneralRadioInfo(discord.ui.View):
+
+	def __init__(self, *items):
+		super().__init__(timeout=None, *items)
+
+	@discord.ui.button(label="Всі альбоми/сингли", style=discord.ButtonStyle.gray, emoji="📜")
+	async def all_albums_singles(self, button, interaction: discord.Interaction):
+		with open('other/albums_data.json', 'r') as file:
+			album_data_json: typing.Dict = json.loads(file.read())
+
+		format_tuple = []
+		all_time = 0.0
+		for k,v in album_data_json.items():
+			format_tuple.append((k,v))
+
+
+		def sort_alg(t):
+			nonlocal all_time
+			all_time += TinyTag.get(f'songs/{t[0]}',image=False).duration
+			return os.stat(f'songs/{t[0]}').st_birthtime
+
+
+		format_tuple.sort(key=sort_alg)
+
+		singles_names = []
+		with open('other/singles_names.json', 'r') as file:
+			singles_names = json.loads(file.read())
+
+		embed = discord.Embed(title='Всі треки')
+		embed.description=''
+		for t in format_tuple:
+			embed.description+=f"{t[1][0]} ({'s' if t[0] in singles_names else 'a'}) (<t:{round(os.stat(f'songs/{t[0]}').st_birthtime)}:d>)"[:32]
+
+		embed.set_footer(text=f'A: {len(format_tuple)-len(singles_names)}, S: {len(singles_names)}, Всього {math.floor((all_time / 60) / 60)} h {math.floor((all_time % 3600) / 60)} m {math.floor(all_time % 60)} s')
+		await interaction.respond(embed=embed, ephemeral=True)
 
 class SleepTimer(discord.ui.View):
 	options = []
@@ -325,66 +363,27 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 			self.radio_channel_id = 1208129687231008808
 		elif radio_name == 'Beta':
 			self.radio_channel_id = 1241401097034268702
-			for command in self.bot.commands:
+			for command in self.bot.application_commands:
 				if command.name == 'spotdl':
 					self.bot.remove_application_command(command)
 					break
 		else:
 			self.radio_channel_id = 1241401134170640455
-			for command in self.bot.commands:
+			for command in self.bot.application_commands:
 				if command.name == 'spotdl':
 					self.bot.remove_application_command(command)
 					break
 
-	@discord.slash_command(name="spotdl", description='Лише для адмінів')
-	@commands.has_permissions(administrator=True)
-	async def spotdl(self, ctx: discord.ApplicationContext, url: discord.Option(str),
-	                 single: discord.Option(bool) = False):
+	async def web_radio_play(self):
+		with open('radio_play_info.json', 'r') as file:
+			radio_play_info = json.loads(file.read())
 
-		await ctx.respond("Успішно розпочато створення альбому!")
-		os.system(f"""python albums_downloader_command.py {url.split('?')[0]} {int(single)}""")
-		download_checker = False
-		while not download_checker:
-			with open("other/albums_data.json", 'r') as file:
-				a_data = json.loads(file.read())
-				urls = []
-				for k, v in a_data.items():
-					urls.append(v[1])
-			if url in urls:
-				download_checker = True
+		if not self.radio_name in radio_play_info:
+			radio_play_info[self.radio_name]={
+				'song_path': '',
+				'start_timestamp ': '',
+			}
 
-		await ctx.respond("Альбом успішно створено!")
-
-	@commands.Cog.listener()
-	async def on_voice_state_update(self, member: discord.Member, before, after):
-
-		try:
-			achannel: discord.VoiceChannel = after.channel
-			bchannel: discord.VoiceChannel = after.channel
-
-			if not (achannel is None):
-				achannel_id = achannel.id
-			else:
-				achannel_id = 0
-
-			if not (bchannel is None):
-				bchannel_id = bchannel.id
-			else:
-				bchannel_id = 0
-
-			if member.id != self.bot.user.id:
-				if achannel_id == self.radio_channel_id:
-					guild: discord.Guild = achannel.guild
-					normal_radio = await guild.fetch_channel(self.radio_channel_id)
-					await (await guild.fetch_member(self.bot.user.id)).move_to(normal_radio)
-				elif bchannel_id == self.radio_channel_id and achannel_id != self.radio_channel_id:
-					guild: discord.Guild = bchannel.guild
-					afk_radio = await guild.fetch_channel(1235991951547961478)
-					await (await guild.fetch_member(self.bot.user.id)).move_to(afk_radio)
-
-			print(f'ovsu m: {member.name} b: {before.channel} a: {after.channel}')
-		except:
-			pass
 
 	@commands.Cog.listener()
 	async def on_ready(self):
@@ -398,6 +397,14 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 
 		if self.radio_name == 'Alpha':
 			radio_info = radio_forum.get_thread(1241410735268167810)
+			general_radio_info = radio_forum.get_thread(1241410417985720411)
+			async for message in general_radio_info.history():
+				if message.author.id == self.bot.user.id:
+					await message.delete()
+
+			await general_radio_info.send("Додаткова інформація:", view=GeneralRadioInfo())
+
+
 		elif self.radio_name == 'Beta':
 			radio_info = radio_forum.get_thread(1241410819560968243)
 		else:
@@ -643,12 +650,12 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 							                     value=audio_info.year if str(audio_info.year) != '1970' else '???')
 							embed_info.add_field(name="💿 Альбом: " if (not album_name in singles_names) else "Сингл ⚡:",
 							                     value=albums_names[album_name] if (
-								                     not album_name in singles_names) else "Між кожним альбомом грають 5 випадкових синглів")
+								                     not album_name in singles_names) else "Між кожним альбомом грають 2 випадкових сингла")
 
 							embed_info.add_field(name="⏲️ Тривалість: ",
 							                     value=f"{math.floor(audio_info.duration / 60)}m {math.floor(audio_info.duration) % 60}s")
 							embed_info.add_field(name="📻 Наступний трек: ",
-							                     value=f"{songs_list[songs_list.index(song_name)+1] if songs_list.index(song_name)+1<len(songs_list) else (song_lists[album_count+1][0] if album_count+1<len(song_lists) else '???')}  <t:{round((datetime.datetime.now() + datetime.timedelta(seconds=audio_info.duration)).timestamp())}:R>")
+							                     value=f"{songs_list[songs_list.index(song_name)+1] if songs_list.index(song_name)+1<len(songs_list) else (f'{song_lists[album_count + 1][1][0]} з {albums_names[song_lists[album_count + 1][0]]}' if album_count+1<len(song_lists) else '???')}  <t:{round((datetime.datetime.now() + datetime.timedelta(seconds=audio_info.duration)).timestamp())}:R>")
 							embed_info.set_image(url=line_img_url)
 							embed2 = discord.Embed(title='Розпорядок наступних альбомів',
 							                       color=discord.Color.from_rgb(r=dcolor[0], g=dcolor[1], b=dcolor[2]))
