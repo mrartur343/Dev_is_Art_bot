@@ -185,7 +185,7 @@ class GeneralRadioInfo(discord.ui.View):
 		def sort_alg(t):
 			nonlocal all_time
 			all_time += TinyTag.get(f'songs/{t[0]}',image=False).duration
-			return os.stat(f'songs/{t[0]}').st_birthtime
+			return os.path.getctime(f'songs/{t[0]}')
 
 
 		format_tuple.sort(key=sort_alg)
@@ -197,7 +197,7 @@ class GeneralRadioInfo(discord.ui.View):
 		embed = discord.Embed(title='Всі треки')
 		embed.description=''
 		for t in format_tuple:
-			embed.description+=f"{t[1][0]} ({'s' if t[0] in singles_names else 'a'}) (<t:{round(os.stat(f'songs/{t[0]}').st_birthtime)}:d>)"[:32]
+			embed.description+=f"{t[1][0]} ({'s' if t[0] in singles_names else 'a'}) (<t:{round(os.path.getctime(f'songs/{t[0]}'))}:d>)"[:32]
 
 		embed.set_footer(text=f'A: {len(format_tuple)-len(singles_names)}, S: {len(singles_names)}, Всього {math.floor((all_time / 60) / 60)} h {math.floor((all_time % 3600) / 60)} m {math.floor(all_time % 60)} s')
 		await interaction.respond(embed=embed, ephemeral=True)
