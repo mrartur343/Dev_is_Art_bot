@@ -193,22 +193,20 @@ class GeneralRadioInfo(discord.ui.View):
 		with open('other/singles_names.json', 'r') as file:
 			singles_names = json.loads(file.read())
 
-		embed = discord.Embed(title='Всі треки')
-		embed.description=''
 
 		def album_line(t):
-			return (f"\n{t[1][0]} ({'s' if t[0] in singles_names else 'a'})")[:25]
+			return (f"\n{t[1][0]} ({'s' if t[0] in singles_names else 'a'})")
 
-		for t in format_tuple[:50]:
-			embed.add_field(name =album_line(t),value='')
-		embed2 = discord.Embed(title='Всі треки')
-		embed2.description=''
+		embeds = []
+		for i in range(4):
+			embed = discord.Embed(title='Всі треки')
+			embed.description=''
+			for t in format_tuple[:25]:
+				embed.add_field(name=album_line(t), value='')
+			format_tuple = format_tuple[25:]
 
-		for t in format_tuple[50:]:
-			embed2.add_field(name =album_line(t),value='')
-
-		embed2.set_footer(text=f'A: {len(format_tuple)-len(singles_names)}, S: {len(singles_names)}, Всього {math.floor((all_time / 60) / 60)} h {math.floor((all_time % 3600) / 60)} m {math.floor(all_time % 60)} s')
-		await interaction.respond(embeds=[embed,embed2], ephemeral=True)
+		embeds[-1].set_footer(text=f'A: {len(format_tuple)-len(singles_names)}, S: {len(singles_names)}, Всього {math.floor((all_time / 60) / 60)} h {math.floor((all_time % 3600) / 60)} m {math.floor(all_time % 60)} s')
+		await interaction.respond(embeds=embeds, ephemeral=True)
 
 class SleepTimer(discord.ui.View):
 	options = []
