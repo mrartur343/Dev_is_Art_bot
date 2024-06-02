@@ -195,11 +195,20 @@ class GeneralRadioInfo(discord.ui.View):
 
 		embed = discord.Embed(title='Всі треки')
 		embed.description=''
-		for t in format_tuple:
-			embed.description+=f"{t[1][0]} ({'s' if t[0] in singles_names else 'a'}) (<t:{round(os.path.getctime(f'songs/{t[0]}'))}:d>)"[:32]
 
-		embed.set_footer(text=f'A: {len(format_tuple)-len(singles_names)}, S: {len(singles_names)}, Всього {math.floor((all_time / 60) / 60)} h {math.floor((all_time % 3600) / 60)} m {math.floor(all_time % 60)} s')
-		await interaction.respond(embed=embed, ephemeral=True)
+		def album_line(t):
+			return f"\n{t[1][0]} ({'s' if t[0] in singles_names else 'a'}) (<t:{round(os.path.getctime(f'songs/{t[0]}'))}:d>)"
+
+		for t in format_tuple[:50]:
+			embed.description += album_line(t)
+		embed2 = discord.Embed(title='Всі треки')
+		embed2.description=''
+
+		for t in format_tuple[50:]:
+			embed2.description += album_line(t)
+
+		embed2.set_footer(text=f'A: {len(format_tuple)-len(singles_names)}, S: {len(singles_names)}, Всього {math.floor((all_time / 60) / 60)} h {math.floor((all_time % 3600) / 60)} m {math.floor(all_time % 60)} s')
+		await interaction.respond(embeds=[embed,embed2], ephemeral=True)
 
 class SleepTimer(discord.ui.View):
 	options = []
