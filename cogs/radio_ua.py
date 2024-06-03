@@ -224,6 +224,8 @@ class MoveAlbumToRadio(discord.ui.View):
 				if not self.album_key in radio_playlist:
 					radio_playlist.append(self.album_key)
 			radio_playlists[str(i + 1)]=radio_playlist
+			with open('other/radio_playlists.json', 'w') as file:
+				json.dump(radio_playlists,file)
 
 
 
