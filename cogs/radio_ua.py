@@ -165,13 +165,15 @@ class AlbumSongs(discord.ui.View):
 
 
 class RadioPlaylistsView(discord.ui.View):
-	def __init__(self, *args, **kwargs):
+	def __init__(self,general_radio_ingo_channel,msg_id, *args, **kwargs):
+		self.general_radio_ingo_channel: discord.Thread = general_radio_ingo_channel
+		self.msg_id: int = msg_id
 		super().__init__(timeout=None, *args)
 
 	@discord.ui.button(label="Змінити радіо", style=discord.ButtonStyle.gray,
 	                   emoji="📻")
 	async def button_callback1(self, button, interaction: discord.Interaction):
-		om: discord.Message = self._message
+		om: discord.Message = await self.general_radio_ingo_channel.fetch_message(self.msg_id)
 		await interaction.respond(f'Переміщення альбому/синглу {om.embeds[0].title}:',
 		                          ephemeral=True, view=MoveAlbumToRadio(om.embeds[0].footer)) # Send a message when the button is clicked
 
@@ -237,6 +239,7 @@ class GeneralRadioInfo(discord.ui.View):
 	@discord.ui.button(label="Всі альбоми/сингли", style=discord.ButtonStyle.gray, emoji="📜")
 	async def all_albums_singles(self, button, interaction: discord.Interaction):
 		radio_playlists_groups: typing.List[pages.PageGroup] = []
+		interaction_message = await interaction.respond(embed=discord.Embed(title='wait...'),ephemeral=True)
 
 		with open('other/albums_data.json', 'r') as file:
 			album_data_json_nf: typing.Dict = json.loads(file.read())
@@ -289,7 +292,7 @@ class GeneralRadioInfo(discord.ui.View):
 			radio_group = pages.PageGroup(
 				radio_pages,
 				label=radio_name,
-				custom_view=RadioPlaylistsView()
+				custom_view=RadioPlaylistsView(interaction_message.channel,interaction_message.id)
 
 			)
 			radio_playlists_groups.append(radio_group)
@@ -299,10 +302,11 @@ class GeneralRadioInfo(discord.ui.View):
 		radio_paginator = pages.Paginator(
 			pages=radio_playlists_groups,
 			timeout=899,
-			show_menu=True
+			show_menu=True,
+			custom_view=RadioPlaylistsView(interaction_message.channel,interaction_message.id)
 		)
 
-		await radio_paginator.respond(interaction, ephemeral=True)
+		await radio_paginator.edit(interaction_message)
 
 
 class SleepTimer(discord.ui.View):
