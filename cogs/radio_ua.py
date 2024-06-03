@@ -235,8 +235,9 @@ class MoveAlbumToRadio(discord.ui.View):
 class GeneralRadioInfo(discord.ui.View):
 
 	def __init__(self, all_radio_time, *items):
-		super().__init__(timeout=None, *items)
+		super().__init__(*items)
 		self.all_radio_time = all_radio_time
+		self.timeout=None
 
 	@discord.ui.button(label="Всі альбоми/сингли", style=discord.ButtonStyle.gray, emoji="📜")
 	async def all_albums_singles(self, button, interaction: discord.Interaction):
