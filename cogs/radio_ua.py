@@ -307,7 +307,8 @@ class GeneralRadioInfo(discord.ui.View):
 
 		pmsg = await radio_paginator.respond(interaction,ephemeral=True)
 		custom_v =RadioPlaylistsView(pmsg.channel,pmsg.id)
-		custom_v.disable_all_items()
+		if not interaction.user.id in [658217734814957578, 1154105417283150034, 499940320088293377, 767783132031352884]:
+			custom_v.disable_all_items()
 		for i in range(4):
 			radio_playlists_groups[i].custom_view=custom_v
 
