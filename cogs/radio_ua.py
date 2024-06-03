@@ -244,7 +244,7 @@ class GeneralRadioInfo(discord.ui.View):
 
 			with open('other/radio_playlists.json', 'r') as file:
 				radio_playlist = json.loads(file.read())[str(i + 1)]
-			with open('other/album_images_cache.json', 'r') as file:
+			with open('other/albums_images_cache.json', 'r') as file:
 				album_images_cache = json.loads(file.read())
 			with open('other/songs_lists_cache.json', 'r') as file:
 				songs_lists_cache = json.loads(file.read())
