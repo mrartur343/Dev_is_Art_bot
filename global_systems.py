@@ -7,9 +7,9 @@ ptimer = time.time()
 
 exit_check = False
 while not exit_check:
-	time.sleep(5)
 	batery: psutil._common.sbattery = psutil.sensors_battery()
 	print(f"Battery: {batery.percent}")
+	time.sleep(10)
 	ptimer = time.time()
 	if batery.percent<25:
 		with open('logs/auto_poweroff.txt', 'w') as file:
