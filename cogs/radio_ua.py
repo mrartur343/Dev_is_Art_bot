@@ -257,7 +257,7 @@ class GeneralRadioInfo(discord.ui.View):
 					album_data_json[ak] = ad
 
 			radio_pages: typing.List[discord.Embed] = []
-
+			print(album_data_json)
 			all_time = 0
 			for k in album_data_json.keys():
 				d = 0
@@ -277,9 +277,11 @@ class GeneralRadioInfo(discord.ui.View):
 					embed.description = ''
 					for song_name in songs_lists_cache[v[1]]:
 						embed.description += f"> - {song_name}\n"
+				print(v[0])
 				embed.set_footer(
 					text=f'A: {len(album_data_json.keys()) - len(singles_names)}, S: {len(singles_names)}, Всього {math.floor((all_time / 60) / 60)} h {math.floor((all_time % 3600) / 60)} m {math.floor(all_time % 60)} s')
 				radio_pages.append(embed)
+
 			radio_group = pages.PageGroup(
 				radio_pages,
 				label=radio_name
@@ -287,7 +289,7 @@ class GeneralRadioInfo(discord.ui.View):
 			radio_playlists_groups.append(radio_group)
 
 		radio_paginator = pages.Paginator(
-			radio_playlists_groups,
+			pages=radio_playlists_groups,
 			timeout=None
 		)
 
