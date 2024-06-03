@@ -296,7 +296,7 @@ class GeneralRadioInfo(discord.ui.View):
 
 		radio_paginator = pages.Paginator(
 			pages=radio_playlists_groups,
-			timeout=900,
+			timeout=899,
 			show_menu=True
 		)
 
