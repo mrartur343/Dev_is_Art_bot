@@ -306,7 +306,7 @@ class GeneralRadioInfo(discord.ui.View):
 			custom_view=RadioPlaylistsView(interaction_message.channel,interaction_message.id)
 		)
 
-		await radio_paginator.edit(interaction_message)
+		await radio_paginator.edit(interaction_message.interaction)
 
 
 class SleepTimer(discord.ui.View):
