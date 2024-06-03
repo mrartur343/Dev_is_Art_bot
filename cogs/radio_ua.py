@@ -171,14 +171,15 @@ class RadioPlaylistsView(discord.ui.View):
 	@discord.ui.button(label="Змінити радіо", style=discord.ButtonStyle.gray,
 	                   emoji="🔄️")
 	async def button_callback1(self, button, interaction: discord.Interaction):
-		await interaction.respond('Переміщення альбому/синглу:',
-		                          ephemeral=True, view=MoveAlbumToRadio())  # Send a message when the button is clicked
+		om: discord.InteractionMessage = await interaction.original_message
+		await interaction.respond(f'Переміщення альбому/синглу {om.embeds[0].title}:',
+		                          ephemeral=True, view=MoveAlbumToRadio(om.embeds[0].footer)) # Send a message when the button is clicked
 
 
 class MoveAlbumToRadio(discord.ui.View):
-	def __init__(self,album_key, *args, **kwargs):
+	def __init__(self,album_key):
 		self.album_key=album_key
-		super().__init__(timeout=None, *args)
+		super().__init__(timeout=None)
 
 
 	@discord.ui.select(  # the decorator that lets you specify the properties of the select menu
@@ -188,7 +189,7 @@ class MoveAlbumToRadio(discord.ui.View):
 		options=[  # the list of options from which users can choose, a required field
 			discord.SelectOption(
 				label="Alpha",
-				description="Хайперпоп, укр. Альт рок | Від @q7d19b_",
+				description="Хайперпоп, укр. альт рок | Від @q7d19b_",
 				value='1'
 
 			),
@@ -280,7 +281,7 @@ class GeneralRadioInfo(discord.ui.View):
 						embed.description += f"> - {song_name}\n"
 
 				embed.set_footer(
-					text=f'A: {len(album_data_json.keys()) - len(singles_names)}, S: {len(singles_names)}, Всього {math.floor((all_time / 60) / 60)} h {math.floor((all_time % 3600) / 60)} m {math.floor(all_time % 60)} s')
+					text=k)
 				radio_pages.append(pages.Page(embeds=[embed]))
 
 			print(f'radio_pages: {len(radio_pages)}')
@@ -297,7 +298,8 @@ class GeneralRadioInfo(discord.ui.View):
 		radio_paginator = pages.Paginator(
 			pages=radio_playlists_groups,
 			timeout=899,
-			show_menu=True
+			show_menu=True,
+			custom_view=RadioPlaylistsView()
 		)
 
 		await radio_paginator.respond(interaction, ephemeral=True)
