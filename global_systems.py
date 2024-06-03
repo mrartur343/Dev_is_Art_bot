@@ -7,7 +7,7 @@ ptimer = time.time()
 
 exit_check = False
 while not exit_check:
-	asyncio.sleep(10)
+	time.sleep(5)
 	batery: psutil._common.sbattery = psutil.sensors_battery()
 	print(f"Battery: {batery.percent}")
 	ptimer = time.time()
