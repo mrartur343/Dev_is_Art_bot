@@ -283,11 +283,15 @@ class GeneralRadioInfo(discord.ui.View):
 					text=f'A: {len(album_data_json.keys()) - len(singles_names)}, S: {len(singles_names)}, Всього {math.floor((all_time / 60) / 60)} h {math.floor((all_time % 3600) / 60)} m {math.floor(all_time % 60)} s')
 				radio_pages.append(embed)
 
+			print(f'radio_pages: {len(radio_pages)}')
+
 			radio_group = pages.PageGroup(
 				radio_pages,
 				label=radio_name
 			)
 			radio_playlists_groups.append(radio_group)
+
+		print(f'radio_playlists_groups: {len(radio_playlists_groups)}')
 
 		radio_paginator = pages.Paginator(
 			pages=radio_playlists_groups,
