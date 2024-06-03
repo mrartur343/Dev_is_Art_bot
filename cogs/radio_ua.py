@@ -290,8 +290,7 @@ class GeneralRadioInfo(discord.ui.View):
 
 			radio_group = pages.PageGroup(
 				radio_pages,
-				label=radio_name,
-				custom_view=RadioPlaylistsView(interaction_message.channel,interaction_message.id)
+				label=radio_name
 
 			)
 			radio_playlists_groups.append(radio_group)
