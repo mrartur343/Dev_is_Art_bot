@@ -239,7 +239,6 @@ class GeneralRadioInfo(discord.ui.View):
 	@discord.ui.button(label="Всі альбоми/сингли", style=discord.ButtonStyle.gray, emoji="📜")
 	async def all_albums_singles(self, button, interaction: discord.Interaction):
 		radio_playlists_groups: typing.List[pages.PageGroup] = []
-		interaction_message = await interaction.respond(embed=discord.Embed(title='wait...'),ephemeral=True)
 
 		with open('other/albums_data.json', 'r') as file:
 			album_data_json_nf: typing.Dict = json.loads(file.read())
@@ -302,11 +301,15 @@ class GeneralRadioInfo(discord.ui.View):
 		radio_paginator = pages.Paginator(
 			pages=radio_playlists_groups,
 			timeout=899,
-			show_menu=True,
-			custom_view=RadioPlaylistsView(interaction_message.channel,interaction_message.id)
+			show_menu=True
 		)
 
-		await radio_paginator.edit(interaction_message.message)
+		pmsg = await radio_paginator.respond(interaction,ephemeral=True)
+		for i in range(4):
+			radio_playlists_groups[i].custom_view=RadioPlaylistsView(pmsg.channel,pmsg.id)
+
+		await radio_paginator.update(pages=radio_playlists_groups,custom_view=RadioPlaylistsView(pmsg.channel,pmsg.id))
+
 
 
 class SleepTimer(discord.ui.View):
