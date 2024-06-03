@@ -256,7 +256,7 @@ class GeneralRadioInfo(discord.ui.View):
 				if ak in radio_playlist:
 					album_data_json[ak] = ad
 
-			radio_pages: typing.List[discord.Embed] = []
+			radio_pages: typing.List[pages.Page] = []
 			print(album_data_json)
 			print(len(album_data_json.values()))
 			all_time = 0
@@ -281,7 +281,7 @@ class GeneralRadioInfo(discord.ui.View):
 
 				embed.set_footer(
 					text=f'A: {len(album_data_json.keys()) - len(singles_names)}, S: {len(singles_names)}, Всього {math.floor((all_time / 60) / 60)} h {math.floor((all_time % 3600) / 60)} m {math.floor(all_time % 60)} s')
-				radio_pages.append(embed)
+				radio_pages.append(pages.Page(embeds=[embed]))
 
 			print(f'radio_pages: {len(radio_pages)}')
 
