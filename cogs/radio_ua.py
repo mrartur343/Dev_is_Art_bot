@@ -288,7 +288,8 @@ class GeneralRadioInfo(discord.ui.View):
 
 			radio_group = pages.PageGroup(
 				radio_pages,
-				label=radio_name
+				label=radio_name,
+				custom_view=RadioPlaylistsView()
 
 			)
 			radio_playlists_groups.append(radio_group)
@@ -298,8 +299,7 @@ class GeneralRadioInfo(discord.ui.View):
 		radio_paginator = pages.Paginator(
 			pages=radio_playlists_groups,
 			timeout=899,
-			show_menu=True,
-			custom_view=RadioPlaylistsView()
+			show_menu=True
 		)
 
 		await radio_paginator.respond(interaction, ephemeral=True)
