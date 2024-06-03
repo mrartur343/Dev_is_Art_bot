@@ -224,8 +224,8 @@ class MoveAlbumToRadio(discord.ui.View):
 				if not self.album_key in radio_playlist:
 					radio_playlist.append(self.album_key)
 			radio_playlists[str(i + 1)]=radio_playlist
-			with open('other/radio_playlists.json', 'w') as file:
-				json.dump(radio_playlists,file)
+		with open('other/radio_playlists.json', 'w') as file:
+			json.dump(radio_playlists,file)
 
 
 
@@ -306,10 +306,12 @@ class GeneralRadioInfo(discord.ui.View):
 		)
 
 		pmsg = await radio_paginator.respond(interaction,ephemeral=True)
+		custom_v =RadioPlaylistsView(pmsg.channel,pmsg.id)
+		custom_v.disable_all_items()
 		for i in range(4):
-			radio_playlists_groups[i].custom_view=RadioPlaylistsView(pmsg.channel,pmsg.id)
+			radio_playlists_groups[i].custom_view=custom_v
 
-		await radio_paginator.update(pages=radio_playlists_groups,custom_view=RadioPlaylistsView(pmsg.channel,pmsg.id))
+		await radio_paginator.update(pages=radio_playlists_groups,custom_view=custom_v)
 
 
 
