@@ -11,7 +11,7 @@ exit_check = False
 while not exit_check:
 	batery: psutil._common.sbattery = psutil.sensors_battery()
 	with open('logs/global_systems_logs.txt', 'a') as file:
-		file.write(f"Battery: {batery.percent} {datetime.datetime.now().strftime('%c')}\n")
+		file.write(f"Battery: {batery.percent} {batery.power_plugged} {datetime.datetime.now().strftime('%c')}\n")
 	time.sleep(10)
 	ptimer = time.time()
 	if batery.percent<25:
