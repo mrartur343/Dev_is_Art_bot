@@ -173,7 +173,7 @@ class RadioPlaylistsView(discord.ui.View):
 	@discord.ui.button(label="Змінити радіо", style=discord.ButtonStyle.gray,
 	                   emoji="📻")
 	async def button_callback1(self, button, interaction: discord.Interaction):
-		om: discord.Message = await self.general_radio_ingo_channel.fetch_message(self.msg_id)
+		om = interaction.message
 		await interaction.respond(f'Переміщення альбому/синглу {om.embeds[0].title}:',
 		                          ephemeral=True, view=MoveAlbumToRadio(om.embeds[0].footer)) # Send a message when the button is clicked
 
