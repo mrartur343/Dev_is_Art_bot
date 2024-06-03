@@ -175,7 +175,7 @@ class RadioPlaylistsView(discord.ui.View):
 	async def button_callback1(self, button, interaction: discord.Interaction):
 		om = interaction.message
 		await interaction.respond(f'Переміщення альбому/синглу {om.embeds[0].title}:',
-		                          ephemeral=True, view=MoveAlbumToRadio(om.embeds[0].footer)) # Send a message when the button is clicked
+		                          ephemeral=True, view=MoveAlbumToRadio(om.embeds[0].footer.text)) # Send a message when the button is clicked
 
 
 class MoveAlbumToRadio(discord.ui.View):
