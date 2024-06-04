@@ -845,6 +845,13 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 								                               name=f"{audio_info.title} - {audio_info.artist} | ({albums_names[album_name]})"))
 
 							try:
+
+								with open('other/current_play.json', 'r') as file:
+									current_play = json.loads(file.read())
+								current_play[self.radio_name]= [f"songs/{album_name}/{file_name}", round(datetime.datetime.now().timestamp())]
+								with open('other/current_play.json', 'w') as file:
+									json.dump(current_play,file)
+
 								waiting_start_time = time.time()
 								wait_duration = audio_info.duration
 								while quality == 32 and time.time() - waiting_start_time < wait_duration:
