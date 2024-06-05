@@ -7,10 +7,11 @@
     <title>Document</title>
 </head>
 <body>
-    <audio  preload="none" autoplay="autoplay" controls="controls" src="{{ url_for('audio') }}" />
     <script>
-        audioElement.play();
+        function playSound(url) {
+            var a = new Audio(url);
+            a.play();
+        }
     </script>
-    <p>{{ url_for('audio') }}</p>
 </body>
 </html>
