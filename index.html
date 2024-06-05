@@ -7,16 +7,12 @@
     <title>Document</title>
 </head>
 <body>
+    <audio src = "{{ url_for('audio') }}" autoplay onpause="AutoUnpause()"></audio>
     <script>
-        function playSound(url) {
-            var a = new Audio(url);
-            a.play();
-        }
-        const audio = document.querySelector("video");
-        audio.addEventListener('pause', (event) => {
+        function AutoUnpause {
           audio.load();
           audio.play();
-        });
+        };
     </script>
 </body>
 </html>

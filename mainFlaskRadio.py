@@ -63,11 +63,10 @@ def streamwav():
 					new_play = AudioSegment.from_mp3(current_play_path)
 					new_play.export(f"tmp/{current_play_path.split('/')[2]}.wav", format="wav")
 
-					start = (datetime.datetime.now() - datetime.datetime.fromtimestamp(current_play_time)).seconds
 					nchannels = fwav.getnchannels()
 					sampwidth = fwav.getsampwidth()
 					framerate = fwav.getframerate()
-					fwav.setpos(int(start * framerate))
+					fwav.setpos(0)
 			# extract data
 
 			data = fwav.readframes(fwav.getnframes()*framerate)
