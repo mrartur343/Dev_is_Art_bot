@@ -90,4 +90,5 @@ def streamwav():
 				yield buffer.read()
 	return Response(generate(), mimetype="audio/wav")
 
+
 app.run(host='0.0.0.0', port=9010)
