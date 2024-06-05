@@ -83,11 +83,13 @@ def streamwav():
 			data_sent = CHUNK*4
 
 			data_sent+=CHUNK
-			audio_data = AudioSegment.from_wav(f"tmp/{ip}.wav")._data
+			audio_segment = AudioSegment.from_wav(f"tmp/{ip}.wav")
+			buf = io.BytesIO
+			audio_segment.export(buf,format='mp3')
 			while audio_data:
-				yield audio_data[:1024]
-				audio_data = audio_data[1024:]
-	return Response(generate(), mimetype="audio/x-wav")
+				yield audio_data[:CHUNK]
+				audio_data = audio_data[CHUNK:]
+	return Response(generate(), mimetype="audio/mp3")
 
 
 
