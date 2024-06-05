@@ -5,6 +5,7 @@ import wave
 import os.path
 
 import flask
+import requests
 from pydub import AudioSegment
 import os, shutil
 from flask import Flask, Response, render_template
@@ -90,5 +91,10 @@ def streamwav():
 				yield buffer.read()
 	return Response(generate(), mimetype="audio/wav")
 
+
+@app.route("/r/beta.wav")
+def r_beta():
+	r = requests.get("http://devisart.xyz:11624/radio.wav?c=1", stream=True)
+	return Response(r.iter_content(chunk_size=CHUNK), mimetype='audio/wav')
 
 app.run(host='0.0.0.0', port=9010)
