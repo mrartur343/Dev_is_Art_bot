@@ -46,7 +46,7 @@ def ffmpeg_generator(fn,start_time):
 
 @app.route("/radio", methods=["GET"])
 def streamwav():
-	ip =flask.request.remote_addr
+	print("streamwav")
 	channels_names = ["Alpha", "Beta", 'Gamma', "Delta"]
 	channel = channels_names[int(flask.request.args.get('c'))]
 	with open("other/current_play.json", 'r') as file:
