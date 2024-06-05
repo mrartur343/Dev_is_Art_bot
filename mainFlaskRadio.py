@@ -34,7 +34,7 @@ RECORD_SECONDS = 5
 
 
 
-@app.route("/radio.wav", methods=["GET"])
+@app.route("/radio.mp3", methods=["GET"])
 def streamwav():
 	ip =flask.request.remote_addr
 	channels_names = ["Alpha", "Beta", 'Gamma', "Delta"]
@@ -44,56 +44,29 @@ def streamwav():
 			cp = json.loads(file.read())
 			current_play_path = cp[channel][0]
 			current_play_time = cp[channel][1]
+			start_time = (datetime.datetime.now()-datetime.datetime.fromtimestamp(current_play_time)).seconds
 
-		if not os.path.exists(f"tmp/{current_play_path.split('/')[2]}.wav"):
-			new_play = AudioSegment.from_mp3(current_play_path)
-			new_play.export(f"tmp/{current_play_path.split('/')[2]}.wav", format="wav")
+		with (open(current_play_path, 'rb') as fmp3):
 
-		with wave.open(f"tmp/{current_play_path.split('/')[2]}.wav", "rb") as fwav:
-			start = (datetime.datetime.now() - datetime.datetime.fromtimestamp(current_play_time)).seconds
-			nchannels = fwav.getnchannels()
-			sampwidth = fwav.getsampwidth()
-			framerate = fwav.getframerate()
-			# set position in wave to start of segment
-			try:
-				fwav.setpos(int(start * framerate))
-			except:
-				with open("other/current_play.json", 'r') as file:
-					cp = json.loads(file.read())
-					current_play_path = cp[channel][0]
-					current_play_time = cp[channel][1]
-					new_play = AudioSegment.from_mp3(current_play_path)
-					new_play.export(f"tmp/{current_play_path.split('/')[2]}.wav", format="wav")
-
-					nchannels = fwav.getnchannels()
-					sampwidth = fwav.getsampwidth()
-					framerate = fwav.getframerate()
-					fwav.setpos(0)
 			# extract data
 
-			data = fwav.readframes(fwav.getnframes()*framerate)
 
-			with wave.open(f"tmp/{ip}.wav", 'wb') as outfile:
-				outfile.setnchannels(nchannels)
-				outfile.setsampwidth(sampwidth)
-				outfile.setframerate(framerate)
-				outfile.setnframes(int(len(data) / sampwidth))
-				outfile.writeframes(data)
+			asmp3 = AudioSegment.from_mp3(fmp3)[(start_time*1000):]
 
-			data_sent = CHUNK*4
-			with open(f'tmp/{ip}.wav', 'rb') as file2:
-				while data_sent<os.path.getsize(f'tmp/{ip}.wav'):
+			buf = io.BytesIO()
+			asmp3.export(buf, format='mp3')
+
+			data_sent = CHUNK
+			with buf as file2:
+				while data_sent<os.path.getsize(current_play_path):
 					data_sent+=CHUNK
 					yield file2.read(CHUNK)
-				buffer = io.BytesIO()
-				AudioSegment.silent(duration=10000).export(buffer, format="wav")
-				yield buffer.read()
-	return Response(generate(), mimetype="audio/wav")
+	return Response(generate(), mimetype="audio/mp3")
 
 
-@app.route("/r/beta.wav")
+@app.route("/r/beta.mp3")
 def r_beta():
-	r = requests.get("http://devisart.xyz:11624/radio.wav?c=1", stream=True)
-	return Response(r.iter_content(chunk_size=CHUNK), mimetype='audio/wav')
+	r = requests.get("http://devisart.xyz:11624/radio.mp3?c=1", stream=True)
+	return Response(r.iter_content(chunk_size=CHUNK), mimetype='audio/mp3')
 
 app.run(host='0.0.0.0', port=9010)
