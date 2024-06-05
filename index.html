@@ -4,9 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Document</title>
+    <title>Radio Dev is Art</title>
 </head>
 <body>
-    <audio autoplay src="{{ url_for('audio') }}"></audio>
+    <script type='text/javascript'>
+    document.getElementById('video').addEventListener('ended',myHandler,false);
+    function myHandler(e) {
+        window.location = 'http://devisart.xyz:11624/radio.wav?c=1';
+    }
+    </script>
+<audio controls id="video" autoplay>
+    <source src="{{ url_for('audio') }}" />
+</audio>
 </body>
 </html>
