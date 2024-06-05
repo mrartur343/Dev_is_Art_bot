@@ -3,6 +3,8 @@ import io
 import json
 import wave
 import os.path
+from subprocess import Popen, PIPE
+import os.path
 
 import flask
 import requests
@@ -32,66 +34,30 @@ RATE = 44100
 CHUNK = 1024
 RECORD_SECONDS = 5
 
-
+PREFIX = "songs/"
+FORMAT = ("mp3", "audio/mpeg")
+def ffmpeg_generator(fn,start_time):
+	process = Popen(["ffmpeg", "-hide_banner", "-loglevel", "panic", "-ss",start_time, "-i", fn, "-f", FORMAT[0], "-"], stdout=PIPE)
+	while True:
+		data = process.stdout.read(1024)
+		if not data:
+			break
+		yield data
 
 @app.route("/radio", methods=["GET"])
 def streamwav():
 	ip =flask.request.remote_addr
 	channels_names = ["Alpha", "Beta", 'Gamma', "Delta"]
 	channel = channels_names[int(flask.request.args.get('c'))]
-	def generate():
-		with open("other/current_play.json", 'r') as file:
-			cp = json.loads(file.read())
-			current_play_path = cp[channel][0]
-			current_play_time = cp[channel][1]
+	with open("other/current_play.json", 'r') as file:
+		cp = json.loads(file.read())
+		current_play_path = cp[channel][0]
+		current_play_time = cp[channel][1]
 
-		if not os.path.exists(f"tmp/{current_play_path.split('/')[2]}.wav"):
-			new_play = AudioSegment.from_mp3(current_play_path)
-			new_play.export(f"tmp/{current_play_path.split('/')[2]}.wav", format="wav")
+	path = os.path.normpath("/" + current_play_path).lstrip("/")
 
-		with wave.open(f"tmp/{current_play_path.split('/')[2]}.wav", "rb") as fwav:
-			start = (datetime.datetime.now() - datetime.datetime.fromtimestamp(current_play_time)).seconds
-			nchannels = fwav.getnchannels()
-			sampwidth = fwav.getsampwidth()
-			framerate = fwav.getframerate()
-			# set position in wave to start of segment
-			try:
-				fwav.setpos(int(start * framerate))
-			except:
-				with open("other/current_play.json", 'r') as file:
-					cp = json.loads(file.read())
-					current_play_path = cp[channel][0]
-					current_play_time = cp[channel][1]
-					new_play = AudioSegment.from_mp3(current_play_path)
-					new_play.export(f"tmp/{current_play_path.split('/')[2]}.wav", format="wav")
-
-					nchannels = fwav.getnchannels()
-					sampwidth = fwav.getsampwidth()
-					framerate = fwav.getframerate()
-					fwav.setpos(0)
-			# extract data
-
-			data = fwav.readframes(fwav.getnframes()*framerate)
-
-			with wave.open(f"tmp/{ip}.wav", 'wb') as outfile:
-				outfile.setnchannels(nchannels)
-				outfile.setsampwidth(sampwidth)
-				outfile.setframerate(framerate)
-				outfile.setnframes(int(len(data) / sampwidth))
-				outfile.writeframes(data)
-
-			data_sent = CHUNK*4
-
-			data_sent+=CHUNK
-			audio_segment = AudioSegment.from_wav(f"tmp/{ip}.wav")
-			buf = io.BytesIO()
-			audio_segment.export(buf,format='wav')
-			audio_data = buf.read(CHUNK)
-			yield audio_data
-			while audio_data:
-				audio_data = buf.read(CHUNK)
-				yield audio_data
-	return Response(generate(), mimetype="audio/wav")
+	start_time = (datetime.datetime.now()-datetime.datetime.fromtimestamp(current_play_time)).seconds
+	return Response(ffmpeg_generator(os.path.join(PREFIX, path),start_time), mimetype=FORMAT[1])
 
 
 
