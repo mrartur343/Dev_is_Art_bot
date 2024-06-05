@@ -95,7 +95,7 @@ def streamwav():
 @app.route('/r/beta')
 def radio_beta():
 	"""Video streaming home page."""
-	return render_template('index.html', radio_index =1 , radio_name = 'Beta')
+	return flask.stream_template('index.html', radio_index =1 , radio_name = 'Beta')
 
 
 app.run(host='0.0.0.0', port=9010)
