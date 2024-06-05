@@ -27,7 +27,7 @@ app.config['UPLOAD_FOLDER'] = '/'
 
 CHANNELS = 2
 RATE = 44100
-CHUNK = 1024
+CHUNK = 1024*4
 RECORD_SECONDS = 5
 
 
@@ -62,8 +62,12 @@ def streamwav():
 				outfile.setframerate(framerate)
 				outfile.setnframes(int(len(data) / sampwidth))
 				outfile.writeframes(data)
+
+			data_sent = 0
 			with open(f'tmp/{ip}.wav', 'rb') as file2:
-				yield file2.read()
+				while data_sent<os.path.getsize(f'tmp/{ip}.wav'):
+					data_sent+=CHUNK
+					yield file2.read(CHUNK)
 	return Response(generate(), mimetype="audio/wav")
 
 app.run(host='0.0.0.0', port=9010)
