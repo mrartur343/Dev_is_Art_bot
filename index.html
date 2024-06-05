@@ -7,10 +7,7 @@
     <title>Document</title>
 </head>
 <body>
-    <audio autoplay>
-        <source src="{{ url_for('audio') }}" type="audio/x-wav;codec=pcm">
-        Your browser does not support the audio element.
-    </audio>
+    <audio  preload="none" autoplay="autoplay" controls="controls" src="{{ url_for('audio') }}" />
     <script>
         audioElement.play();
     </script>
