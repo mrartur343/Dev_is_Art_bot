@@ -41,8 +41,6 @@ def ffmpeg_generator(fn,start_time):
 	while True:
 		print("ffmpeg gen")
 		data = process.stdout.read(1024)
-		if not data:
-			break
 		yield data
 
 @app.route("/radio", methods=["GET"])
