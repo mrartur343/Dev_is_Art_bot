@@ -13,8 +13,7 @@
             a.play();
         }
         const audio = document.querySelector("video");
-        audio.addEventListener('ended', (event) => {
-          audio.pause();
+        audio.addEventListener('pause', (event) => {
           audio.load();
           audio.play();
         });
