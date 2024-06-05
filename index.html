@@ -7,10 +7,9 @@
     <title>Document</title>
 </head>
 <body>
-    <audio src = "{{ url_for('audio') }}" autoplay onpause="AutoUnpause()"></audio>
+    <audio src = "{{ url_for('audio') }}" autoplay onended="AutoUnpause()"  onpause="AutoUnpause()"></audio>
     <script>
         function AutoUnpause {
-          audio.load();
           audio.play();
         };
     </script>
