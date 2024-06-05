@@ -37,7 +37,7 @@ RECORD_SECONDS = 5
 PREFIX = "songs/"
 FORMAT = ("mp3", "audio/mpeg")
 def ffmpeg_generator(fn,start_time):
-	process = Popen(["ffmpeg", "-hide_banner", "-loglevel", "panic", "-ss", str(start_time), "-i", fn, "-f", FORMAT[0], "-"], stdout=PIPE)
+	process = Popen(["ffmpeg", "-ss", str(start_time), "-i", fn, "-f", FORMAT[0]], stdout=PIPE)
 	while True:
 		print("ffmpeg gen")
 		data = process.stdout.read()
