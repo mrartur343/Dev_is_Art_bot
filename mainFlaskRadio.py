@@ -42,7 +42,6 @@ def streamwav():
 			cp = json.loads(file.read())
 			current_play_path = cp[channel][0]
 			current_play_time = cp[channel][1]
-			next_play_path = cp[channel][2]
 
 		if not os.path.exists(f"tmp/{current_play_path.split('/')[2]}.wav"):
 			new_play = AudioSegment.from_mp3(current_play_path)
