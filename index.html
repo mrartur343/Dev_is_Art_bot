@@ -7,8 +7,10 @@
     <title>Document</title>
     <script>
         function AutoUnpause {
-          audio.load();
-          audio.play();
+           const music = document.querySelector("audio");
+           music.pause();
+           music.load();
+           music.play();
         };
     </script>
 </head>
