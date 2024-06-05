@@ -83,7 +83,9 @@ def streamwav():
 			data_sent = CHUNK*4
 			with open(f'tmp/{ip}.wav', 'rb') as file2:
 				data_sent+=CHUNK
-				yield file2.read(CHUNK)
+				audio_data = file2.read(CHUNK)
+				if audio_data:
+					yield audio_data
 	return Response(generate(), mimetype="audio/wav")
 
 
