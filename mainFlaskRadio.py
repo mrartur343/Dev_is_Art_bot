@@ -84,9 +84,6 @@ def streamwav():
 			with open(f'tmp/{ip}.wav', 'rb') as file2:
 				data_sent+=CHUNK
 				yield file2.read(CHUNK)
-				buffer = io.BytesIO()
-				AudioSegment.silent(duration=10000).export(buffer, format="wav")
-				yield buffer.read()
 	return Response(generate(), mimetype="audio/wav")
 
 
