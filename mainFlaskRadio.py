@@ -86,7 +86,7 @@ def streamwav():
 				data_sent+=CHUNK
 				audio_data = file2.read(CHUNK)
 				yield audio_data
-				while audio_data
+				while audio_data:
 					audio_data = file2.read(CHUNK)
 					yield audio_data
 	return Response(generate(), mimetype="audio/wav")
