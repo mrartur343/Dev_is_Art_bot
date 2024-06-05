@@ -87,11 +87,10 @@ def streamwav():
 			buf = io.BytesIO()
 			audio_segment.export(buf,format='mp3')
 			audio_data = buf.read(CHUNK)
-			yield audio_data[:CHUNK]
+			yield audio_data
 			while audio_data:
 				audio_data = buf.read(CHUNK)
-				yield audio_data[:CHUNK]
-				audio_data = audio_data[CHUNK:]
+				yield audio_data
 	return Response(generate(), mimetype="audio/mp3")
 
 
