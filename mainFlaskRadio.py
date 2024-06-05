@@ -36,7 +36,7 @@ RECORD_SECONDS = 5
 @app.route("/radio.wav", methods=["GET"])
 def streamwav():
 	ip =flask.request.remote_addr
-	channels_names = ["Alpha", "Beta", 'Delta', "Gamma"]
+	channels_names = ["Alpha", "Beta", 'Gamma', "Delta"]
 	channel = channels_names[int(flask.request.args.get('c'))]
 	def generate():
 		with open("other/current_play.json", 'r') as file:
@@ -86,7 +86,7 @@ def streamwav():
 					yield file2.read(CHUNK)
 				os.remove(f"tmp/{ip}.wav")
 				buffer = io.BytesIO()
-				AudioSegment.silent(duration=1000).export(buffer, format="wav")
+				AudioSegment.silent(duration=100000).export(buffer, format="wav")
 				yield buffer.read(CHUNK)
 	return Response(generate(), mimetype="audio/wav")
 
