@@ -71,6 +71,7 @@ def streamwav():
 					data_sent+=CHUNK
 					yield file2.read(CHUNK)
 				os.remove(f"tmp/{ip}.wav")
+				yield AudioSegment.silent(duration=1000)
 	return Response(generate(), mimetype="audio/wav")
 
 app.run(host='0.0.0.0', port=9010)
