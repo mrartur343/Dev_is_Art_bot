@@ -1,4 +1,5 @@
 import datetime
+import io
 import json
 import wave
 import os.path
@@ -78,13 +79,15 @@ def streamwav():
 				outfile.setnframes(int(len(data) / sampwidth))
 				outfile.writeframes(data)
 
-			data_sent = 0
+			data_sent = CHUNK
 			with open(f'tmp/{ip}.wav', 'rb') as file2:
 				while data_sent<os.path.getsize(f'tmp/{ip}.wav'):
 					data_sent+=CHUNK
 					yield file2.read(CHUNK)
 				os.remove(f"tmp/{ip}.wav")
-				yield AudioSegment.silent(duration=1000)
+				buffer = io.BytesIO()
+				AudioSegment.silent(duration=1000).export(buffer, format="wav")
+				yield buffer.read()
 	return Response(generate(), mimetype="audio/wav")
 
 app.run(host='0.0.0.0', port=9010)
