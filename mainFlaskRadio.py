@@ -29,7 +29,7 @@ app.config['UPLOAD_FOLDER'] = '/'
 
 CHANNELS = 2
 RATE = 44100
-CHUNK = 1024*4
+CHUNK = 1024
 RECORD_SECONDS = 5
 
 
@@ -85,13 +85,13 @@ def streamwav():
 			data_sent+=CHUNK
 			audio_segment = AudioSegment.from_wav(f"tmp/{ip}.wav")
 			buf = io.BytesIO()
-			audio_segment.export(buf,format='mp3')
+			audio_segment.export(buf,format='wav')
 			audio_data = buf.read(CHUNK)
 			yield audio_data
 			while audio_data:
 				audio_data = buf.read(CHUNK)
 				yield audio_data
-	return Response(generate(), mimetype="audio/mp3")
+	return Response(generate(), mimetype="audio/wav")
 
 
 
