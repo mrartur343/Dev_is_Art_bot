@@ -67,6 +67,6 @@ def streamwav():
 @app.route("/r/beta.mp3")
 def r_beta():
 	r = requests.get("http://devisart.xyz:11624/radio.mp3?c=1", stream=True)
-	return Response(r.iter_content(chunk_size=CHUNK), mimetype='audio/mp3')
+	return Response(r.iter_content(chunk_size=1), mimetype='audio/mp3')
 
 app.run(host='0.0.0.0', port=9010)
