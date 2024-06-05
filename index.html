@@ -7,16 +7,5 @@
     <title>Document</title>
 </head>
 <body>
-    <script>
-        function playSound(url) {
-            var a = new Audio(url);
-            a.play();
-        }
-        const audio = document.querySelector("video");
-        audio.addEventListener('pause', (event) => {
-          audio.load();
-          audio.play();
-        });
-    </script>
 </body>
 </html>
