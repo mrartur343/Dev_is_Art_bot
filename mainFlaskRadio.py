@@ -42,9 +42,11 @@ def streamwav():
 			cp = json.loads(file.read())
 			current_play_path = cp[channel][0]
 			current_play_time = cp[channel][1]
+
 		if not os.path.exists(f"tmp/{current_play_path.split('/')[2]}.wav"):
 			new_play = AudioSegment.from_mp3(current_play_path)
 			new_play.export(f"tmp/{current_play_path.split('/')[2]}.wav", format="wav")
+
 		with wave.open(f"tmp/{current_play_path.split('/')[2]}.wav", "rb") as fwav:
 			start = (datetime.datetime.now() - datetime.datetime.fromtimestamp(current_play_time)).seconds
 			nchannels = fwav.getnchannels()
