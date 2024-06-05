@@ -81,14 +81,12 @@ def streamwav():
 				outfile.writeframes(data)
 
 			data_sent = CHUNK*4
-			with open(f'tmp/{ip}.wav', 'rb') as file2:
 
-				data_sent+=CHUNK
-				audio_data = file2.read(CHUNK)
-				yield audio_data
-				while audio_data:
-					audio_data = file2.read(CHUNK)
-					yield audio_data
+			data_sent+=CHUNK
+			audio_data = AudioSegment.from_wav(f"tmp/{ip}.wav").raw_data
+			while audio_data:
+				yield audio_data[:1024]
+				audio_data = audio_data[1024:]
 	return Response(generate(), mimetype="audio/x-wav")
 
 
