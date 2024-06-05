@@ -83,7 +83,7 @@ def streamwav():
 			data_sent = CHUNK*4
 
 			data_sent+=CHUNK
-			audio_data = AudioSegment.from_wav(f"tmp/{ip}.wav").raw_data
+			audio_data = AudioSegment.from_wav(f"tmp/{ip}.wav")._data
 			while audio_data:
 				yield audio_data[:1024]
 				audio_data = audio_data[1024:]
