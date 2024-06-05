@@ -34,7 +34,7 @@ RECORD_SECONDS = 5
 
 
 
-@app.route("/audio1", methods=["GET"])
+@app.route("/radio", methods=["GET"])
 def streamwav():
 	ip =flask.request.remote_addr
 	channels_names = ["Alpha", "Beta", 'Gamma', "Delta"]
