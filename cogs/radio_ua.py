@@ -456,14 +456,8 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 
 
 
-							try:
-								await radio_all_play(f"songs/{album_name}/{file_name}",self.bot,radio_msg_embeds,radio_msg_view,audio_info)
+							await radio_all_play(f"songs/{album_name}/{file_name}",self.bot,radio_msg_embeds,radio_msg_view,audio_info)
 
-
-							#await asyncio.sleep(1)
-
-							except Exception as error_play:
-								pass
 
 							with open("other/radio_sleep_timers.json", 'r') as file:
 								radio_sleep_timers: typing.Dict[str, typing.List[int]] = json.loads(file.read())
