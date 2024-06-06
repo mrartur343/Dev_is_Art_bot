@@ -67,7 +67,7 @@ async def radio_all_play(play_source_path: str, bot: discord.Bot, radio_info_emb
 			await another_radio_info_messages[guild.id].edit(embeds=radio_info_embeds)
 		else:
 			if len(another_radio_ids[0])==1:
-				info_channel = await guild.fetch_channel(another_radio_ids[1])
+				info_channel = await guild.fetch_channel(another_radio_ids[0][0])
 			else:
 				forum_channel =  await guild.fetch_channel(another_radio_ids[0][0])
 				info_channel = forum_channel.get_thread(another_radio_ids[0][1])
