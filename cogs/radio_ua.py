@@ -55,7 +55,7 @@ async def guild_play(play_source_path:str,audio_info:TinyTag,radio_voice_client:
 async def radio_all_play(play_source_path: str, bot: discord.Bot, radio_info_embeds: typing.List[discord.Embed],radio_info_view: discord.ui.View,audio_info,radio_name):
 	global another_radio_info_messages
 	global another_guilds_channel
-
+	nel = asyncio.new_event_loop()
 	for guild in await bot.fetch_guilds().flatten():
 		print(guild)
 		another_radio = another_guilds_channel[guild.id]
@@ -83,7 +83,9 @@ async def radio_all_play(play_source_path: str, bot: discord.Bot, radio_info_emb
 
 
 
-		asyncio.run(guild_play(play_source_path,audio_info, voice))
+		threading.Thread(target = guild_play,args = [play_source_path,audio_info, voice]).start()
+
+
 
 
 
