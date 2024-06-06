@@ -21,10 +21,10 @@ from os.path import isfile, join
 from tinytag import TinyTag
 from modules.radio_ua_views import *
 
-
+another_guilds_channel: typing.Dict[int,typing.Tuple[discord.Thread | discord.TextChannel, discord.VoiceChannel]] = {}
 another_radio_info_messages: typing.Dict[int, discord.Message] = {}
 
-async def guild_play(play_source_path:discord.AudioSource,audio_info:TinyTag,radio_voice_client: discord.VoiceClient | discord.VoiceProtocol):
+async def guild_play(play_source_path:str,audio_info:TinyTag,radio_voice_client: discord.VoiceClient | discord.VoiceProtocol):
 	updated_channel: discord.VoiceChannel = await radio_voice_client.channel.guild.fetch_channel(
 		radio_voice_client.channel.id)
 
@@ -54,24 +54,18 @@ async def guild_play(play_source_path:discord.AudioSource,audio_info:TinyTag,rad
 
 async def radio_all_play(play_source_path: str, bot: discord.Bot, radio_info_embeds: typing.List[discord.Embed],radio_info_view: discord.ui.View,audio_info,radio_name):
 	global another_radio_info_messages
-
-	with open("other/another_guilds_radio.json", 'r') as file:
-		another_guilds_radio: typing.Dict[str , typing.Tuple[typing.List[int], int]] = json.loads(file.read())[radio_name]
+	global another_guilds_channel
 
 	async for guild in bot.fetch_guilds():
-		another_radio_ids = another_guilds_radio[str(guild.id)]
+		another_radio = another_guilds_channel[guild.id]
 
-		radio_play_channel: discord.VoiceChannel = await guild.fetch_channel(another_radio_ids[0][0])
+		radio_play_channel: discord.VoiceChannel = another_radio[1]
 		if guild.id in another_radio_info_messages:
 
 			await another_radio_info_messages[guild.id].edit(embeds=radio_info_embeds)
 		else:
-			print(f"Info channel id: {another_radio_ids[0]}")
-			if len(another_radio_ids[0])==1:
-				info_channel = await guild.fetch_channel(another_radio_ids[0][0])
-			else:
-				forum_channel =  await guild.fetch_channel(another_radio_ids[0][0])
-				info_channel = forum_channel.get_thread(another_radio_ids[0][1])
+			print(f"Info channel id: {another_radio[0].id}")
+			info_channel = another_radio[0]
 
 			async for message in info_channel.history():
 				if message.author.id == bot.user.id:
@@ -138,6 +132,7 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 
 	@commands.Cog.listener()
 	async def on_ready(self):
+		global another_guilds_channel
 		print("Radio: ON")
 
 		albums_imgs = albums_images_cache
@@ -147,7 +142,21 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 		with open('other/radio_playlists.json', 'r') as file:
 			radio_playlist = json.loads(file.read())[self.radio_name]
 
+		with open("other/another_guilds_radio.json", 'r') as file:
+			another_guilds_radio: typing.Dict[str, typing.Tuple[typing.List[int], int]] = json.loads(file.read())
 
+		for guild_str_id, guild_channels in another_guilds_radio.items():
+			guild_id = int(guild_str_id)
+
+			guild = await self.bot.fetch_guild(guild_id)
+
+			if len(guild_channels[0])==1:
+				info_channel = await guild.fetch_channel(guild_channels[0][0])
+			else:
+				forum_channel =  await guild.fetch_channel(guild_channels[0][0])
+				info_channel = forum_channel.get_thread(guild_channels[0][1])
+
+			another_guilds_channel[guild_id] = ((await guild.fetch_channel(guild_channels[1])),info_channel)
 
 		while True:
 
