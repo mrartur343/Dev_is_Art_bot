@@ -19,7 +19,7 @@ from discord.ext import commands, pages
 from os import listdir
 from os.path import isfile, join
 from tinytag import TinyTag
-from modules.radio_ua_views import *
+from radio_ua_views import *
 
 
 another_radio_info_messages: typing.Dict[int, discord.Message] = {}

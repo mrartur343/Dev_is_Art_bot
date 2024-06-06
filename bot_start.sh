@@ -1,6 +1,6 @@
 pkill python3
 git pull
-screen python3 main.py
-screen python3 mainBeta.py
-screen python3 mainGamma.py
-screen python3 mainDelta.py
+screen python3 mainAlphaRadio.py
+screen python3 mainRadio.py 1
+screen python3 mainRadio.py 2
+screen python3 mainRadio.py 3
