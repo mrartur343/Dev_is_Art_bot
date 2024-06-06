@@ -365,7 +365,7 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 
 				for song_name in songs_list:
 					if song_name in songs[album_name]:
-						if 0==0:
+						try:
 							print(
 								f'Play {song_name} ({album_name}) ({datetime.datetime.now().strftime(format="%c")})')
 
@@ -477,9 +477,9 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 												if user.voice.channel.id == self.radio_channel_id:
 													await user.move_to(None)
 													radio_sleep_timers['song_end'].remove(member_id)
-											if 0==0:
+											try:
 												await user.send(f"Надобраніч!")
-											elif 0!=0:
+											except:
 												pass
 
 									for timer_str, st_members_ids in radio_sleep_timers.items():
@@ -493,9 +493,9 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 															if user.voice.channel.id == self.radio_channel_id:
 																await user.move_to(None)
 																radio_sleep_timers[timer_str].remove(m_id)
-														if 0==0:
+														try:
 															await user.send(f"Надобраніч!")
-														elif 0!=0:
+														except:
 															pass
 
 						except Exception as error:
@@ -518,9 +518,9 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 									if user.voice.channel.id == self.radio_channel_id:
 										await user.move_to(None)
 										radio_sleep_timers['album_end'].remove(member_id)
-								if 0==0:
+								try:
 									await user.send(f"Надобраніч!")
-								elif 0!=0:
+								except:
 									pass
 
 
