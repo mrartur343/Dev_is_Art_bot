@@ -325,7 +325,7 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 								album_notification_label = "Сингл" if album_list[
 									                                      next_album_index] in singles_names else "Альбом"
 								await user.send(
-									f"{album_notification_label} **`{albums_names[album_list[next_album_index]]}`**, який ви вподобали, буде у <#{self.radio_channel_id}> <t:{round(next_album_timestamp)}:R>",
+									f"{album_notification_label} **`{albums_names[album_list[next_album_index]]}`**, який ви вподобали, буде грати на радіо <t:{round(next_album_timestamp)}:R>",
 									view=DislikeAlbum(timeout=None, liked_album=album_list[next_album_index]))
 
 				if next_index >= len(album_list):
