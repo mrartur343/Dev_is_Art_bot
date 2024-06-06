@@ -19,7 +19,7 @@ from discord.ext import commands, pages
 from os import listdir
 from os.path import isfile, join
 from tinytag import TinyTag
-from radio_ua_views import *
+from modules.radio_ua_views import *
 
 
 another_radio_info_messages: typing.Dict[int, discord.Message] = {}
@@ -51,11 +51,11 @@ async def guild_play(play_source_path:discord.AudioSource,audio_info:TinyTag,rad
 	if time.time() - waiting_start_time < wait_duration:
 		await radio_voice_client.play(audio_source, wait_finish=True)
 
-async def radio_all_play(play_source_path: str, bot: discord.Bot, radio_info_embeds: typing.List[discord.Embed],radio_info_view: discord.ui.View,audio_info,radio_name:str):
+async def radio_all_play(play_source_path: str, bot: discord.Bot, radio_info_embeds: typing.List[discord.Embed],radio_info_view: discord.ui.View,audio_info):
 	global another_radio_info_messages
 
 	with open("other/another_guilds_radio.json", 'r') as file:
-		another_guilds_radio: typing.Dict[str , typing.Tuple[typing.List[int], int]] = json.loads(file.read())[radio_name]
+		another_guilds_radio: typing.Dict[str , typing.Tuple[typing.List[int], int]] = json.loads(file.read())
 
 	async for guild in bot.fetch_guilds():
 		another_radio_ids = another_guilds_radio[str(guild.id)]
@@ -75,7 +75,7 @@ async def radio_all_play(play_source_path: str, bot: discord.Bot, radio_info_emb
 				if message.author.id == bot.user.id:
 					await message.delete()
 
-			msg= await info_channel.send(embeds=radio_info_embeds,view=radio_info_view)
+			msg= await info_channel.send(embeds=radio_info_embeds)
 			another_radio_info_messages[guild.id]=msg
 
 		if guild.voice_client:
@@ -457,7 +457,7 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 
 
 							try:
-								await radio_all_play(f"songs/{album_name}/{file_name}",self.bot,radio_msg_embeds,radio_msg_view,audio_info,self.radio_name)
+								await radio_all_play(f"songs/{album_name}/{file_name}",self.bot,radio_msg_embeds,radio_msg_view,audio_info)
 
 
 							#await asyncio.sleep(1)
