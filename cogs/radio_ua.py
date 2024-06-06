@@ -156,7 +156,9 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 				forum_channel =  await guild.fetch_channel(guild_channels[0][0])
 				info_channel = forum_channel.get_thread(guild_channels[0][1])
 
-			another_guilds_channel[guild_id] = ((await guild.fetch_channel(guild_channels[1])),info_channel)
+			voice_channel = (await guild.fetch_channel(guild_channels[1]))
+
+			another_guilds_channel[guild_id] = (info_channel,voice_channel)
 
 		while True:
 
