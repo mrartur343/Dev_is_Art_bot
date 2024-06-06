@@ -56,7 +56,7 @@ async def radio_all_play(play_source_path: str, bot: discord.Bot, radio_info_emb
 	global another_radio_info_messages
 	global another_guilds_channel
 
-	async for guild in bot.fetch_guilds():
+	for guild in await bot.fetch_guilds().flatten():
 		another_radio = another_guilds_channel[guild.id]
 
 		radio_play_channel: discord.VoiceChannel = another_radio[1]
