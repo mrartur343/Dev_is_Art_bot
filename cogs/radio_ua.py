@@ -7,7 +7,7 @@ import random
 import time
 from PIL import Image, ImageDraw
 from discord import Thread
-
+import threading
 import avarage_color_getter
 import jmespath
 import typing
@@ -58,6 +58,7 @@ async def radio_all_play(play_source_path: str, bot: discord.Bot, radio_info_emb
 		another_guilds_radio: typing.Dict[str , typing.Tuple[typing.List[int], int]] = json.loads(file.read())
 
 	async for guild in bot.fetch_guilds():
+		print(f"Play guild: {guild.name}")
 		another_radio_ids = another_guilds_radio[str(guild.id)]
 
 		radio_play_channel: discord.VoiceChannel = await guild.fetch_channel(another_radio_ids[1])
@@ -82,6 +83,7 @@ async def radio_all_play(play_source_path: str, bot: discord.Bot, radio_info_emb
 			voice = guild.voice_client
 		else:
 			voice = await radio_play_channel.connect()
+
 
 
 		asyncio.run(guild_play(play_source_path,audio_info, voice))
@@ -282,12 +284,6 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 					r.remove(self.bot.user.id)
 				return r
 
-			print("ALBUMS\n-----")
-			for album_name, songs_list in song_lists[:10]:
-				print(f"**{album_name}**")
-				for song in songs_list:
-					print(song)
-			print()
 
 			for album_name, _ in song_lists:
 				cycle_duration += album_durations[album_name]
@@ -320,7 +316,6 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 										not_check = False
 							if user.can_send() and not_check and ((next_album_index - album_count) - 1) < len(
 									timetable):
-								print(timetable)
 								next_album_timestamp = timetable[(next_album_index - album_count) - 1][1].timestamp()
 								album_notification_label = "Сингл" if album_list[
 									                                      next_album_index] in singles_names else "Альбом"
@@ -335,9 +330,6 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 						await send_album_not(next_index2)
 				else:
 					await send_album_not(next_index)
-				print("---songs_list---")
-				print(song_lists)
-				print("------")
 
 				dcolor = avarage_color_getter.get_avarage_color(album_name)
 
@@ -402,9 +394,6 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 							                       color=discord.Color.from_rgb(r=dcolor[0], g=dcolor[1], b=dcolor[2]))
 							embed2.description = ''
 							embed2.set_image(url=line_img_url)
-							print('Albums durations\n----')
-							print(album_durations)
-							print("----")
 
 							i = 0
 							single_check = True
@@ -414,13 +403,11 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 									v: datetime.datetime
 
 									kyiv_h = v.hour
-									print(kyiv_h)
 
 									time_emoji = "🏙️" if 12 <= kyiv_h < 18 else (
 										"🌇" if 18 <= kyiv_h < 24 else ('🌇' if 6 <= kyiv_h < 12 else "🌃"))
 									if time_emoji != old_emoji:
 										embed2.description += f"\n- {time_emoji}\n"
-									print(f'k: {k}, v: {v} s: {k in singles_names}')
 									if i == 0 and (k in singles_names) and single_check:
 										single_check = False
 										embed2.description += f"⚡ <t:{round(v.timestamp())}:t> Випадковий сингл (<t:{round(v.timestamp())}:R>)\n"
@@ -496,7 +483,7 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 
 						except Exception as error:
 							await admin_logs.send(
-								f"Помилка при завантажені трека: {song_name} ({albums_names[album_name]})\n{error}")
+								f"Помилка при завантажені трека: {song_name} ({albums_names[album_name]})\n{error.__str__()}")
 							continue
 
 
