@@ -24,33 +24,21 @@ from modules.radio_ua_views import *
 another_guilds_channel: typing.Dict[int,typing.Tuple[discord.Thread | discord.TextChannel, discord.VoiceChannel]] = {}
 another_radio_info_messages: typing.Dict[int, discord.Message] = {}
 
-async def guild_play(play_source_path:str,audio_info:TinyTag,radio_voice_client: discord.VoiceClient | discord.VoiceProtocol):
-	updated_channel: discord.VoiceChannel = await radio_voice_client.channel.guild.fetch_channel(
-		radio_voice_client.channel.id)
+def guild_play(play_source_path:str,audio_info:TinyTag,radio_voice_client: discord.VoiceClient | discord.VoiceProtocol):
+	updated_channel: discord.VoiceChannel = asyncio.run(radio_voice_client.channel.guild.fetch_channel(
+		radio_voice_client.channel.id))
 
-	if len(updated_channel.members) < 2:
-		quality_high = False
-	else:
-		quality_high = True
+	quality_high = True
 
 	waiting_start_time = time.time()
 	wait_duration = audio_info.duration
-	while not quality_high and time.time() - waiting_start_time < wait_duration:
-		await asyncio.sleep(1)
-		updated_channel: discord.VoiceChannel = await radio_voice_client.channel.guild.fetch_channel(
-			radio_voice_client.channel.id)
-
-
-
-		if len(updated_channel.members) >= 2:
-			quality_high = True
 	FFMPEG_OPTIONS = {
 		'options': f'-vn -b:a 320k -ss {round(time.time() - waiting_start_time)}'}
 	audio_source = discord.FFmpegPCMAudio(play_source_path,
 	                                      **FFMPEG_OPTIONS)
 	if time.time() - waiting_start_time < wait_duration:
 
-		await radio_voice_client.play(audio_source, wait_finish=True)
+		radio_voice_client.play(audio_source)
 
 async def radio_all_play(play_source_path: str, bot: discord.Bot, radio_info_embeds: typing.List[discord.Embed],radio_info_view: discord.ui.View,audio_info,radio_name):
 	global another_radio_info_messages
