@@ -52,11 +52,11 @@ async def guild_play(play_source_path:discord.AudioSource,audio_info:TinyTag,rad
 
 		await radio_voice_client.play(audio_source, wait_finish=True)
 
-async def radio_all_play(play_source_path: str, bot: discord.Bot, radio_info_embeds: typing.List[discord.Embed],radio_info_view: discord.ui.View,audio_info):
+async def radio_all_play(play_source_path: str, bot: discord.Bot, radio_info_embeds: typing.List[discord.Embed],radio_info_view: discord.ui.View,audio_info,radio_name):
 	global another_radio_info_messages
 
 	with open("other/another_guilds_radio.json", 'r') as file:
-		another_guilds_radio: typing.Dict[str , typing.Tuple[typing.List[int], int]] = json.loads(file.read())
+		another_guilds_radio: typing.Dict[str , typing.Tuple[typing.List[int], int]] = json.loads(file.read())[radio_name]
 
 	async for guild in bot.fetch_guilds():
 		another_radio_ids = another_guilds_radio[str(guild.id)]
@@ -67,7 +67,7 @@ async def radio_all_play(play_source_path: str, bot: discord.Bot, radio_info_emb
 			await another_radio_info_messages[guild.id].edit(embeds=radio_info_embeds)
 		else:
 			if len(another_radio_ids[0])==1:
-				info_channel = await guild.fetch_channel(another_radio_ids[0][0])
+				info_channel = await guild.fetch_channel(another_radio_ids[1])
 			else:
 				forum_channel =  await guild.fetch_channel(another_radio_ids[0][0])
 				info_channel = forum_channel.get_thread(another_radio_ids[0][1])
@@ -76,7 +76,7 @@ async def radio_all_play(play_source_path: str, bot: discord.Bot, radio_info_emb
 				if message.author.id == bot.user.id:
 					await message.delete()
 
-			msg= await info_channel.send(embeds=radio_info_embeds)
+			msg= await info_channel.send(embeds=radio_info_embeds,view=radio_info_view)
 			another_radio_info_messages[guild.id]=msg
 
 		if guild.voice_client:
@@ -446,7 +446,7 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 
 
 
-							await radio_all_play(f"songs/{album_name}/{file_name}",self.bot,radio_msg_embeds,radio_msg_view,audio_info)
+							await radio_all_play(f"songs/{album_name}/{file_name}",self.bot,radio_msg_embeds,radio_msg_view,audio_info,self.radio_name)
 
 
 							with open("other/radio_sleep_timers.json", 'r') as file:
