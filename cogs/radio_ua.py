@@ -145,7 +145,7 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 		with open("other/another_guilds_radio.json", 'r') as file:
 			another_guilds_radio: typing.Dict[str, typing.Tuple[typing.List[int], int]] = json.loads(file.read())
 
-		for guild_str_id, guild_channels in another_guilds_radio.items():
+		for guild_str_id, guild_channels in another_guilds_radio.items()[self.radio_name]:
 			guild_id = int(guild_str_id)
 
 			guild = await self.bot.fetch_guild(guild_id)
