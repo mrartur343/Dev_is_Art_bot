@@ -3,7 +3,7 @@ from discord.ext import commands
 import os
 from cogs import account_info,collections,event_messages,radio_ua,store,without_category
 
-Token = "MTIyMTQwMzcwMDExNTgwMDE2NA.GPXNpX.5KvYcN1WfswDQ5Z0oJqjoT4FLUo_wMnL4uqgRs"
+Token = "MTIyMTQwMzcwMDExNTgwMDE2NA.G-wjCw.gsVwNQwPKVbsELllSMGQwLy36iPeBbN-AnEEUI"
 intents: discord.Intents = discord.Intents.all()
 
 bot = commands.Bot(intents=intents,command_prefix='....')
