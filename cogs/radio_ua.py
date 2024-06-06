@@ -49,6 +49,7 @@ async def guild_play(play_source_path:discord.AudioSource,audio_info:TinyTag,rad
 	audio_source = discord.FFmpegPCMAudio(play_source_path,
 	                                      **FFMPEG_OPTIONS)
 	if time.time() - waiting_start_time < wait_duration:
+
 		await radio_voice_client.play(audio_source, wait_finish=True)
 
 async def radio_all_play(play_source_path: str, bot: discord.Bot, radio_info_embeds: typing.List[discord.Embed],radio_info_view: discord.ui.View,audio_info):
@@ -58,12 +59,11 @@ async def radio_all_play(play_source_path: str, bot: discord.Bot, radio_info_emb
 		another_guilds_radio: typing.Dict[str , typing.Tuple[typing.List[int], int]] = json.loads(file.read())
 
 	async for guild in bot.fetch_guilds():
-		print(f"Play guild: {guild.name}")
 		another_radio_ids = another_guilds_radio[str(guild.id)]
 
 		radio_play_channel: discord.VoiceChannel = await guild.fetch_channel(another_radio_ids[1])
 
-		if guild.id in another_radio_info_messages:
+		if not guild.id in another_radio_info_messages:
 			await another_radio_info_messages[guild.id].edit(embeds=radio_info_embeds)
 		else:
 			if len(another_radio_ids[0])==1:
