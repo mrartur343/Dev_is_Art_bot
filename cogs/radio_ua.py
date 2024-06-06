@@ -352,6 +352,9 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 				for song_name in songs_list:
 					if song_name in songs[album_name]:
 						try:
+							print(
+								f'Play {song_name} ({album_name}) ({datetime.datetime.now().strftime(format="%c")})')
+
 							await admin_logs.send(
 								f'Play {song_name} ({album_name}) ({datetime.datetime.now().strftime(format="%c")})')
 							file_name = songs[album_name][song_name]
