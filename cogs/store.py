@@ -1,3 +1,4 @@
+import asyncio
 import json
 import time
 import typing
@@ -103,10 +104,17 @@ class Store(commands.Cog):  # create a class for our cog that inherits from comm
 		print(self.color_roles)
 
 
+
 	@commands.slash_command(name='select_color')  # we can also add application commands
 	async def select_color(self, ctx: discord.ApplicationContext):
 
 		await ctx.respond(view=ColorSelect(member=ctx.user, color_roles=self.color_roles))
+	@commands.slash_command(name='check_voice')  # we can also add application commands
+	async def check_voice(self, ctx: discord.ApplicationContext):
+		if ctx.voice_client is None:
+			await ctx.respond("None")
+		else:
+			await ctx.respond(ctx.voice_client.channel.id)
 
 
 async def setup(bot):  # this is called by Pycord to setup the cog

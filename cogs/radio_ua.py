@@ -19,423 +19,81 @@ from discord.ext import commands, pages
 from os import listdir
 from os.path import isfile, join
 from tinytag import TinyTag
-
-radio_sleep_timers: typing.Dict[str, typing.List[int]] = {'song_end': [], 'album_end': []}
-
-
-class AlbumSongs(discord.ui.View):
-	def __init__(self, songs_list: typing.List[str], current_play: str, current_album: str, timeout: float | None,
-	             timetable: typing.Dict[str, datetime.datetime], next_cycle_time: datetime.datetime,
-	             cycle_duration: float, e_pages=typing.List[discord.Embed], *args, **kwargs):
-		self.cycle_duration = cycle_duration
-		self.next_cycle_time = next_cycle_time
-		self.timetable = timetable
-		self.current_album = current_album
-		self.current_play = current_play
-		self.songs_list = songs_list
-		super().__init__(timeout=timeout, *args)
-
-	# Create a class called MyView that subclasses discord.ui.View
-	@discord.ui.button(label="Список треків в альбомі:", style=discord.ButtonStyle.gray,
-	                   emoji="📋")  # Create a button with the label "😎 Click me!" with color Blurple
-	async def button_callback1(self, button, interaction):
-		embed = discord.Embed(title='Наступні треки в альбомі:')
-		embed.description = ''
-		for song in self.songs_list:
-			embed.description += f'- {"▶️ " if self.current_play == song else ""}{song}\n'
-		await interaction.response.send_message(embed=embed,
-		                                        ephemeral=True)  # Send a message when the button is clicked
-
-	@discord.ui.button(label="До обраних", style=discord.ButtonStyle.gray,
-	                   emoji="❤️")  # Create a button with the label "😎 Click me!" with color Blurple
-	async def button_callback2(self, button, interaction: discord.Interaction):
-
-		album_likes = {}
-		with open("other/album_likes.json", 'r') as file:
-			album_likes = json.loads(file.read())
-		if not interaction.user.id in album_likes[self.current_album]:
-			album_likes[self.current_album].append(interaction.user.id)
-		with open("other/album_likes.json", 'w') as file:
-			json.dump(album_likes, file)
-		await interaction.response.send_message(
-			f"Успішно додано альбом до ваших обраних, тепер вам буде приходити оповіщення за деякий час до початку цього альбому!",
-			ephemeral=True, view=DislikeAlbum(liked_album=self.current_album,
-			                                  timeout=None))  # Send a message when the button is clicked
-
-	@discord.ui.button(label="Список обраних", style=discord.ButtonStyle.gray,
-	                   emoji="💕")  # Create a button with the label "😎 Click me!" with color Blurple
-	async def button_callback3(self, button, interaction: discord.Interaction):
-
-		album_likes = {}
-		with open("other/album_likes.json", 'r') as file:
-			album_likes = json.loads(file.read())
-		with open('other/albums_data.json', 'r') as file:
-			album_data_json = json.loads(file.read())
-		albums_names = {}
-		for short_name, info in album_data_json.items():
-			albums_names[short_name] = info[0]
-		albums_list = []
-
-		for album_name, members in album_likes.items():
-			if interaction.user.id in members:
-				albums_list.append(album_name)
-
-		dict_timetable = {}
-		for line in self.timetable:
-			if not line[0] in dict_timetable:
-				dict_timetable[line[0]] = line[1]
-
-		def sort_albums(album_key):
-			if album_key in dict_timetable:
-				return dict_timetable[album_key].timestamp()
-			else:
-				return 9999999999
-
-		albums_list.sort(key=sort_albums)
-		items_pages = []
-		for album_name in albums_list:
-
-			time_check = False
-
-			if album_name in dict_timetable:
-				album_start_time = dict_timetable[album_name]
-				time_check = True
-			else:
-				album_start_time = self.next_cycle_time
-
-			items_embed = discord.Embed(title=albums_names[album_name])
-			n = '\n'
-			items_embed.description = f"❤️ | Цей альбом обрали: **{len(album_likes[album_name])}**"
-
-			if time_check:
-				items_embed.add_field(name=f'Заграє на радіо:', value=f"<t:{round(album_start_time.timestamp())}:f>")
-			else:
-				items_embed.add_field(name=f'Заграє на радіо:',
-				                      value=f"~ <t:{round(album_start_time.timestamp())}:f> - <t:{round((album_start_time + datetime.timedelta(seconds=self.cycle_duration)).timestamp())}:f> (Цей альбом заграє вже у наступному циклі, тому час лише приблизний)")
-
-			with open('other/notifications_off.json', 'r') as file:
-				notifications_off: typing.Dict[str, typing.List[str]] = json.loads(file.read())
-				if str(interaction.user.id) in notifications_off:
-					if album_name in notifications_off[str(interaction.user.id)]:
-						items_embed.add_field(name='Сповіщення про увімкнення:', value='🌙 Вимкнуто')
-					else:
-						items_embed.add_field(name='Сповіщення про увімкнення:', value='🔔 Увімкнуто')
-				else:
-					items_embed.add_field(name='Сповіщення про увімкнення:', value='🔔 Увімкнуто')
-
-			if album_name in albums_images_cache:
-				items_embed.set_image(url=albums_images_cache[album_name])
-			items_embed.set_footer(text=album_name)
-
-			items_pages.append(items_embed)
-
-		buttons = [
-			pages.PaginatorButton("first", label="<<-", style=discord.ButtonStyle.green),
-			pages.PaginatorButton("prev", label="<-", style=discord.ButtonStyle.green),
-			pages.PaginatorButton("page_indicator", style=discord.ButtonStyle.gray, disabled=True),
-			pages.PaginatorButton("next", label="->", style=discord.ButtonStyle.green),
-			pages.PaginatorButton("last", label="->>", style=discord.ButtonStyle.green),
-		]
-
-		paginator: pages.Paginator = pages.Paginator(
-			pages=items_pages,
-			show_indicator=True,
-			use_default_buttons=False,
-			custom_buttons=buttons
-
-		)
-
-		pmsg = await paginator.respond(interaction, ephemeral=True)
-		custom_view = DislikeAlbumFromList(pmsg.id, pmsg.channel)
-		await paginator.update(custom_view=custom_view)
-
-	@discord.ui.button(label="Таймер сну", style=discord.ButtonStyle.gray,
-	                   emoji="🌙")  # Create a button with the label "😎 Click me!" with color Blurple
-	async def button_callback4(self, button, interaction: discord.Interaction):
-		view = SleepTimer()
-		cancel_check = False
-		for k, v in radio_sleep_timers.items():
-			if interaction.user.id in v:
-				cancel_check = True
-
-		if cancel_check:
-			view.options.insert(0, discord.SelectOption(label='Вимкнути таймер', value='stop'))
-		await interaction.respond("Таймер сну автоматично від'єднає вас з голосового каналу тоді, коли вам потрібно:",
-		                          view=view, ephemeral=True)
+from modules.radio_ua_views import *
 
 
-class RadioPlaylistsView(discord.ui.View):
-	def __init__(self,general_radio_ingo_channel,msg_id, *args, **kwargs):
-		self.general_radio_ingo_channel: discord.Thread = general_radio_ingo_channel
-		self.msg_id: int = msg_id
-		super().__init__(timeout=None, *args)
+another_radio_info_messages: typing.Dict[int, discord.Message] = {}
 
-	@discord.ui.button(label="Змінити радіо", style=discord.ButtonStyle.gray,
-	                   emoji="📻")
-	async def button_callback1(self, button, interaction: discord.Interaction):
-		om = interaction.message
-		await interaction.respond(f'Переміщення альбому/синглу {om.embeds[0].title}:',
-		                          ephemeral=True, view=MoveAlbumToRadio(om.embeds[0].footer.text)) # Send a message when the button is clicked
+async def guild_play(play_source_path:discord.AudioSource,audio_info:TinyTag,radio_voice_client: discord.VoiceClient | discord.VoiceProtocol):
+	updated_channel: discord.VoiceChannel = await radio_voice_client.channel.guild.fetch_channel(
+		radio_voice_client.channel.id)
 
+	if len(updated_channel.members) < 2:
+		quality_high = False
+	else:
+		quality_high = True
 
-class MoveAlbumToRadio(discord.ui.View):
-	def __init__(self,album_key):
-		self.album_key=album_key
-		super().__init__(timeout=None)
-
-
-	@discord.ui.select(  # the decorator that lets you specify the properties of the select menu
-		placeholder="Виберіть радіо",  # the placeholder text that will be displayed if nothing is selected
-		min_values=1,  # the minimum number of values that must be selected by the users
-		max_values=1,  # the maximum number of values that can be selected by the users
-		options=[  # the list of options from which users can choose, a required field
-			discord.SelectOption(
-				label="Alpha",
-				description="Хайперпоп, укр. альт рок | Від @q7d19b_",
-				value='1'
-
-			),
-			discord.SelectOption(
-				label="Beta",
-				description="Захід. альт рок, легкий фонк, джаз, інші види захід. року | Від @optymist",
-				value='2'
-			),
-			discord.SelectOption(
-				label="Gamma",
-				description="Андер, важкий фонк, метал | Від @svosvosvosvo",
-				value='3'
-			),
-			discord.SelectOption(
-				label="Delta",
-				description="OST ігор, джаз, інше спокійне | Від @cap_banana",
-				value='4'
-			)
-		]
-	)
-	async def select_callback(self, select, interaction):  # the function called when the user is done selecting options
-		radio_playlists = {'1': [], '2': [], '3': [], '4': []}
-		for i in range(4):
-			with open('other/radio_playlists.json', 'r') as file:
-				radio_playlist: typing.List[str] = json.loads(file.read())[str(i + 1)]
-			if select.values[0]!=str(i + 1):
-				if self.album_key in radio_playlist:
-					radio_playlist.remove(self.album_key)
-			else:
-				if not self.album_key in radio_playlist:
-					radio_playlist.append(self.album_key)
-			radio_playlists[str(i + 1)]=radio_playlist
-		with open('other/radio_playlists.json', 'w') as file:
-			json.dump(radio_playlists,file)
+	waiting_start_time = time.time()
+	wait_duration = audio_info.duration
+	while not quality_high and time.time() - waiting_start_time < wait_duration:
+		await asyncio.sleep(1)
+		updated_channel: discord.VoiceChannel = await radio_voice_client.channel.guild.fetch_channel(
+			radio_voice_client.channel.id)
 
 
 
-		await interaction.respond(f"Успішно перенесено цей альбом до радіо {['Alpha','Beta','Gamma','Delta'][int(select.values[0])-1]}",ephemeral=True)
+		if len(updated_channel.members) >= 2:
+			quality_high = True
+	FFMPEG_OPTIONS = {
+		'options': f'-vn -b:a 320k -ss {round(time.time() - waiting_start_time)}'}
+	audio_source = discord.FFmpegPCMAudio(play_source_path,
+	                                      **FFMPEG_OPTIONS)
+	if time.time() - waiting_start_time < wait_duration:
+		await radio_voice_client.play(audio_source, wait_finish=True)
 
+async def radio_all_play(play_source_path: str, bot: discord.Bot, radio_info_embeds: typing.List[discord.Embed],radio_info_view: discord.ui.View,audio_info,radio_name:str):
+	global another_radio_info_messages
 
-class GeneralRadioInfo(discord.ui.View):
+	with open("other/another_guilds_radio.json", 'r') as file:
+		another_guilds_radio: typing.Dict[str , typing.Tuple[typing.List[int], int]] = json.loads(file.read())[radio_name]
 
-	def __init__(self, all_radio_time, *items):
-		super().__init__(*items)
-		self.all_radio_time = all_radio_time
-		self.timeout=None
+	async for guild in bot.fetch_guilds():
+		another_radio_ids = another_guilds_radio[str(guild.id)]
 
-	@discord.ui.button(label="Всі альбоми/сингли", style=discord.ButtonStyle.gray, emoji="📜")
-	async def all_albums_singles(self, button, interaction: discord.Interaction):
-		radio_playlists_groups: typing.List[pages.PageGroup] = []
+		radio_play_channel: discord.VoiceChannel = await guild.fetch_channel(another_radio_ids[1])
 
-		with open('other/albums_data.json', 'r') as file:
-			album_data_json_nf: typing.Dict = json.loads(file.read())
-
-		for i, radio_name in enumerate(['Alpha', 'Beta', 'Gamma', 'Delta']):
-
-			with open('other/radio_playlists.json', 'r') as file:
-				radio_playlist = json.loads(file.read())[str(i + 1)]
-			with open('other/albums_images_cache.json', 'r') as file:
-				album_images_cache = json.loads(file.read())
-			with open('other/songs_lists_cache.json', 'r') as file:
-				songs_lists_cache = json.loads(file.read())
-			with open('other/singles_names.json', 'r') as file:
-				singles_names = json.loads(file.read())
-
-			album_data_json = {}
-			for ak, ad in album_data_json_nf.items():
-				if ak in radio_playlist:
-					album_data_json[ak] = ad
-
-			radio_pages: typing.List[pages.Page] = []
-			print(album_data_json)
-			print(len(album_data_json.values()))
-			all_time = 0
-			for k in album_data_json.keys():
-				d = 0
-				for file in [f for f in listdir(f"songs/{k}") if
-				             isfile(join(f"songs/{k}", f))]:
-					audio_info = TinyTag.get(f"songs/{k}/{file}")
-					if audio_info.duration != None:
-						d += audio_info.duration
-				all_time += d
-
-			for k, v in album_data_json.items():
-				embed = discord.Embed(title=v[0])
-				if k in album_images_cache:
-					embed.set_image(url=album_images_cache[k])
-				embed.url = v[1]
-				if v[1] in songs_lists_cache:
-					embed.description = ''
-					for song_name in songs_lists_cache[v[1]]:
-						embed.description += f"> - {song_name}\n"
-
-				embed.set_footer(
-					text=k)
-				radio_pages.append(pages.Page(embeds=[embed]))
-
-			print(f'radio_pages: {len(radio_pages)}')
-
-			radio_group = pages.PageGroup(
-				radio_pages,
-				label=radio_name
-
-			)
-			radio_playlists_groups.append(radio_group)
-
-		print(f'radio_playlists_groups: {len(radio_playlists_groups)}')
-
-		radio_paginator = pages.Paginator(
-			pages=radio_playlists_groups,
-			timeout=899,
-			show_menu=True
-		)
-
-		pmsg = await radio_paginator.respond(interaction,ephemeral=True)
-		custom_v =RadioPlaylistsView(pmsg.channel,pmsg.id)
-		if not interaction.user.id in [658217734814957578, 1154105417283150034, 499940320088293377, 767783132031352884]:
-			custom_v.disable_all_items()
-		for i in range(4):
-			radio_playlists_groups[i].custom_view=custom_v
-
-		await radio_paginator.update(pages=radio_playlists_groups,custom_view=custom_v)
-
-
-
-class SleepTimer(discord.ui.View):
-	options = []
-	options.append(discord.SelectOption(label='15 хв', value='15m'))
-	options.append(discord.SelectOption(label='30 хв', value='30m'))
-	options.append(discord.SelectOption(label='45 хв', value='45m'))
-	options.append(discord.SelectOption(label='60 хв', value='60m'))
-	options.append(discord.SelectOption(label='По закінченню трека', value='song_end'))
-	options.append(discord.SelectOption(label='По закінченню альбому', value='album_end'))
-
-	@discord.ui.select(  # the decorator that lets you specify the properties of the select menu
-		placeholder="Вибрати дію",  # the placeholder text that will be displayed if nothing is selected
-		min_values=1,  # the minimum number of values that must be selected by the users
-		max_values=1,  # the maximum number of values that can be selected by the users
-		options=options
-	)
-	async def select_callback(self, select: discord.ui.Select,
-	                          interaction: discord.Interaction):  # the function called when the user is done selecting options
-		global radio_sleep_timers
-		for k, v in radio_sleep_timers.items():
-			if interaction.user.id in v:
-				radio_sleep_timers[k].remove(interaction.user.id)
-				if k.endswith('m'):
-					if len(v) == 0:
-						del (radio_sleep_timers[k])
-		if select.values[0] == 'stop':
-			await interaction.respond(f"Успішно вимкнено таймер сну ☀️", ephemeral=True)
-
-
-		elif select.values[0].endswith('m'):
-			r_timestamp = round(
-				(datetime.datetime.now() + datetime.timedelta(minutes=int(select.values[0][:-1]))).timestamp())
-			radio_sleep_timers[f"{r_timestamp}m"] = []
-			radio_sleep_timers[f"{r_timestamp}m"].append(interaction.user.id)
-			await interaction.respond(
-				f"Вас автоматично від'єднає <t:{r_timestamp}:R> (по завершенню трека після закінчення аймеру)",
-				ephemeral=True)
+		if guild.id in another_radio_info_messages:
+			await another_radio_info_messages[guild.id].edit(embeds=radio_info_embeds)
 		else:
-			radio_sleep_timers[select.values[0]].append(interaction.user.id)
-			await interaction.respond(
-				f"Вас автоматично від'єднає з войса по завершенню {'альбому' if select.values[0] == 'album_end' else 'треку'}",
-				ephemeral=True)
-
-		self.disable_all_items()
-		await self.message.delete()
-
-
-class DislikeAlbum(discord.ui.View):
-	def __init__(self, liked_album: str, timeout: float | None = None, *args, **kwargs):
-		self.liked_album = liked_album
-		super().__init__(timeout=timeout, *args)
-
-	@discord.ui.button(label="Зняти з обраних", style=discord.ButtonStyle.gray,
-	                   emoji="💔")  # Create a button with the label "😎 Click me!" with color Blurple
-	async def button_callback(self, button, interaction: discord.Interaction):
-		album_likes = {}
-		with open("other/album_likes.json", 'r') as file:
-			album_likes = json.loads(file.read())
-		if interaction.user.id in album_likes[self.liked_album]:
-			album_likes[self.liked_album].remove(interaction.user.id)
-		with open("other/album_likes.json", 'w') as file:
-			json.dump(album_likes, file)
-		await interaction.response.send_message(f"Успішно видалено альбом з ваших обраних!",
-		                                        ephemeral=True)  # Send a message when the button is clicked
-
-
-class DislikeAlbumFromList(discord.ui.View):
-	def __init__(self, msg_id: int, radio_channel: discord.TextChannel, timeout: float | None = None, *args, **kwargs):
-		super().__init__(timeout=timeout, *args)
-		self.radio_channel = radio_channel
-		self.msg_id = msg_id
-
-	@discord.ui.button(label="Зняти з обраних", style=discord.ButtonStyle.gray,
-	                   emoji="💔")  # Create a button with the label "😎 Click me!" with color Blurple
-	async def button_callback(self, button: discord.Button, interaction: discord.Interaction):
-		self.pmsg = interaction.message
-		self.liked_album = self.pmsg.embeds[0].footer.text
-		album_likes = {}
-		with open("other/album_likes.json", 'r') as file:
-			album_likes = json.loads(file.read())
-		if interaction.user.id in album_likes[self.liked_album]:
-			album_likes[self.liked_album].remove(interaction.user.id)
-		with open("other/album_likes.json", 'w') as file:
-			json.dump(album_likes, file)
-		await interaction.respond(content=f"Успішно видалено 1 альбом з ваших обраних!",
-		                          ephemeral=True)  # Send a message when the button is clicked
-
-	@discord.ui.button(label="", style=discord.ButtonStyle.gray, custom_id='notification_button',
-	                   emoji="🔔")  # Create a button with the label "😎 Click me!" with color Blurple
-	async def button_callback2(self, button, interaction: discord.Interaction):
-		self.pmsg = interaction.message
-		self.liked_album = self.pmsg.embeds[0].footer.text
-		with open('other/notifications_off.json', 'r') as file:
-			album_name = self.liked_album
-			str_id = str(interaction.user.id)
-			not_check = False
-			notifications_off: typing.Dict[str, typing.List[str]] = json.loads(file.read())
-			if str(interaction.user.id) in notifications_off:
-				if album_name in notifications_off[str(interaction.user.id)]:
-					notifications_off[str_id].remove(album_name)
-					not_check = True
-				else:
-					notifications_off[str_id].append(album_name)
+			if len(another_radio_ids[0])==1:
+				info_channel = await guild.fetch_channel(another_radio_ids[0][0])
 			else:
-				notifications_off[str_id] = []
-				notifications_off[str_id].append(album_name)
+				forum_channel =  await guild.fetch_channel(another_radio_ids[0][0])
+				info_channel = forum_channel.get_thread(another_radio_ids[0][1])
 
-		with open('other/notifications_off.json', 'w') as file:
-			json.dump(notifications_off, file)
+			async for message in info_channel.history():
+				if message.author.id == bot.user.id:
+					await message.delete()
 
-		if not_check:
-			await interaction.respond(content=f"🔔 Успішно **увімкнуто** сповіщення для цього альбому!", ephemeral=True)
+			msg= await info_channel.send(embeds=radio_info_embeds,view=radio_info_view)
+			another_radio_info_messages[guild.id]=msg
+
+		if guild.voice_client:
+			voice = guild.voice_client
 		else:
-			await interaction.respond(content=f"🌙 Успішно **вимкнуто** сповіщення для цього альбому!", ephemeral=True)
+			voice = await radio_play_channel.connect()
+
+
+		asyncio.run(guild_play(play_source_path,audio_info, voice))
+
 
 
 with open("other/songs_lists_cache.json", 'r') as file:
 	songs_lists_cache = json.loads(file.read())
 with open("other/albums_images_cache.json", 'r') as file:
 	albums_images_cache = json.loads(file.read())
+with open("other/radio_sleep_timers.json", 'r') as file:
+	radio_sleep_timers: typing.Dict[str, typing.List[int]] = json.loads(file.read())
 
 
 def get_song_list(url: str):
@@ -474,14 +132,6 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 		self.bot: discord.Bot = bot
 		self.radio_name = radio_name
 
-		if radio_name == 'Alpha':
-			self.radio_channel_id = 1208129687231008808
-		elif radio_name == 'Beta':
-			self.radio_channel_id = 1241401097034268702
-		elif radio_name == 'Gamma':
-			self.radio_channel_id = 1241401134170640455
-		else:
-			self.radio_channel_id = 1246941666045198367
 
 	@commands.Cog.listener()
 	async def on_ready(self):
@@ -490,41 +140,11 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 		albums_imgs = albums_images_cache
 		start_check = True
 
-		voice_channel: discord.VoiceChannel = await self.bot.fetch_channel(self.radio_channel_id)
-		radio_forum: discord.ForumChannel = await self.bot.fetch_channel(1241408420284989494)
 
-		if self.radio_name == 'Alpha':
-			radio_info = radio_forum.get_thread(1246944941721260092)
-			general_radio_info: Thread | None = radio_forum.get_thread(1241410417985720411)
-			async for message in general_radio_info.history():
-				if message.author.id == self.bot.user.id:
-					await message.delete()
-		elif self.radio_name == 'Beta':
-			radio_info = radio_forum.get_thread(1246944795897626726)
-		elif self.radio_name == 'Gamma':
-			radio_info = radio_forum.get_thread(1246944747621322782)
-		else:
-			radio_info = radio_forum.get_thread(1246944596961919027)
+		with open('other/radio_playlists.json', 'r') as file:
+			radio_playlist = json.loads(file.read())[self.radio_name]
 
-		if self.radio_name == 'Alpha':
-			with open('other/radio_playlists.json', 'r') as file:
-				radio_playlist = json.loads(file.read())['1']
-		elif self.radio_name == 'Beta':
-			with open('other/radio_playlists.json', 'r') as file:
-				radio_playlist = json.loads(file.read())['2']
-		elif self.radio_name == 'Gamma':
-			with open('other/radio_playlists.json', 'r') as file:
-				radio_playlist = json.loads(file.read())['3']
-		else:
-			with open('other/radio_playlists.json', 'r') as file:
-				radio_playlist = json.loads(file.read())['4']
 
-		voice_client = await voice_channel.connect(reconnect=True)
-
-		async for message in radio_info.history():
-			if message.author.id == self.bot.user.id:
-				await message.delete()
-		msg = await radio_info.send(embeds=[discord.Embed(title='load...'), discord.Embed(title='load...')])
 
 		while True:
 
@@ -561,7 +181,9 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 
 			# noinspection PyTypeChecker
 
-			admin_logs = await voice_channel.guild.fetch_channel(1208129687067303940)
+
+
+			admin_logs = (await (await self.bot.fetch_guild(1208129686031310848)).fetch_channel(1208129687067303940))
 			# noinspection PyTypeChecker
 			afk_radio: discord.VoiceChannel = await self.bot.fetch_channel(1235991951547961478)
 			await admin_logs.send(f'Cycle {datetime.datetime.now().strftime(format="%c")}')
@@ -591,6 +213,11 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 			for duration in album_durations.values():
 				all_radio_time += duration
 			if self.radio_name == 'Alpha':
+				general_radio_info = (await (await self.bot.fetch_guild(1208129686031310848)).fetch_channel(1241408420284989494)).get_thread(1241410417985720411)
+
+				async for message in general_radio_info.history():
+					if message.author.id == self.bot.user.id:
+						await message.delete()
 				await general_radio_info.send("Додаткова інформація:",
 				                              view=GeneralRadioInfo(all_radio_time=all_radio_time))
 
@@ -735,19 +362,11 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 						try:
 							await admin_logs.send(
 								f'Play {song_name} ({album_name}) ({datetime.datetime.now().strftime(format="%c")})')
-							print(voice_channel.members)
 							file_name = songs[album_name][song_name]
 
 							quality = 320
 
-							updated_channel: discord.VoiceChannel = await voice_channel.guild.fetch_channel(
-								self.radio_channel_id)
-							print(len(updated_channel.members))
-							if len(updated_channel.members) < 2:
-								await admin_logs.send("LOW QUALITY")
-								quality = 32
-							else:
-								await admin_logs.send("HIGH QUALITY")
+
 
 							audio_info = TinyTag.get(f"songs/{album_name}/{file_name}", image=True)
 							if not album_name in albums_imgs:
@@ -820,131 +439,91 @@ class RadioUa(commands.Cog):  # create a class for our cog that inherits from co
 								embed2 = discord.Embed(description='Цей сингл є початком циклу музики на радіо',
 								                       colour=discord.Color.from_rgb(r=dcolor[0], g=dcolor[1],
 								                                                     b=dcolor[2]))
-							await msg.edit(embeds=[embed_info, embed2],
-							               view=AlbumSongs(songs_list=songs_list, current_play=song_name, timeout=None,
+
+							radio_msg_embeds = [embed_info, embed2]
+							radio_msg_view = AlbumSongs(songs_list=songs_list, current_play=song_name, timeout=None,
 							                               current_album=album_name, timetable=timetable,
 							                               next_cycle_time=next_cycle_time,
-							                               cycle_duration=cycle_duration))
+							                               cycle_duration=cycle_duration)
 
 							sde_achievement_list = []
 
-							if audio_info.title == 'Sex, Drugs, Etc.':
-								for member in voice_channel.members:
-									sde_achievement_list.append(member)
 
-							if voice_channel.guild.me.voice is None:
-								await admin_logs.send("Discord disconect me from voice")
-								if len(voice_channel.members) > 0:
-									voice_client = await voice_channel.connect(reconnect=True)
-								else:
-									voice_client = await afk_radio.connect(reconnect=True)
 							await self.bot.change_presence(status=discord.Status.streaming,
 							                               activity=discord.Activity(
 								                               type=discord.ActivityType.listening,
-								                               url="https://discord.com/channels/1208129686031310848/1208129687231008808",
 								                               name=f"{audio_info.title} - {audio_info.artist} | ({albums_names[album_name]})"))
 
+
+
 							try:
+								await radio_all_play(f"songs/{album_name}/{file_name}",self.bot,radio_msg_embeds,radio_msg_view,audio_info,self.radio_name)
 
-								with open('other/current_play.json', 'r') as file:
-									current_play = json.loads(file.read())
-								current_play[self.radio_name]= [f"songs/{album_name}/{file_name}", round(datetime.datetime.now().timestamp())]
-								with open('other/current_play.json', 'w') as file:
-									json.dump(current_play,file)
-
-								waiting_start_time = time.time()
-								wait_duration = audio_info.duration
-								while quality == 32 and time.time() - waiting_start_time < wait_duration:
-									await asyncio.sleep(1)
-									updated_channel: discord.VoiceChannel = await voice_channel.guild.fetch_channel(
-										self.radio_channel_id)
-
-									if len(updated_channel.members) >= 2:
-										quality = 320
-								FFMPEG_OPTIONS = {
-									'options': f'-vn -b:a {quality}k -ss {round(time.time() - waiting_start_time)}'}
-								audio_source = discord.FFmpegPCMAudio(f"songs/{album_name}/{file_name}",
-								                                      **FFMPEG_OPTIONS)
-								if time.time() - waiting_start_time < wait_duration:
-									await voice_client.play(audio_source, wait_finish=True)
 
 							#await asyncio.sleep(1)
 
 							except Exception as error_play:
-								if error_play.__str__() in ['Not connected to voice.',
-								                            "Cannot write to closing transport"]:
-									try:
-										if len(voice_channel.members) > 0:
-											voice_client = await voice_channel.connect(reconnect=True)
-										else:
-											voice_client = await afk_radio.connect(reconnect=True)
-									except Exception as error_connect:
-										if error_connect.__str__() == "Cannot write to closing transport":
-											connect_check = True
-											while connect_check:
-												await admin_logs.send('Try to connect....')
-												await asyncio.sleep(5)
-												if len(voice_channel.members) > 0:
-													voice_client = await voice_channel.connect(reconnect=True)
-													connect_check = False
-												else:
-													voice_client = await afk_radio.connect(reconnect=True)
-													connect_check = False
+								pass
 
-							if audio_info.title == 'Sex, Drugs, Etc.':
-								for member in voice_channel.members:
-									sde_achievement_list.append(member)
+							with open("other/radio_sleep_timers.json", 'r') as file:
+								radio_sleep_timers: typing.Dict[str, typing.List[int]] = json.loads(file.read())
 
-								achievements = account_controll.all_achievements()
 
-								for member in sde_achievement_list:
-									account_controll.add_to_member('sde', member.id)
-									if member.can_send() and member.id != 1221403700115800164:
-										await member.send(
-											f"Адміністрація серверу Dev is Art додала вам 1 нових ачівок:\n- **`{achievements['sde']['name']}`**\n> {achievements['sde']['description']}")
+							for guild in self.bot.guilds:
+								if guild.voice_client:
+									voice_channel: discord.VoiceChannel = guild.voice_client.channel
+									for member_id in radio_sleep_timers['song_end']:
+										user = await voice_channel.guild.fetch_member(member_id)
+										if user != None:
+											if user.voice != None:
+												if user.voice.channel.id == self.radio_channel_id:
+													await user.move_to(None)
+													radio_sleep_timers['song_end'].remove(member_id)
+											try:
+												await user.send(f"Надобраніч!")
+											except:
+												pass
 
-							for member_id in radio_sleep_timers['song_end']:
-								user = await voice_channel.guild.fetch_member(member_id)
-								if user != None:
-									if user.voice != None:
-										if user.voice.channel.id == self.radio_channel_id:
-											await user.move_to(None)
-											radio_sleep_timers['song_end'].remove(member_id)
-									try:
-										await user.send(f"Надобраніч!")
-									except:
-										pass
-							for timer_str, st_members_ids in radio_sleep_timers.items():
-								if timer_str.endswith('m'):
-									r_timestamp = int(timer_str.split('m')[0])
-									if r_timestamp < datetime.datetime.now().timestamp():
-										for m_id in st_members_ids:
-											user = await voice_channel.guild.fetch_member(m_id)
-											if user != None:
-												if user.voice != None:
-													if user.voice.channel.id == self.radio_channel_id:
-														await user.move_to(None)
-														radio_sleep_timers[timer_str].remove(m_id)
-												try:
-													await user.send(f"Надобраніч!")
-												except:
-													pass
+									for timer_str, st_members_ids in radio_sleep_timers.items():
+										if timer_str.endswith('m'):
+											r_timestamp = int(timer_str.split('m')[0])
+											if r_timestamp < datetime.datetime.now().timestamp():
+												for m_id in st_members_ids:
+													user = await voice_channel.guild.fetch_member(m_id)
+													if user != None:
+														if user.voice != None:
+															if user.voice.channel.id == self.radio_channel_id:
+																await user.move_to(None)
+																radio_sleep_timers[timer_str].remove(m_id)
+														try:
+															await user.send(f"Надобраніч!")
+														except:
+															pass
 
 						except Exception as error:
 							await admin_logs.send(
 								f"Помилка при завантажені трека: {song_name} ({albums_names[album_name]})\n{error}")
 							continue
-				for member_id in radio_sleep_timers['album_end']:
-					user = await voice_channel.guild.fetch_member(member_id)
-					if user != None:
-						if user.voice != None:
-							if user.voice.channel.id == self.radio_channel_id:
-								await user.move_to(None)
-								radio_sleep_timers['album_end'].remove(member_id)
-						try:
-							await user.send(f"Надобраніч!")
-						except:
-							pass
+
+
+				with open("other/radio_sleep_timers.json", 'r') as file:
+					radio_sleep_timers: typing.Dict[str, typing.List[int]] = json.loads(file.read())
+
+				for guild in self.bot.guilds:
+					if guild.voice_client:
+						voice_channel: discord.VoiceChannel  = guild.voice_client.channel
+
+						for member_id in radio_sleep_timers['album_end']:
+							user = await voice_channel.guild.fetch_member(member_id)
+							if user != None:
+								if user.voice != None:
+									if user.voice.channel.id == self.radio_channel_id:
+										await user.move_to(None)
+										radio_sleep_timers['album_end'].remove(member_id)
+								try:
+									await user.send(f"Надобраніч!")
+								except:
+									pass
 
 
 async def setup(bot):  # this is called by Pycord to setup the cog
