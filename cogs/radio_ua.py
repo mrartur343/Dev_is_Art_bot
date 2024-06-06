@@ -65,6 +65,7 @@ async def radio_all_play(play_source_path: str, bot: discord.Bot, radio_info_emb
 
 			await another_radio_info_messages[guild.id].edit(embeds=radio_info_embeds)
 		else:
+			print(another_radio)
 			print(f"Info channel id: {another_radio[0].id}")
 			info_channel = another_radio[0]
 
