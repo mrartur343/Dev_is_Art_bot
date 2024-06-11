@@ -102,11 +102,13 @@ class RadioPlaylistsView(discord.ui.View):
 					if song_name==song_name_path:
 						song_path=songs_paths[i]
 
-				audio_info = TinyTag.get(song_path,image=True)
+				audio_info = TinyTag.get(song_path, image=True)
 
 				image_data: bytes = audio_info.get_image()
 				with open('a.png', 'wb') as file:
 					file.write(image_data)
+
+
 				admin_logs = (
 					await (await self.bot.fetch_guild(1208129686031310848)).fetch_channel(1208129687067303940))
 
