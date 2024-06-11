@@ -204,7 +204,7 @@ class RadioPlaylistsView(discord.ui.View):
 				msg = await msg.edit(embeds=radio_msg_embeds, view=radio_msg_view)
 
 				while len(updated_channel.members) < 2 and time.time() - waiting_start_time < wait_duration:
-					updated_channel: discord.VoiceChannel = asyncio.run(vc.channel.guild.fetch_channel(
+					updated_channel: discord.VoiceChannel = await (vc.channel.guild.fetch_channel(
 						vc.channel.id))
 					await asyncio.sleep(1)
 				FFMPEG_OPTIONS = {
