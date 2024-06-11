@@ -230,7 +230,6 @@ class SRadio(commands.Cog):  # create a class for our cog that inherits from com
 			timeout=899
 		)
 
-		await paginator.respond(ctx.interaction)
 		pmsg = await paginator.respond(ctx.interaction)
 		custom_v =RadioPlaylistsView(pmsg.channel,pmsg.id,self.bot,cycled)
 
