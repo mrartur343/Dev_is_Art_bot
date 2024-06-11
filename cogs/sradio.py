@@ -10,19 +10,19 @@ from modules.radio_ua_views import *
 from PIL import Image, ImageDraw
 from tinytag import TinyTag
 import discord
-import jmespath
+import sradio_contoller
 from discord.ext import commands, pages
-
 import avarage_color_getter
-from modules import sradio_contoller, radio_timetable
+from modules import radio_timetable
 
 
 class RadioPlaylistsView(discord.ui.View):
-	def __init__(self,general_radio_ingo_channel,msg_id,bot,cycled, *args, **kwargs):
+	def __init__(self,general_radio_ingo_channel,msg_id,bot,cycled,voice_channel, *args, **kwargs):
 		self.general_radio_ingo_channel: discord.Thread = general_radio_ingo_channel
 		self.msg_id: int = msg_id
 		self.bot = bot
 		self.cycled = cycled
+		self.voice_channel = voice_channel
 		super().__init__(timeout=None, *args)
 
 	@discord.ui.button(label="Грати радіо", style=discord.ButtonStyle.gray,
@@ -47,51 +47,60 @@ class RadioPlaylistsView(discord.ui.View):
 			if radio['name'] == radio_name:
 				radio_url = radio['link']
 
-		radio_queue = sradio_contoller.get_songs(radio_url)
+		songs_names, songs_urls = sradio_contoller.get_songs(radio_url)
 
-		print(list(radio_queue))
+
 
 		cycle = True
 
-		ctx_voice_channel = interaction.user.voice.channel
+		ctx_voice_channel = self.voice_channel
 
-		if ctx_voice_channel is None:
-			return
 
 
 		while cycle:
 			ci = -1
-			for song_name, song_url in radio_queue:
+			for song_name, song_url in zip(songs_names, songs_urls):
+				print(f"Play {song_name} - {song_url}")
 				ci += 1
 
-				actual_songs_paths = sradio_contoller.get_all_songs_paths()
+				songs_names_paths,songs_paths = sradio_contoller.get_all_songs_paths()
 				print("Зачекайте, не всі треки з плейлиста були завантажені...")
-				while not (song_name in jmespath.search('[*][0]', actual_songs_paths)):
-					print("Зачекайте, не всі треки з плейлиста були завантажені...")
+				if not (song_name in songs_names_paths):
+					print(songs_paths)
 
 					await interaction.channel.send('Зачекайте, не всі треки з плейлиста були завантажені...')
 					sradio_contoller.songs_download(radio_url)
 					await asyncio.sleep(3)
-					actual_songs_paths = sradio_contoller.get_all_songs_paths()
+					while not (song_name in songs_names_paths):
+						songs_names_paths,songs_paths = sradio_contoller.get_all_songs_paths()
 				await interaction.channel.send('Плейлист було дозавантажено!')
 				print("Плейлист було дозавантажено")
 
 				album_durations = {}
-				for d_song_path in jmespath.search('[*][1]', actual_songs_paths):
+				for d_song_path in songs_paths:
 					audio_info = TinyTag.get(d_song_path)
 					if audio_info.duration != None:
 						album_durations[d_song_path] = round(audio_info.duration)
 
 				cycle_duration = 0.0
 
-				for d_song_path in jmespath.search('[*][1]', actual_songs_paths):
+				for d_song_path in songs_paths:
 					cycle_duration += album_durations[d_song_path]
 
 				next_cycle_time = datetime.datetime.now() + datetime.timedelta(seconds=cycle_duration)
 
 				album_start_time = datetime.datetime.now()
 
-				song_path = jmespath.search(f'[?[0]== {song_name}][1]', actual_songs_paths)
+
+
+				song_path = ""
+
+				i=-1
+
+				for song_name_path in songs_names_paths:
+					i+=1
+					if song_name==song_name_path:
+						song_path=songs_paths[i]
 
 				audio_info = TinyTag.get(song_path)
 
@@ -122,7 +131,7 @@ class RadioPlaylistsView(discord.ui.View):
 				file = discord.File(fp='a.png')
 				imgmsg: discord.Message = await admin_logs.send(content=".", file=file)
 
-				timetable = radio_timetable.get_album_times2(jmespath.search('[*][0]', actual_songs_paths),
+				timetable = radio_timetable.get_album_times2(songs_names,
 				                                             album_durations, ci,
 				                                             album_start_time + datetime.timedelta(
 					                                             seconds=album_durations[song_path]))
@@ -142,7 +151,7 @@ class RadioPlaylistsView(discord.ui.View):
 				embed_info.add_field(name="⏲️ Тривалість: ",
 				                     value=f"{math.floor(audio_info.duration / 60)}m {math.floor(audio_info.duration) % 60}s")
 				embed_info.add_field(name="📻 Наступний трек: ",
-				                     value=f"{radio_queue[ci + 1] if ci + 1 < len(radio_queue) else '???'}  <t:{round((datetime.datetime.now() + datetime.timedelta(seconds=audio_info.duration)).timestamp())}:R>")
+				                     value=f"{songs_names[ci + 1] if ci + 1 < len(songs_names) else '???'}  <t:{round((datetime.datetime.now() + datetime.timedelta(seconds=audio_info.duration)).timestamp())}:R>")
 				embed_info.set_image(url=line_img_url)
 				embed2 = discord.Embed(title='Розпорядок наступних альбомів',
 				                       color=discord.Color.from_rgb(r=dcolor[0], g=dcolor[1], b=dcolor[2]))
@@ -204,10 +213,6 @@ class RadioPlaylistsView(discord.ui.View):
 				cycle = False
 
 
-async def get_radios(ctx: discord.AutocompleteContext):
-	all_radios = sradio_contoller.get_server_radio(ctx.interaction.guild.id)
-	return jmespath.search('[*].name', all_radios)
-
 
 class SRadio(commands.Cog):  # create a class for our cog that inherits from commands.Cog
 	# this class is used to create a cog, which is a module that can be added to the bot
@@ -216,7 +221,7 @@ class SRadio(commands.Cog):  # create a class for our cog that inherits from com
 		self.bot = bot
 
 	@discord.slash_command()  # we can also add application commands
-	async def play(self, ctx: discord.ApplicationContext, cycled: discord.Option(bool,required=False)=True):
+	async def play(self, ctx: discord.ApplicationContext,voice_channel: discord.Option(discord.VoiceChannel), cycled: discord.Option(bool,required=False)=True):
 
 		server_radios = sradio_contoller.get_server_radio(ctx.guild.id)
 
@@ -234,7 +239,7 @@ class SRadio(commands.Cog):  # create a class for our cog that inherits from com
 		)
 
 		pmsg = await paginator.respond(ctx.interaction)
-		custom_v =RadioPlaylistsView(pmsg.channel,pmsg.id,self.bot,cycled)
+		custom_v =RadioPlaylistsView(pmsg.channel,pmsg.id,self.bot,cycled,voice_channel)
 
 		await paginator.update(pages=embeds,custom_view=custom_v)
 
