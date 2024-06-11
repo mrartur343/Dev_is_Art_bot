@@ -176,7 +176,7 @@ class RadioPlaylistsView(discord.ui.View):
 							embed2.description += f"\n- {time_emoji}\n"
 
 						embed2.description += (
-							f"<t:{round(v.timestamp())}:t> {audio_info.title} {f' (<t:{round(v.timestamp())}:R>)' if (i == 0) else ''}\n")
+							f"<t:{round(v.timestamp())}:t> {songs_names[ci+i+1]} {f' (<t:{round(v.timestamp())}:R>)' if (i == 0) else ''}\n")
 
 					old_emoji = time_emoji
 					i+=1
