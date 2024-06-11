@@ -55,9 +55,6 @@ class RadioPlaylistsView(discord.ui.View):
 		if ctx_voice_channel is None:
 			return
 
-		async for message in interaction.channel.history():
-			if message.author.id == self.bot.user.id:
-				await message.delete()
 		msg = interaction.respond(embed=discord.Embed(title='load...'))
 		while cycle:
 			ci = -1
