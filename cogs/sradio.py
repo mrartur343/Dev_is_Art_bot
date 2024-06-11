@@ -17,62 +17,57 @@ import avarage_color_getter
 from modules import sradio_contoller, radio_timetable
 
 
-async def get_radios(ctx: discord.AutocompleteContext):
-	all_radios = sradio_contoller.get_server_radio(ctx.interaction.guild.id)
-	return jmespath.search('[*].name', all_radios)
-
-
-class SRadio(commands.Cog):  # create a class for our cog that inherits from commands.Cog
-	# this class is used to create a cog, which is a module that can be added to the bot
-
-	def __init__(self, bot):  # this is a special method that is called when the cog is loaded
+class RadioPlaylistsView(discord.ui.View):
+	def __init__(self,general_radio_ingo_channel,msg_id,bot,cycled, *args, **kwargs):
+		self.general_radio_ingo_channel: discord.Thread = general_radio_ingo_channel
+		self.msg_id: int = msg_id
 		self.bot = bot
+		self.cycled = cycled
+		super().__init__(timeout=None, *args)
 
-	@discord.slash_command()  # we can also add application commands
-	async def play_radio(self, ctx: discord.ApplicationContext,
-	                     radio_name: discord.Option(str, autocomplete=discord.utils.basic_autocomplete(get_radios)),
-	                     cycled: discord.Option(bool, required=False) = True
-	                     ):
+	@discord.ui.button(label="Грати радіо", style=discord.ButtonStyle.gray,
+	                   emoji="📻")
+	async def button_callback1(self, button, interaction: discord.Interaction):
+
+		radio_name = interaction.message.embeds[0].footer
 
 
-		msg = ctx.respond(embed=discord.Embed(title='load...'))
-		all_radios = sradio_contoller.get_server_radio(ctx.interaction.guild.id)
+
+		msg = interaction.respond(embed=discord.Embed(title='load...'))
+		all_radios = sradio_contoller.get_server_radio(interaction.guild.id)
 		radio_url = ''
+
 
 		for radio in all_radios:
 			if radio['name'] == radio_name:
-				radio_url=radio['link']
+				radio_url = radio['link']
 
 		radio_queue = sradio_contoller.get_songs(radio_url)
 
 		cycle = True
 
-
-		ctx_voice_channel = ctx.author.voice.channel
+		ctx_voice_channel = interaction.user.voice.channel
 
 		if ctx_voice_channel is None:
 			return
 
-		async for message in ctx.channel.history():
+		async for message in interaction.channel.history():
 			if message.author.id == self.bot.user.id:
 				await message.delete()
-
-
 
 		while cycle:
 			ci = -1
 			for song_name, song_url in radio_queue:
-				ci+=1
-
+				ci += 1
 
 				actual_songs_paths = sradio_contoller.get_all_songs_paths()
 
 				while not (song_name in jmespath.search('[*][0]', actual_songs_paths)):
-					await ctx.channel.send('Зачекайте, не всі треки з плейлиста були завантажені...')
+					await interaction.channel.send('Зачекайте, не всі треки з плейлиста були завантажені...')
 					sradio_contoller.songs_download(radio_url)
 					await asyncio.sleep(3)
 					actual_songs_paths = sradio_contoller.get_all_songs_paths()
-				await ctx.channel.send('Плейлист було дозавантажено!')
+				await interaction.channel.send('Плейлист було дозавантажено!')
 
 				album_durations = {}
 				for d_song_path in jmespath.search('[*][1]', actual_songs_paths):
@@ -80,7 +75,7 @@ class SRadio(commands.Cog):  # create a class for our cog that inherits from com
 					if audio_info.duration != None:
 						album_durations[d_song_path] = round(audio_info.duration)
 
-				cycle_duration=0.0
+				cycle_duration = 0.0
 
 				for d_song_path in jmespath.search('[*][1]', actual_songs_paths):
 					cycle_duration += album_durations[d_song_path]
@@ -117,16 +112,13 @@ class SRadio(commands.Cog):  # create a class for our cog that inherits from com
 				imgmsg = await admin_logs.send(content=".", file=file)
 				line_img_url = imgmsg.attachments[0].url
 
-
 				file = discord.File(fp='a.png')
-				imgmsg:discord.Message = await admin_logs.send(content=".", file=file)
+				imgmsg: discord.Message = await admin_logs.send(content=".", file=file)
 
 				timetable = radio_timetable.get_album_times2(jmespath.search('[*][0]', actual_songs_paths),
-				                                            album_durations, ci,
-				                                            album_start_time + datetime.timedelta(
-					                                            seconds=album_durations[song_path]))
-
-
+				                                             album_durations, ci,
+				                                             album_start_time + datetime.timedelta(
+					                                             seconds=album_durations[song_path]))
 
 				embed_info = discord.Embed(title='Зараз грає:',
 				                           color=discord.Color.from_rgb(r=dcolor[0], g=dcolor[1],
@@ -143,7 +135,7 @@ class SRadio(commands.Cog):  # create a class for our cog that inherits from com
 				embed_info.add_field(name="⏲️ Тривалість: ",
 				                     value=f"{math.floor(audio_info.duration / 60)}m {math.floor(audio_info.duration) % 60}s")
 				embed_info.add_field(name="📻 Наступний трек: ",
-				                     value=f"{radio_queue[ci + 1] if ci + 1 < len(radio_queue) else  '???'}  <t:{round((datetime.datetime.now() + datetime.timedelta(seconds=audio_info.duration)).timestamp())}:R>")
+				                     value=f"{radio_queue[ci + 1] if ci + 1 < len(radio_queue) else '???'}  <t:{round((datetime.datetime.now() + datetime.timedelta(seconds=audio_info.duration)).timestamp())}:R>")
 				embed_info.set_image(url=line_img_url)
 				embed2 = discord.Embed(title='Розпорядок наступних альбомів',
 				                       color=discord.Color.from_rgb(r=dcolor[0], g=dcolor[1], b=dcolor[2]))
@@ -165,7 +157,7 @@ class SRadio(commands.Cog):  # create a class for our cog that inherits from com
 							embed2.description += f"\n- {time_emoji}\n"
 
 						embed2.description += (
-								f"<t:{round(v.timestamp())}:t> {audio_info.title} {f' (<t:{round(v.timestamp())}:R>)' if (i == 0) else ''}\n")
+							f"<t:{round(v.timestamp())}:t> {audio_info.title} {f' (<t:{round(v.timestamp())}:R>)' if (i == 0) else ''}\n")
 
 					old_emoji = time_emoji
 				if i < 6:
@@ -174,9 +166,9 @@ class SRadio(commands.Cog):  # create a class for our cog that inherits from com
 				embed2.set_footer(text='Між кожним альбомом грають 2 випадкових синглів')
 
 				radio_msg_embeds = [embed_info, embed2]
-				radio_msg_view = AlbumSongs( current_play=song_name, timeout=None, timetable=timetable,
+				radio_msg_view = AlbumSongs(current_play=song_name, timeout=None, timetable=timetable,
 				                            next_cycle_time=next_cycle_time,
-				                            cycle_duration=cycle_duration,current_album=song_path)
+				                            cycle_duration=cycle_duration, current_album=song_path)
 
 				sde_achievement_list = []
 
@@ -190,8 +182,7 @@ class SRadio(commands.Cog):  # create a class for our cog that inherits from com
 
 				msg = await msg.edit(embeds=radio_msg_embeds, view=radio_msg_view)
 
-
-				while len(updated_channel.members)<2 and time.time() - waiting_start_time < wait_duration:
+				while len(updated_channel.members) < 2 and time.time() - waiting_start_time < wait_duration:
 					updated_channel: discord.VoiceChannel = asyncio.run(vc.channel.guild.fetch_channel(
 						vc.channel.id))
 					await asyncio.sleep(1)
@@ -200,16 +191,45 @@ class SRadio(commands.Cog):  # create a class for our cog that inherits from com
 				audio_source = discord.FFmpegPCMAudio(song_path,
 				                                      **FFMPEG_OPTIONS)
 
+				await vc.play(audio_source, wait_finish=True)
 
-				await vc.play(audio_source,wait_finish=True)
-
-
-
-
-
-
-			if not cycled:
+			if not self.cycled:
 				cycle = False
+
+
+async def get_radios(ctx: discord.AutocompleteContext):
+	all_radios = sradio_contoller.get_server_radio(ctx.interaction.guild.id)
+	return jmespath.search('[*].name', all_radios)
+
+
+class SRadio(commands.Cog):  # create a class for our cog that inherits from commands.Cog
+	# this class is used to create a cog, which is a module that can be added to the bot
+
+	def __init__(self, bot):  # this is a special method that is called when the cog is loaded
+		self.bot = bot
+
+	@discord.slash_command()  # we can also add application commands
+	async def play(self, ctx: discord.ApplicationContext, cycled: discord.Option(bool,required=False)=True):
+
+		server_radios = sradio_contoller.get_server_radio(ctx.guild.id)
+
+		embeds = []
+
+		for radio in server_radios:
+			embed = discord.Embed(title=radio['name'])
+			embed.add_field(name='Радіо плейлист:', value=radio['link'])
+			embeds.append(embed)
+
+		paginator = pages.Paginator(
+			embeds,
+			timeout=None
+		)
+
+		await paginator.respond(ctx.interaction)
+		pmsg = await paginator.respond(ctx.interaction,ephemeral=True)
+		custom_v =RadioPlaylistsView(pmsg.channel,pmsg.id,self.bot,cycled)
+
+		await paginator.update(pages=embeds,custom_view=custom_v)
 
 	@discord.slash_command()  # we can also add application commands
 	async def list(self, ctx: discord.ApplicationContext):
