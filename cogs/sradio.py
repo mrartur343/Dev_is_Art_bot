@@ -54,7 +54,7 @@ class RadioPlaylistsView(discord.ui.View):
 		cycle = True
 
 		ctx_voice_channel = self.voice_channel
-
+		vc: discord.VoiceClient = await ctx_voice_channel.connect()
 
 
 		while cycle:
@@ -194,7 +194,7 @@ class RadioPlaylistsView(discord.ui.View):
 
 				sde_achievement_list = []
 
-				vc: discord.VoiceClient = await ctx_voice_channel.connect()
+
 
 				waiting_start_time = time.time()
 				wait_duration = audio_info.duration
