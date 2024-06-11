@@ -183,6 +183,8 @@ class RadioPlaylistsView(discord.ui.View):
 						f"<t:{round(next_cycle_time.timestamp())}:t> Наступний цикл (довантаження нових альбомів/синглів/плейлистів) {f' (<t:{round(next_cycle_time.timestamp())}:R>)' if (i == 0) and single_check else ''}\n")
 				embed2.set_footer(text='Між кожним альбомом грають 2 випадкових синглів')
 
+				print(embed2.description)
+
 				radio_msg_embeds = [embed_info, embed2]
 				radio_msg_view = AlbumSongs(current_play=song_name, timeout=None, timetable=timetable,
 				                            next_cycle_time=next_cycle_time,
