@@ -38,6 +38,8 @@ class AlbumSongs(discord.ui.View):
 		album_likes = {}
 		with open("other/album_likes.json", 'r') as file:
 			album_likes = json.loads(file.read())
+		if not self.current_album in album_likes:
+			album_likes[self.current_album]=[]
 		if not interaction.user.id in album_likes[self.current_album]:
 			album_likes[self.current_album].append(interaction.user.id)
 		with open("other/album_likes.json", 'w') as file:
