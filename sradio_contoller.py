@@ -24,7 +24,7 @@ def get_all_songs_paths() -> typing.Tuple[typing.List[str],typing.List[str]]:
 	all_songs_files = ["downloaded_songs/"+f for f in listdir(f"downloaded_songs") if
 	                   isfile(join(f"downloaded_songs", f))]
 
-	all_songs_names = [TinyTag.get(f).title for f in listdir(f"downloaded_songs") if
+	all_songs_names = [TinyTag.get("downloaded_songs/"+f).title for f in listdir(f"downloaded_songs") if
 	                   isfile(join(f"downloaded_songs", f))]
 
 
