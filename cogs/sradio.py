@@ -36,9 +36,9 @@ class SRadio(commands.Cog):  # create a class for our cog that inherits from com
 		all_radios = sradio_contoller.get_server_radio(ctx.interaction.guild.id)
 		radio_url = ''
 
-		for rn, rl in all_radios:
-			if rn == radio_name:
-				radio_url=rl
+		for radio in all_radios:
+			if radio['name'] == radio_name:
+				radio_url=radio['link']
 
 		radio_queue = sradio_contoller.get_songs(radio_url)
 
