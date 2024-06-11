@@ -65,11 +65,14 @@ class RadioPlaylistsView(discord.ui.View):
 				actual_songs_paths = sradio_contoller.get_all_songs_paths()
 
 				while not (song_name in jmespath.search('[*][0]', actual_songs_paths)):
+					print("Зачекайте, не всі треки з плейлиста були завантажені...")
+
 					await interaction.channel.send('Зачекайте, не всі треки з плейлиста були завантажені...')
 					sradio_contoller.songs_download(radio_url)
 					await asyncio.sleep(3)
 					actual_songs_paths = sradio_contoller.get_all_songs_paths()
 				await interaction.channel.send('Плейлист було дозавантажено!')
+				print("Плейлист було дозавантажено")
 
 				album_durations = {}
 				for d_song_path in jmespath.search('[*][1]', actual_songs_paths):
