@@ -16,13 +16,14 @@ def get_album_times(albums_names: typing.List[str], albums_duration: typing.Dict
     return timetable
 
 
-def get_album_times2(albums_names: typing.List[str], albums_duration: typing.Dict[str,int], current_album: int, next_time: datetime.datetime):
+def get_album_times2(albums_names: typing.List[str], albums_duration: typing.Dict[str,int], current_album: int, next_time: datetime.datetime,songs_names:typing.List[str]):
     albums_names = albums_names[(current_album+1):]
+    songs_names = songs_names[(current_album + 1):]
 
     timetable: list = []
 
     iter_time = next_time
-    for album_name in albums_names:
+    for album_name,song_name in zip(albums_names,songs_names):
         album_duration=albums_duration[album_name]
         timetable.append((album_name,iter_time))
         iter_time = iter_time+datetime.timedelta(seconds=album_duration)

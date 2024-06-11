@@ -165,6 +165,7 @@ class RadioPlaylistsView(discord.ui.View):
 				old_emoji = ""
 				for k, v in timetable:
 					if i < 6:
+						audio_info = TinyTag.get(k, image=True)
 						v: datetime.datetime
 
 						kyiv_h = v.hour
@@ -178,6 +179,7 @@ class RadioPlaylistsView(discord.ui.View):
 							f"<t:{round(v.timestamp())}:t> {audio_info.title} {f' (<t:{round(v.timestamp())}:R>)' if (i == 0) else ''}\n")
 
 					old_emoji = time_emoji
+					i+=1
 				if i < 6:
 					embed2.description += (
 						f"<t:{round(next_cycle_time.timestamp())}:t> Наступний цикл (довантаження нових альбомів/синглів/плейлистів) {f' (<t:{round(next_cycle_time.timestamp())}:R>)' if (i == 0) and single_check else ''}\n")
