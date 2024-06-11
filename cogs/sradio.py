@@ -28,9 +28,11 @@ class RadioPlaylistsView(discord.ui.View):
 	@discord.ui.button(label="Грати радіо", style=discord.ButtonStyle.gray,
 	                   emoji="📻")
 	async def button_callback1(self, button:discord.ui.Button, interaction: discord.Interaction):
-		await interaction.delete_original_message
+
 
 		radio_name = interaction.message.embeds[0].footer.text
+
+		await interaction.delete_original_message
 
 		msg = await interaction.respond(embed=discord.Embed(title='load...'))
 
