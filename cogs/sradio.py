@@ -23,7 +23,7 @@ class RadioPlaylistsView(discord.ui.View):
 		self.msg_id: int = msg_id
 		self.bot = bot
 		self.cycled = cycled
-		super().__init__(timeout=899, *args)
+		super().__init__(timeout=None, *args)
 
 	@discord.ui.button(label="Грати радіо", style=discord.ButtonStyle.gray,
 	                   emoji="📻")
