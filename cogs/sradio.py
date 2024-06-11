@@ -220,7 +220,8 @@ class SRadio(commands.Cog):  # create a class for our cog that inherits from com
 	def __init__(self, bot):  # this is a special method that is called when the cog is loaded
 		self.bot = bot
 
-	@discord.slash_command()  # we can also add application commands
+	@discord.slash_command()
+	@commands.has_permissions(administrator=True)
 	async def play(self, ctx: discord.ApplicationContext,voice_channel: discord.Option(discord.VoiceChannel), cycled: discord.Option(bool,required=False)=True):
 
 		server_radios = sradio_contoller.get_server_radio(ctx.guild.id)
