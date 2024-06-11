@@ -3,7 +3,8 @@ import os.path
 import typing
 from os import listdir
 from os.path import join, isfile
-
+import spotipy
+from spotipy.oauth2 import SpotifyClientCredentials, SpotifyOAuth
 import requests
 from bs4 import BeautifulSoup
 import subprocess
@@ -11,7 +12,8 @@ import sys # for sys.executable (The file path of the currently using python)
 from spotdl import __main__ as spotdl # To get the location of spotdl
 from tinytag import TinyTag
 
-
+auth_manager = SpotifyClientCredentials(client_id="1a5350b67e5c4715b4ac9ac99e1b4b28",client_secret="2b0a1dc0bb094cabbc4e01cef163e125")
+sp = spotipy.Spotify(auth_manager=auth_manager)
 def get_server_radio(server_id:int) -> typing.List[typing.Dict[str, str]] | None:
 	if os.path.exists(f"server_radios/{server_id}.json"):
 		with open(f"server_radios/{server_id}.json", 'r') as file:
@@ -30,15 +32,13 @@ def get_all_songs_paths() -> typing.List[typing.Tuple[str,str]]:
 
 def get_songs(url:str) -> typing.List[typing.Tuple[str, str]]:
 
-	r_onlineradio = requests.get(url).content
+	uri = url.split("/")[-1].split("?")[0]
 
-	soup = BeautifulSoup(r_onlineradio, 'html.parser')
+	print(sp.playlist_tracks(uri,limit=1000))
 
-	songs_names = [heading.text for heading in
-	 soup.find_all('div', class_='encore-text encore-text-body-medium encore-internal-color-text-base btE2c3IKaOXZ4VNAb8WQ standalone-ellipsis-one-line')]
+	songs_names = [t["track"]["name"] for t in sp.playlist_tracks(uri,limit=1000)['items']]
 
-	songs_urls = [heading.text for heading in
-	 soup.find_all('a', class_='btE2c3IKaOXZ4VNAb8WQ')]
+	songs_urls = ["https://open.spotify.com/track/"+t["track"]["uri"] for t in sp.playlist_tracks(uri,limit=1000)['items']]
 
 	return zip(songs_names,songs_urls)
 
