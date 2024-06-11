@@ -222,7 +222,7 @@ class SRadio(commands.Cog):  # create a class for our cog that inherits from com
 
 		paginator = pages.Paginator(
 			embeds,
-			timeout=None
+			timeout=899
 		)
 
 		await paginator.respond(ctx.interaction)
