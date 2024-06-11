@@ -104,7 +104,7 @@ class RadioPlaylistsView(discord.ui.View):
 
 				audio_info = TinyTag.get(song_path, image=True)
 
-				image_data: bytes = audio_info.get_image()
+				image_data: bytes = audio_info._image_data
 				with open('a.png', 'wb') as file:
 					file.write(image_data)
 
@@ -133,7 +133,7 @@ class RadioPlaylistsView(discord.ui.View):
 				file = discord.File(fp='a.png')
 				imgmsg: discord.Message = await admin_logs.send(content=".", file=file)
 
-				timetable = radio_timetable.get_album_times2(songs_names,
+				timetable = radio_timetable.get_album_times2(songs_paths,
 				                                             album_durations, ci,
 				                                             album_start_time + datetime.timedelta(
 					                                             seconds=album_durations[song_path]))
