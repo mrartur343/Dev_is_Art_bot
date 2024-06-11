@@ -45,3 +45,7 @@ def get_songs(url:str) -> typing.List[typing.Tuple[str, str]]:
 def song_download(track_url: str):
 	subprocess.call('cd downloaded_songs', shell=True)
 	subprocess.check_call([sys.executable, spotdl.__file__, track_url], shell=True)
+
+def songs_download(radio_url: str):
+	subprocess.call('cd downloaded_songs', shell=True)
+	subprocess.check_call([sys.executable, spotdl.__file__, radio_url], shell=True)
