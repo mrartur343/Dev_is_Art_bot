@@ -19,7 +19,7 @@ with open("other/songs_lists_cache.json", 'r') as file:
 with open("other/albums_images_cache.json", 'r') as file:
 	albums_images_cache = json.loads(file.read())
 class AlbumSongs(discord.ui.View):
-	def __init__(self, songs_list: typing.List[str], current_play: str, current_album: str, timeout: float | None,
+	def __init__(self,  current_play: str, current_album: str, timeout: float | None,
 	             timetable: typing.Dict[str, datetime.datetime], next_cycle_time: datetime.datetime,
 	             cycle_duration: float, e_pages=typing.List[discord.Embed], *args, **kwargs):
 		self.cycle_duration = cycle_duration
@@ -27,19 +27,9 @@ class AlbumSongs(discord.ui.View):
 		self.timetable = timetable
 		self.current_album = current_album
 		self.current_play = current_play
-		self.songs_list = songs_list
 		super().__init__(timeout=timeout, *args)
 
 	# Create a class called MyView that subclasses discord.ui.View
-	@discord.ui.button(label="Список треків в альбомі:", style=discord.ButtonStyle.gray,
-	                   emoji="📋")  # Create a button with the label "😎 Click me!" with color Blurple
-	async def button_callback1(self, button, interaction):
-		embed = discord.Embed(title='Наступні треки в альбомі:')
-		embed.description = ''
-		for song in self.songs_list:
-			embed.description += f'- {"▶️ " if self.current_play == song else ""}{song}\n'
-		await interaction.response.send_message(embed=embed,
-		                                        ephemeral=True)  # Send a message when the button is clicked
 
 	@discord.ui.button(label="До обраних", style=discord.ButtonStyle.gray,
 	                   emoji="❤️")  # Create a button with the label "😎 Click me!" with color Blurple
