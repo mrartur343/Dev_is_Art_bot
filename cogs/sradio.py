@@ -37,6 +37,10 @@ class RadioPlaylistsView(discord.ui.View):
 		all_radios = sradio_contoller.get_server_radio(interaction.guild.id)
 		radio_url = ''
 
+		print(all_radios)
+		print(radio_name)
+
+
 
 		for radio in all_radios:
 			if radio['name'] == radio_name:
