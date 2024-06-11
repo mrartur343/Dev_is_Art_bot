@@ -32,7 +32,7 @@ class RadioPlaylistsView(discord.ui.View):
 
 		radio_name = interaction.message.embeds[0].footer.text
 
-		await interaction.delete_original_message()
+		await interaction.delete_original_message
 
 		msg = await interaction.respond(embed=discord.Embed(title='load...'))
 
