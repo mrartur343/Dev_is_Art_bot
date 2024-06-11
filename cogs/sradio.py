@@ -31,6 +31,7 @@ class RadioPlaylistsView(discord.ui.View):
 
 		radio_name = interaction.message.embeds[0].footer.text
 
+		msg = interaction.respond(embed=discord.Embed(title='load...'))
 
 
 
@@ -55,7 +56,7 @@ class RadioPlaylistsView(discord.ui.View):
 		if ctx_voice_channel is None:
 			return
 
-		msg = interaction.respond(embed=discord.Embed(title='load...'))
+
 		while cycle:
 			ci = -1
 			for song_name, song_url in radio_queue:
