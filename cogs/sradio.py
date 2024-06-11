@@ -231,7 +231,7 @@ class SRadio(commands.Cog):  # create a class for our cog that inherits from com
 		)
 
 		await paginator.respond(ctx.interaction)
-		pmsg = await paginator.respond(ctx.interaction,ephemeral=True)
+		pmsg = await paginator.respond(ctx.interaction)
 		custom_v =RadioPlaylistsView(pmsg.channel,pmsg.id,self.bot,cycled)
 
 		await paginator.update(pages=embeds,custom_view=custom_v)
