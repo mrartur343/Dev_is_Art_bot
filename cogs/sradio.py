@@ -33,7 +33,7 @@ class RadioPlaylistsView(discord.ui.View):
 
 
 
-		msg = interaction.respond(embed=discord.Embed(title='load...'))
+
 		all_radios = sradio_contoller.get_server_radio(interaction.guild.id)
 		radio_url = ''
 
@@ -58,7 +58,7 @@ class RadioPlaylistsView(discord.ui.View):
 		async for message in interaction.channel.history():
 			if message.author.id == self.bot.user.id:
 				await message.delete()
-
+		msg = interaction.respond(embed=discord.Embed(title='load...'))
 		while cycle:
 			ci = -1
 			for song_name, song_url in radio_queue:
