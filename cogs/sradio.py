@@ -104,7 +104,7 @@ class RadioPlaylistsView(discord.ui.View):
 
 				audio_info = TinyTag.get(song_path, image=True)
 
-				image_data: bytes = audio_info._image_data
+				image_data: bytes = audio_info.get_image()
 				with open('a.png', 'wb') as file:
 					file.write(image_data)
 
