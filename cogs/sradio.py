@@ -49,6 +49,8 @@ class RadioPlaylistsView(discord.ui.View):
 
 		radio_queue = sradio_contoller.get_songs(radio_url)
 
+		print(radio_queue)
+
 		cycle = True
 
 		ctx_voice_channel = interaction.user.voice.channel
@@ -63,7 +65,7 @@ class RadioPlaylistsView(discord.ui.View):
 				ci += 1
 
 				actual_songs_paths = sradio_contoller.get_all_songs_paths()
-
+				print("Зачекайте, не всі треки з плейлиста були завантажені...")
 				while not (song_name in jmespath.search('[*][0]', actual_songs_paths)):
 					print("Зачекайте, не всі треки з плейлиста були завантажені...")
 
