@@ -115,8 +115,8 @@ class AlbumSongs(discord.ui.View):
 					items_embed.add_field(name='Сповіщення про увімкнення:', value='🔔 Увімкнуто')
 
 
-			if album_name in url_by_name:
-				song_image = sradio_contoller.track_image(url_by_name[album_name])
+			if audio_info.title in url_by_name:
+				song_image = sradio_contoller.track_image(url_by_name[audio_info.title])
 				if not (song_image is None):
 					items_embed.set_image(url=song_image)
 			items_embed.set_footer(text=album_name)
