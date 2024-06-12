@@ -2,6 +2,7 @@ import asyncio
 import datetime
 import json
 import math
+import random
 import time
 from os import listdir
 from os.path import isfile, join
@@ -31,39 +32,45 @@ class RadioPlaylistsView(discord.ui.View):
 	                   emoji="📻")
 	async def button_callback1(self, button:discord.ui.Button, interaction: discord.Interaction):
 
-
 		radio_name = interaction.message.embeds[0].footer.text
+		await interaction.message.delete()
 
 		int_channel:discord.TextChannel = interaction.channel
 		await interaction.respond(embed=discord.Embed(title='Радіо вмикається'),ephemeral=True)
 		msg = await int_channel.send(embed=discord.Embed(title='load...'))
 
-
-
-		all_radios = sradio_contoller.get_server_radio(interaction.guild.id)
-		radio_url = ''
-
-		print(all_radios)
-		print(radio_name)
-
-
-
-		for radio in all_radios:
-			if radio['name'] == radio_name:
-				radio_url = radio['link']
-
-		songs_names, songs_urls = sradio_contoller.get_songs(radio_url)
-
-
-
 		cycle = True
 
-		ctx_voice_channel = self.voice_channel
-		vc: discord.VoiceClient = await ctx_voice_channel.connect()
+		first_play=True
 
 
 		while cycle:
-			ci = -1
+
+			all_radios = sradio_contoller.get_server_radio(interaction.guild.id)
+			radio_url = ''
+
+			print(all_radios)
+			print(radio_name)
+
+			for radio in all_radios:
+				if radio['name'] == radio_name:
+					radio_url = radio['link']
+
+			songs_names, songs_urls = sradio_contoller.get_songs(radio_url)
+
+			if first_play:
+				random_position = random.randint(0, len(songs_names))
+				songs_names = songs_names[random_position:]
+				songs_urls = songs_urls[random_position:]
+				first_play=False
+				ci=random_position-1
+			else:
+				ci=-1
+
+
+
+			ctx_voice_channel = self.voice_channel
+			vc: discord.VoiceClient = await ctx_voice_channel.connect()
 			for song_name, song_url in zip(songs_names, songs_urls):
 				print(f"Play {song_name} - {song_url}")
 				ci += 1
@@ -274,10 +281,10 @@ class SRadio(commands.Cog):  # create a class for our cog that inherits from com
 
 		paginator = pages.Paginator(
 			embeds,
-			timeout=899
+			timeout=None
 		)
 
-		pmsg = await paginator.respond(ctx.interaction,ephemeral=True)
+		pmsg = await paginator.respond(ctx.interaction)
 		custom_v =RadioPlaylistsView(pmsg.channel,pmsg.id,self.bot,cycled,voice_channel)
 
 		await paginator.update(pages=embeds,custom_view=custom_v)
