@@ -207,7 +207,7 @@ class RadioPlaylistsView(discord.ui.View):
 				radio_msg_embeds = [embed_info, embed2]
 				radio_msg_view = AlbumSongs(current_play=song_name, timeout=None, timetable=timetable,
 				                            next_cycle_time=next_cycle_time,
-				                            cycle_duration=cycle_duration, current_album=song_path)
+				                            cycle_duration=cycle_duration, current_album=song_path,radio_url=radio_url)
 
 
 

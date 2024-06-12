@@ -8,6 +8,7 @@ import discord
 from discord.ext import pages
 from tinytag import TinyTag
 
+import sradio_contoller
 
 radio_bot_list = ['Alpha','Beta','Gamma','Delta']
 
@@ -21,12 +22,13 @@ with open("other/albums_images_cache.json", 'r') as file:
 class AlbumSongs(discord.ui.View):
 	def __init__(self,  current_play: str, current_album: str, timeout: float | None,
 	             timetable: typing.Dict[str, datetime.datetime], next_cycle_time: datetime.datetime,
-	             cycle_duration: float, e_pages=typing.List[discord.Embed], *args, **kwargs):
+	             cycle_duration: float,radio_url:str, e_pages=typing.List[discord.Embed], *args, **kwargs):
 		self.cycle_duration = cycle_duration
 		self.next_cycle_time = next_cycle_time
 		self.timetable = timetable
 		self.current_album = current_album
 		self.current_play = current_play
+		self.radio_url = radio_url
 		super().__init__(timeout=timeout, *args)
 
 	# Create a class called MyView that subclasses discord.ui.View
@@ -105,6 +107,7 @@ class AlbumSongs(discord.ui.View):
 						items_embed.add_field(name='Сповіщення про увімкнення:', value='🔔 Увімкнуто')
 				else:
 					items_embed.add_field(name='Сповіщення про увімкнення:', value='🔔 Увімкнуто')
+
 
 			if album_name in albums_images_cache:
 				items_embed.set_image(url=albums_images_cache[album_name])
