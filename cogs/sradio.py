@@ -32,7 +32,7 @@ class RadioPlaylistsView(discord.ui.View):
 
 		radio_name = interaction.message.embeds[0].footer.text
 
-		msg = await interaction.respond(embed=discord.Embed(title='load...'))
+		msg: discord.Message = (await interaction.respond(embed=discord.Embed(title='load...'))).message
 
 
 
@@ -191,7 +191,6 @@ class RadioPlaylistsView(discord.ui.View):
 				                            next_cycle_time=next_cycle_time,
 				                            cycle_duration=cycle_duration, current_album=song_path)
 
-				sde_achievement_list = []
 
 
 
