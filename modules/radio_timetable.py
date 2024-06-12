@@ -12,9 +12,10 @@ def get_album_times2(albums_names_sort: typing.List[str], albums_duration: typin
 
 	iter_time = next_time
 	for album_name in albums_names_sort:
-		album_duration=albums_duration[path_by_name[album_name]]
-		timetable.append((path_by_name[album_name],iter_time))
-		iter_time = iter_time+datetime.timedelta(seconds=album_duration)
+		if album_name in path_by_name:
+			album_duration=albums_duration[path_by_name[album_name]]
+			timetable.append((path_by_name[album_name],iter_time))
+			iter_time = iter_time+datetime.timedelta(seconds=album_duration)
 
 
 	return timetable
