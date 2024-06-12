@@ -116,7 +116,7 @@ class AlbumSongs(discord.ui.View):
 
 
 			if audio_info.title in url_by_name:
-				song_image = sradio_contoller.track_image(url_by_name[audio_info.title])
+				song_image = await sradio_contoller.track_image(url_by_name[audio_info.title])
 				if not (song_image is None):
 					items_embed.set_image(url=song_image)
 			items_embed.set_footer(text=album_name)
