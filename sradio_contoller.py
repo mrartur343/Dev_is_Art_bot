@@ -72,7 +72,7 @@ async def playlist_image(url: str):
 		try:
 			returned= sp.playlist_cover_image(url.split("/")[-1].split("?")[0])[0]['url']
 			return returned
-		except ConnectionError as e:
+		except Exception as e:
 			print(f"Error encountered: {e}")
 			print(f"Retrying... (Attempt {retry_count + 1} of {MAX_RETRIES})")
 			retry_count+=1
