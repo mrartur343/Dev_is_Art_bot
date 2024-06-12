@@ -68,6 +68,12 @@ class AlbumSongs(discord.ui.View):
 			if not line[0] in dict_timetable:
 				dict_timetable[line[0]] = line[1]
 
+		songs_names, songs_urls = await sradio_contoller.get_songs(self.radio_url)
+
+		url_by_name = {}
+		for s_name, s_url in zip(songs_names,songs_urls):
+			url_by_name[s_name] = s_url
+
 		def sort_albums(album_key):
 			if album_key in dict_timetable:
 				return dict_timetable[album_key].timestamp()
@@ -109,8 +115,10 @@ class AlbumSongs(discord.ui.View):
 					items_embed.add_field(name='Сповіщення про увімкнення:', value='🔔 Увімкнуто')
 
 
-			if album_name in albums_images_cache:
-				items_embed.set_image(url=albums_images_cache[album_name])
+			if album_name in url_by_name:
+				song_image = sradio_contoller.track_image(url_by_name[album_name])
+				if not (song_image is None):
+					items_embed.set_image(url=song_image)
 			items_embed.set_footer(text=album_name)
 
 			items_pages.append(items_embed)
