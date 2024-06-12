@@ -58,20 +58,20 @@ class RadioPlaylistsView(discord.ui.View):
 
 			songs_names, songs_urls = sradio_contoller.get_songs(radio_url)
 
-			if first_play:
-				random_position = random.randint(0, len(songs_names))
-				songs_names = songs_names[random_position:]
-				songs_urls = songs_urls[random_position:]
-				first_play=False
-				ci=random_position-1
-			else:
-				ci=-1
 
 
-
+			ci =-1
 			ctx_voice_channel = self.voice_channel
 			vc: discord.VoiceClient = await ctx_voice_channel.connect()
+			random_pos = random.randint(0, len(songs_names))
 			for song_name, song_url in zip(songs_names, songs_urls):
+				if first_play:
+					if ci<random_pos:
+						ci += 1
+						continue
+
+					else:
+						first_play=False
 				print(f"Play {song_name} - {song_url}")
 				ci += 1
 
