@@ -285,6 +285,8 @@ class SRadio(commands.Cog):  # create a class for our cog that inherits from com
 			playlist_image = await sradio_contoller.playlist_image(radio['link'])
 			if not (playlist_image is None):
 				embed.set_image(url = playlist_image)
+			embed.set_footer(text=radio['name'])
+
 			embeds.append(embed)
 
 		paginator = pages.Paginator(
