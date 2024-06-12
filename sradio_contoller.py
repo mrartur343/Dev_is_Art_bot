@@ -6,11 +6,6 @@ import os
 from os.path import join, isfile
 import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials, SpotifyOAuth
-import requests
-from bs4 import BeautifulSoup
-import subprocess
-import sys # for sys.executable (The file path of the currently using python)
-from spotdl import __main__ as spotdl # To get the location of spotdl
 from tinytag import TinyTag
 
 auth_manager = SpotifyClientCredentials(client_id="1a5350b67e5c4715b4ac9ac99e1b4b28",client_secret="2b0a1dc0bb094cabbc4e01cef163e125")
@@ -53,3 +48,8 @@ def songs_download(radio_url: str):
 
 def songs_downloads(radio_url: str):
 	os.system(f"ls;cd downloaded_songs;spotdl download {radio_url} --port 2099 --threads 20")
+
+def playlist_image(uri: str):
+	return sp.playlist_tracks(uri)
+
+print(playlist_image("3cEYpjA9oz9GiPac4AsH4n"))
