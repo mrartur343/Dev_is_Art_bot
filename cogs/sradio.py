@@ -143,10 +143,10 @@ class RadioPlaylistsView(discord.ui.View):
 				line_img_url = imgmsg.attachments[0].url
 
 
-				timetable = radio_timetable.get_album_times2(songs_paths,
+				timetable = radio_timetable.get_album_times2(songs_names,
 				                                             album_durations, ci,
 				                                             album_start_time + datetime.timedelta(
-					                                             seconds=album_durations[song_path]))
+					                                             seconds=album_durations[song_path]),songs_names_paths, songs_paths)
 
 				embed_info = discord.Embed(title='Зараз грає:',
 				                           color=discord.Color.from_rgb(r=dcolor[0], g=dcolor[1],
