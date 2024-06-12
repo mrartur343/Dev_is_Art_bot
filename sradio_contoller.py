@@ -50,6 +50,6 @@ def songs_downloads(radio_url: str):
 	os.system(f"ls;cd downloaded_songs;spotdl download {radio_url} --port 2099 --threads 20")
 
 def playlist_image(uri: str):
-	return sp.playlist_tracks(uri)
+	return sp.playlist_cover_image(uri)
 
 print(playlist_image("3cEYpjA9oz9GiPac4AsH4n"))
