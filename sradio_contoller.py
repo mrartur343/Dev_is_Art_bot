@@ -1,3 +1,4 @@
+import asyncio
 import json
 import os.path
 import typing
@@ -26,12 +27,24 @@ def get_all_songs_paths() -> typing.Tuple[typing.List[str],typing.List[str]]:
 	return all_songs_names,all_songs_files
 
 
-def get_songs(url:str) -> typing.Tuple[typing.List[str], typing.List[str]]:
+async def get_songs(url:str) -> typing.Tuple[typing.List[str], typing.List[str]]:
+	MAX_RETRIES=15
+	retry_count=0
 
 	uri = url.split("/")[-1].split("?")[0]
 
+	while retry_count < MAX_RETRIES:
+		try:
+			results = sp.playlist_tracks(uri)
+		except ConnectionError as e:
+			print(f"Error encountered: {e}")
+			print(f"Retrying... (Attempt {retry_count + 1} of {MAX_RETRIES})")
+			retry_count+=1
+			await asyncio.sleep(0.5)
+	else:
+		print(f"Failed to add chunk to playlist after {MAX_RETRIES} attempts. Skipping...")
+		results = sp.playlist_tracks(uri)
 
-	results = sp.playlist_tracks(uri)
 	songs_original = results['items']
 	while results['next']:
 		results = sp.next(results)
@@ -49,7 +62,33 @@ def songs_download(radio_url: str):
 def songs_downloads(radio_url: str):
 	os.system(f"ls;cd downloaded_songs;spotdl download {radio_url} --port 2099 --threads 20")
 
-def playlist_image(url: str):
-	return sp.playlist_cover_image(url.split("/")[-1].split("?")[0])[0]['url']
-def track_image(url: str):
-	return sp.track(url.split("/")[-1].split("?")[0])["album"]['images'][0]['url']
+async def playlist_image(url: str):
+	MAX_RETRIES=15
+	retry_count=0
+	while retry_count<MAX_RETRIES:
+		try:
+			returned= sp.playlist_cover_image(url.split("/")[-1].split("?")[0])[0]['url']
+			return returned
+		except ConnectionError as e:
+			print(f"Error encountered: {e}")
+			print(f"Retrying... (Attempt {retry_count + 1} of {MAX_RETRIES})")
+			retry_count+=1
+			await asyncio.sleep(0.5)
+	else:
+		print(f"Failed to add chunk to playlist after {MAX_RETRIES} attempts. Skipping...")
+		return
+async def track_image(url: str):
+	MAX_RETRIES=15
+	retry_count=0
+	while retry_count<MAX_RETRIES:
+		try:
+			returned= sp.track(url.split("/")[-1].split("?")[0])["album"]['images'][0]['url']
+			return returned
+		except ConnectionError as e:
+			print(f"Error encountered: {e}")
+			print(f"Retrying... (Attempt {retry_count + 1} of {MAX_RETRIES})")
+			retry_count+=1
+			await asyncio.sleep(1)
+	else:
+		print(f"Failed to add chunk to playlist after {MAX_RETRIES} attempts. Skipping...")
+		return
