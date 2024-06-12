@@ -15,6 +15,8 @@ from discord.ext import commands, pages
 import avarage_color_getter
 from modules import radio_timetable
 
+with open("other/radio_sleep_timers.json", 'r') as file:
+	radio_sleep_timers: typing.Dict[str, typing.List[int]] = json.loads(file.read())
 
 class RadioPlaylistsView(discord.ui.View):
 	def __init__(self,general_radio_ingo_channel,msg_id,bot,cycled,voice_channel, *args, **kwargs):
@@ -212,6 +214,39 @@ class RadioPlaylistsView(discord.ui.View):
 				                                      **FFMPEG_OPTIONS)
 
 				await vc.play(audio_source, wait_finish=True)
+
+				with open("other/radio_sleep_timers.json", 'r') as file:
+					radio_sleep_timers: typing.Dict[str, typing.List[int]] = json.loads(file.read())
+
+				if len(updated_channel.members) >=2:
+					voice_channel: discord.VoiceChannel  =self.voice_channel
+					for member_id in radio_sleep_timers['song_end']:
+						user = await voice_channel.guild.fetch_member(member_id)
+						if user != None:
+							if user.voice != None:
+								if user.voice.channel.id == voice_channel.id:
+									await user.move_to(None)
+									radio_sleep_timers['song_end'].remove(member_id)
+							try:
+								await user.send(f"Надобраніч!")
+							except:
+								pass
+
+					for timer_str, st_members_ids in radio_sleep_timers.items():
+						if timer_str.endswith('m'):
+							r_timestamp = int(timer_str.split('m')[0])
+							if r_timestamp < datetime.datetime.now().timestamp():
+								for m_id in st_members_ids:
+									user = await voice_channel.guild.fetch_member(m_id)
+									if user != None:
+										if user.voice != None:
+											if user.voice.channel.id == voice_channel.id:
+												await user.move_to(None)
+												radio_sleep_timers[timer_str].remove(m_id)
+										try:
+											await user.send(f"Надобраніч!")
+										except:
+											pass
 
 			if not self.cycled:
 				cycle = False
