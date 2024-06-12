@@ -55,11 +55,6 @@ class AlbumSongs(discord.ui.View):
 		album_likes = {}
 		with open("other/album_likes.json", 'r') as file:
 			album_likes = json.loads(file.read())
-		with open('other/albums_data.json', 'r') as file:
-			album_data_json = json.loads(file.read())
-		albums_names = {}
-		for short_name, info in album_data_json.items():
-			albums_names[short_name] = info[0]
 		albums_list = []
 
 		for album_name, members in album_likes.items():
@@ -89,7 +84,9 @@ class AlbumSongs(discord.ui.View):
 			else:
 				album_start_time = self.next_cycle_time
 
-			items_embed = discord.Embed(title=albums_names[album_name])
+			audio_info  = TinyTag.get(album_name)
+
+			items_embed = discord.Embed(title=audio_info.title)
 			n = '\n'
 			items_embed.description = f"❤️ | Цей трек обрали: **{len(album_likes[album_name])}**"
 
