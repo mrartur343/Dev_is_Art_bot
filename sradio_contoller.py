@@ -36,6 +36,17 @@ async def get_songs(url:str) -> typing.Tuple[typing.List[str], typing.List[str]]
 	while retry_count < MAX_RETRIES:
 		try:
 			results = sp.playlist_tracks(uri)
+
+			songs_original = results['items']
+			while results['next']:
+				results = sp.next(results)
+				songs_original.extend(results['items'])
+
+			songs_names = [t["track"]["name"] for t in songs_original]
+
+			songs_urls = ["https://open.spotify.com/track/" + t["track"]["uri"] for t in songs_original]
+
+			return songs_names, songs_urls
 		except ConnectionError as e:
 			print(f"Error encountered: {e}")
 			print(f"Retrying... (Attempt {retry_count + 1} of {MAX_RETRIES})")
@@ -45,16 +56,6 @@ async def get_songs(url:str) -> typing.Tuple[typing.List[str], typing.List[str]]
 		print(f"Failed to add chunk to playlist after {MAX_RETRIES} attempts. Skipping...")
 		results = sp.playlist_tracks(uri)
 
-	songs_original = results['items']
-	while results['next']:
-		results = sp.next(results)
-		songs_original.extend(results['items'])
-
-	songs_names = [t["track"]["name"] for t in songs_original]
-
-	songs_urls = ["https://open.spotify.com/track/"+t["track"]["uri"] for t in songs_original]
-
-	return songs_names, songs_urls
 
 def songs_download(radio_url: str):
 	os.system(f"ls;cd downloaded_songs;spotdl download {radio_url} --port 2099 --threads 20")
