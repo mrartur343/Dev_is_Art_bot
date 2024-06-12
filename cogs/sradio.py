@@ -56,9 +56,13 @@ class RadioPlaylistsView(discord.ui.View):
 			for radio in all_radios:
 				if radio['name'] == radio_name:
 					radio_url = radio['link']
+			print("radio_image...")
 			radio_image = await sradio_contoller.playlist_image(radio_url)
+			print("radio_image")
 
+			print("songs_names, songs_urls...")
 			songs_names, songs_urls = await sradio_contoller.get_songs(radio_url)
+			print("songs_names, songs_urls")
 
 
 
