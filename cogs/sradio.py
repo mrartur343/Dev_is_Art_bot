@@ -76,8 +76,7 @@ class RadioPlaylistsView(discord.ui.View):
 						ci += 1
 						continue
 
-					else:
-						first_play=False
+
 				print(f"Play {song_name} - {song_url}")
 				ci += 1
 
@@ -263,6 +262,9 @@ class RadioPlaylistsView(discord.ui.View):
 											await user.send(f"Надобраніч!")
 										except:
 											pass
+
+				if first_play:
+					first_play=False
 
 			if not self.cycled:
 				cycle = False
