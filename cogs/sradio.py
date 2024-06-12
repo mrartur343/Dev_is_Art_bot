@@ -275,8 +275,8 @@ class SRadio(commands.Cog):  # create a class for our cog that inherits from com
 
 		for radio in server_radios:
 			embed = discord.Embed(title=radio['name'])
-			embed.add_field(name='Радіо плейлист:', value=radio['link'])
-			embed.set_footer(text=radio['name'])
+			embed.url =radio['link']
+			embed.set_image(url = sradio_contoller.playlist_image(radio['link']))
 			embeds.append(embed)
 
 		paginator = pages.Paginator(
