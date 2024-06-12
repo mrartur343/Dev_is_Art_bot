@@ -144,7 +144,7 @@ class RadioPlaylistsView(discord.ui.View):
 				line_img_url = imgmsg.attachments[0].url
 
 
-				timetable = radio_timetable.get_album_times2( songs_paths[random_pos:]+songs_paths[random_pos:] if first_play else songs_paths,
+				timetable = radio_timetable.get_album_times2( songs_paths[random_pos:]+songs_paths[:random_pos] if first_play else songs_paths,
 				                                             album_durations, ci,
 				                                             album_start_time + datetime.timedelta(
 					                                             seconds=album_durations[song_path]))
