@@ -105,9 +105,6 @@ class RadioPlaylistsView(discord.ui.View):
 
 				audio_info = TinyTag.get(song_path, image=True)
 
-				image_data: bytes = audio_info._image_data
-				with open('a.png', 'wb') as file:
-					file.write(image_data)
 
 
 				admin_logs = (
@@ -131,8 +128,6 @@ class RadioPlaylistsView(discord.ui.View):
 				imgmsg = await admin_logs.send(content=".", file=file)
 				line_img_url = imgmsg.attachments[0].url
 
-				file = discord.File(fp='a.png')
-				imgmsg: discord.Message = await admin_logs.send(content=".", file=file)
 
 				timetable = radio_timetable.get_album_times2(songs_paths,
 				                                             album_durations, ci,
@@ -142,7 +137,7 @@ class RadioPlaylistsView(discord.ui.View):
 				embed_info = discord.Embed(title='Зараз грає:',
 				                           color=discord.Color.from_rgb(r=dcolor[0], g=dcolor[1],
 				                                                        b=dcolor[2]))
-				embed_info.set_thumbnail(url=imgmsg.attachments[0].url)
+				embed_info.set_thumbnail(url=sradio_contoller.track_image(song_url))
 
 				embed_info.add_field(name="🎵 Назва:", value=audio_info.title)
 				embed_info.add_field(name="🧑‍🎤 Виконавець: ", value=audio_info.artist)
@@ -160,6 +155,8 @@ class RadioPlaylistsView(discord.ui.View):
 				                       color=discord.Color.from_rgb(r=dcolor[0], g=dcolor[1], b=dcolor[2]))
 				embed2.description = ''
 				embed2.set_image(url=line_img_url)
+
+				embed2.set_footer(text=f'Грає {radio_name}', icon_url=radio_url)
 
 				i = 0
 				single_check = True
@@ -291,7 +288,8 @@ class SRadio(commands.Cog):  # create a class for our cog that inherits from com
 
 		for radio in server_radios:
 			embed = discord.Embed(title=radio['name'])
-			embed.add_field(name='Радіо плейлист:', value=radio['link'])
+			embed.url =radio['link']
+			embed.set_image(url = sradio_contoller.playlist_image(radio['link']))
 			embeds.append(embed)
 
 		paginator = pages.Paginator(

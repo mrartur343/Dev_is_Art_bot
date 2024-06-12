@@ -49,7 +49,7 @@ def songs_download(radio_url: str):
 def songs_downloads(radio_url: str):
 	os.system(f"ls;cd downloaded_songs;spotdl download {radio_url} --port 2099 --threads 20")
 
-def playlist_image(uri: str):
-	return sp.playlist_cover_image(uri)
-
-print(playlist_image("3cEYpjA9oz9GiPac4AsH4n"))
+def playlist_image(url: str):
+	return sp.playlist_cover_image(url.split("/")[-1].split("?")[0])[0]['url']
+def track_image(url: str):
+	return sp.track(url.split("/")[-1].split("?")[0])["album"]['images'][0]['url']
