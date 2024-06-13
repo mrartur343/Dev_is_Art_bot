@@ -334,7 +334,7 @@ class SRadio(commands.Cog):  # create a class for our cog that inherits from com
 		)
 
 		pmsg = await paginator.respond(ctx.interaction)
-		custom_v =RadioPlaylistsView(pmsg.channel,pmsg.id,self.bot)
+		custom_v =RadioRemove(pmsg.channel,pmsg.id,self.bot)
 
 		await paginator.update(pages=embeds,custom_view=custom_v)
 	@discord.slash_command()
