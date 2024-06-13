@@ -18,7 +18,34 @@ from modules import radio_timetable
 
 with open("other/radio_sleep_timers.json", 'r') as file:
 	radio_sleep_timers: typing.Dict[str, typing.List[int]] = json.loads(file.read())
+class RadioRemove(discord.ui.View):
+	def __init__(self,general_radio_ingo_channel,msg_id,bot, *args, **kwargs):
+		self.general_radio_ingo_channel: discord.Thread = general_radio_ingo_channel
+		self.msg_id: int = msg_id
+		self.bot: discord.Bot = bot
+		super().__init__(timeout=None, *args)
 
+	@discord.ui.button(label="Видалити плейлист", style=discord.ButtonStyle.gray,
+	                   emoji="🗑️")
+	async def button_callback1(self, button:discord.ui.Button, interaction: discord.Interaction):
+
+		radio_name = interaction.message.embeds[0].footer.text
+		await interaction.message.delete()
+
+		guild = interaction.guild
+
+
+		with open(f'server_radios/{guild.id}.json', 'r') as file:
+			server_radios = json.loads(file.read())
+
+		result = []
+		for p in server_radios:
+			if p['name']!=radio_name:
+				result.append(p)
+
+
+		with open(f'server_radios/{guild.id}.json', 'w') as file:
+			json.dump(result, file)
 class RadioPlaylistsView(discord.ui.View):
 	def __init__(self,general_radio_ingo_channel,msg_id,bot,cycled,voice_channel, *args, **kwargs):
 		self.general_radio_ingo_channel: discord.Thread = general_radio_ingo_channel
@@ -283,6 +310,33 @@ class SRadio(commands.Cog):  # create a class for our cog that inherits from com
 
 		with open(f'server_radios/{guild.id}.json', 'w') as file:
 			json.dump(server_radios, file)
+	@discord.slash_command()
+	@commands.has_permissions(administrator=True)
+	async def remove(self, ctx: discord.ApplicationContext,playlist_link: discord.Option(str,description='Посилання на плейлист')):
+
+		server_radios = sradio_contoller.get_server_radio(ctx.guild.id)
+
+		embeds = []
+
+		for radio in server_radios:
+			embed = discord.Embed(title=radio['name'])
+			embed.url =radio['link']
+			playlist_image = await sradio_contoller.playlist_image(radio['link'])
+			if not (playlist_image is None):
+				embed.set_image(url = playlist_image)
+			embed.set_footer(text=radio['name'])
+
+			embeds.append(embed)
+
+		paginator = pages.Paginator(
+			embeds,
+			timeout=None
+		)
+
+		pmsg = await paginator.respond(ctx.interaction)
+		custom_v =RadioPlaylistsView(pmsg.channel,pmsg.id,self.bot)
+
+		await paginator.update(pages=embeds,custom_view=custom_v)
 	@discord.slash_command()
 	@commands.has_permissions(administrator=True)
 	async def play(self, ctx: discord.ApplicationContext,voice_channel: discord.Option(discord.VoiceChannel), cycled: discord.Option(bool,required=False)=True):
