@@ -392,7 +392,6 @@ class SRadio(commands.Cog):  # create a class for our cog that inherits from com
 	async def on_ready(self):  # this is called when a member joins the server
 		msg  =await (await (await self.bot.fetch_guild(1208129686031310848)).fetch_channel(1208129686572638214)).fetch_message(1250852725676310558)
 		emb = msg.embeds[0]
-		print(emb.__dict__)
 		print(f"title: {emb.title}")
 		print(f"author: {emb.author.name}")
 		print(f"desc: {emb.description}")
