@@ -185,10 +185,10 @@ class RadioPlaylistsView(discord.ui.View):
 				if not (track_image is None):
 					embed_info.set_thumbnail(url=track_image)
 
-				embed_info.description=f"**[{audio_info.title}]({song_url})**"
+				embed_info.url = song_url
 
-				embed_info.add_field(name='Автор', value=audio_info.artist)
-				embed_info.add_field(name='Альбом', value=audio_info.album)
+
+				embed_info.description = f"{audio_info.artist} • {audio_info.album}"
 
 				embed_info.set_image(url=line_img_url)
 				embed2 = discord.Embed(title='Розпорядок наступних треків',
@@ -196,6 +196,10 @@ class RadioPlaylistsView(discord.ui.View):
 				embed2.description = ''
 				embed2.description +=('**Наступні треки:**\n')
 
+				embed2.set_image(url=line_img_url)
+				radio_msg_view = AlbumSongs(current_play=song_name, timeout=None, timetable=timetable,
+				                            next_cycle_time=next_cycle_time,
+				                            cycle_duration=cycle_duration, current_album=song_path,radio_url=radio_url,audio_info=audio_info)
 
 				i = 0
 				single_check = True
@@ -224,9 +228,6 @@ class RadioPlaylistsView(discord.ui.View):
 				print(embed2.description)
 
 				radio_msg_embeds = [embed_info, embed2]
-				radio_msg_view = AlbumSongs(current_play=song_name, timeout=None, timetable=timetable,
-				                            next_cycle_time=next_cycle_time,
-				                            cycle_duration=cycle_duration, current_album=song_path,radio_url=radio_url,audio_info=audio_info)
 
 
 
