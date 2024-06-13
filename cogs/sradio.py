@@ -180,7 +180,7 @@ class RadioPlaylistsView(discord.ui.View):
 				single_check = True
 				old_emoji = ""
 				for k, v in timetable:
-					if i < 6:
+					if i < 6 and ci+i+1 < len(songs_names):
 						audio_info = TinyTag.get(k, image=True)
 						v: datetime.datetime
 
