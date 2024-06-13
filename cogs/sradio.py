@@ -114,7 +114,7 @@ class RadioPlaylistsView(discord.ui.View):
 					while not (song_name in songs_names_paths):
 						songs_names_paths, songs_paths = sradio_contoller.get_all_songs_paths()
 
-			if not new_downloads_check:
+			if new_downloads_check:
 				await interaction.respond("Плейлист було дозавантажено", ephemeral=True)
 			else:
 				await interaction.respond("Плейлист повінстю вже був завантажений", ephemeral=True)
