@@ -157,30 +157,21 @@ class RadioPlaylistsView(discord.ui.View):
 				if not (track_image is None):
 					embed_info.set_thumbnail(url=track_image)
 
-				embed_info.add_field(name="🎵 Назва:", value=audio_info.title)
+				embed_info.add_field(name=audio_info.title, value=f"{audio_info.artist} • {audio_info.album}", inline=False)
 				embed_info.add_field(name="🧑‍🎤 Виконавець: ", value=audio_info.artist)
-				embed_info.add_field(name="⌛ Рік випуску: ",
-				                     value=audio_info.year if str(audio_info.year) != '1970' else '???')
-				embed_info.add_field(name="💿 Альбом: ",
-				                     value=audio_info.album)
-
-				embed_info.add_field(name="⏲️ Тривалість: ",
-				                     value=f"{math.floor(audio_info.duration / 60)}m {math.floor(audio_info.duration) % 60}s")
-				embed_info.add_field(name="📻 Наступний трек: ",
-				                     value=f"{songs_names[ci + 1] if ci + 1 < len(songs_names) else '???'}  <t:{round((datetime.datetime.now() + datetime.timedelta(seconds=audio_info.duration)).timestamp())}:R>")
+				embed_info.description=f"> Наступний трек - {songs_names[ci + 1] if ci + 1 < len(songs_names) else '???'}  <t:{round((datetime.datetime.now() + datetime.timedelta(seconds=audio_info.duration)).timestamp())}:R>"
 				embed_info.set_image(url=line_img_url)
-				embed2 = discord.Embed(title='Розпорядок наступних альбомів',
+				embed2 = discord.Embed(title='Розпорядок наступних треків',
 				                       color=discord.Color.from_rgb(r=dcolor[0], g=dcolor[1], b=dcolor[2]))
-				embed2.description = ''
-				embed2.set_image(url=line_img_url)
 
-				embed2.set_footer(text=f'Грає {radio_name}', icon_url=radio_url)
+				embed2.description +=('**Наступні треки:**\n')
+
 
 				i = 0
 				single_check = True
 				old_emoji = ""
 				for k, v in timetable:
-					if i < 6 and ci+i+1 < len(songs_names):
+					if i < 4 and ci+i+1 < len(songs_names):
 						audio_info = TinyTag.get(k, image=True)
 						v: datetime.datetime
 
@@ -196,17 +187,16 @@ class RadioPlaylistsView(discord.ui.View):
 
 					old_emoji = time_emoji
 					i+=1
-				if i < 6:
+				if i < 4:
 					embed2.description += (
 						f"<t:{round(next_cycle_time.timestamp())}:t> Наступний цикл (довантаження нових альбомів/синглів/плейлистів) {f' (<t:{round(next_cycle_time.timestamp())}:R>)' if (i == 0) and single_check else ''}\n")
-				embed2.set_footer(text='Між кожним альбомом грають 2 випадкових синглів')
 
 				print(embed2.description)
 
 				radio_msg_embeds = [embed_info, embed2]
 				radio_msg_view = AlbumSongs(current_play=song_name, timeout=None, timetable=timetable,
 				                            next_cycle_time=next_cycle_time,
-				                            cycle_duration=cycle_duration, current_album=song_path,radio_url=radio_url)
+				                            cycle_duration=cycle_duration, current_album=song_path,radio_url=radio_url,audio_info=audio_info)
 
 
 
@@ -279,7 +269,20 @@ class SRadio(commands.Cog):  # create a class for our cog that inherits from com
 
 	def __init__(self, bot):  # this is a special method that is called when the cog is loaded
 		self.bot = bot
+	@discord.slash_command()
+	@commands.has_permissions(administrator=True)
+	async def add(self, ctx: discord.ApplicationContext,playlist_link: discord.Option(str,description='Посилання на плейлист')):
+		guild = ctx.guild
+		with open(f'server_radios/{guild.id}.json', 'r') as file:
+			server_radios = json.loads(file.read())
 
+		radio_name = sradio_contoller.playlist_name(playlist_link)
+
+		server_radios.append({'name': radio_name, 'link': playlist_link})
+
+
+		with open(f'server_radios/{guild.id}.json', 'w') as file:
+			json.dump(server_radios, file)
 	@discord.slash_command()
 	@commands.has_permissions(administrator=True)
 	async def play(self, ctx: discord.ApplicationContext,voice_channel: discord.Option(discord.VoiceChannel), cycled: discord.Option(bool,required=False)=True):
