@@ -188,7 +188,7 @@ class RadioPlaylistsView(discord.ui.View):
 				embed_info.url = song_url
 
 
-				embed_info.description = f"{audio_info.artist} • {audio_info.album}"
+				embed_info.description = f"{audio_info.artist}  •  {audio_info.album}"
 
 				embed_info.set_image(url=line_img_url)
 				embed2 = discord.Embed(title='Розпорядок наступних треків',
