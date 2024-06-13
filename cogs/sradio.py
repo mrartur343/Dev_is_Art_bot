@@ -23,9 +23,9 @@ class RadioPlaylistsView(discord.ui.View):
 	def __init__(self,general_radio_ingo_channel,msg_id,bot,cycled,voice_channel, *args, **kwargs):
 		self.general_radio_ingo_channel: discord.Thread = general_radio_ingo_channel
 		self.msg_id: int = msg_id
-		self.bot = bot
+		self.bot: discord.Bot = bot
 		self.cycled = cycled
-		self.voice_channel = voice_channel
+		self.voice_channel: discord.VoiceChannel = voice_channel
 		super().__init__(timeout=None, *args)
 
 	@discord.ui.button(label="Грати радіо", style=discord.ButtonStyle.gray,
@@ -227,6 +227,9 @@ class RadioPlaylistsView(discord.ui.View):
 					'options': f'-vn -b:a 320k -ss {round(time.time() - waiting_start_time)}'}
 				audio_source = discord.FFmpegPCMAudio(song_path,
 				                                      **FFMPEG_OPTIONS)
+
+				if not (self.bot.user.id in  [m.id for m in updated_channel.members]):
+					vc = await ctx_voice_channel.connect()
 
 				await vc.play(audio_source, wait_finish=True)
 
