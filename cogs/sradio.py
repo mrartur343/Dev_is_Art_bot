@@ -97,6 +97,27 @@ class RadioPlaylistsView(discord.ui.View):
 			ctx_voice_channel = self.voice_channel
 			vc: discord.VoiceClient = await ctx_voice_channel.connect()
 			random_pos = random.randint(0, len(songs_names))
+
+			new_downloads_check = False
+
+			for song_name, song_url in zip(songs_names, songs_urls):
+
+				songs_names_paths,songs_paths = sradio_contoller.get_all_songs_paths()
+				if not (song_name in songs_names_paths):
+					if not new_downloads_check:
+						await interaction.respond("Зачекайте, не всі треки з плейлиста були завантажені...", ephemeral=True)
+
+					new_downloads_check=True
+
+					sradio_contoller.songs_download(radio_url)
+					await asyncio.sleep(3)
+					while not (song_name in songs_names_paths):
+						songs_names_paths, songs_paths = sradio_contoller.get_all_songs_paths()
+
+			if not new_downloads_check:
+				await interaction.respond("Плейлист було дозавантажено", ephemeral=True)
+			else:
+				await interaction.respond("Плейлист повінстю вже був завантажений", ephemeral=True)
 			for song_name, song_url in zip(songs_names, songs_urls):
 				if first_play:
 					if ci<random_pos:
@@ -108,7 +129,6 @@ class RadioPlaylistsView(discord.ui.View):
 				ci += 1
 
 				songs_names_paths,songs_paths = sradio_contoller.get_all_songs_paths()
-				print("Зачекайте, не всі треки з плейлиста були завантажені...")
 				if not (song_name in songs_names_paths):
 					print(songs_paths)
 
@@ -116,7 +136,7 @@ class RadioPlaylistsView(discord.ui.View):
 					await asyncio.sleep(3)
 					while not (song_name in songs_names_paths):
 						songs_names_paths,songs_paths = sradio_contoller.get_all_songs_paths()
-				print("Плейлист було дозавантажено")
+
 
 				album_durations = {}
 				for d_song_path in songs_paths:
