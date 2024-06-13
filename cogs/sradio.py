@@ -298,7 +298,7 @@ class SRadio(commands.Cog):  # create a class for our cog that inherits from com
 	# this class is used to create a cog, which is a module that can be added to the bot
 
 	def __init__(self, bot):  # this is a special method that is called when the cog is loaded
-		self.bot = bot
+		self.bot: discord.Bot = bot
 	@discord.slash_command()
 	@commands.has_permissions(administrator=True)
 	async def add(self, ctx: discord.ApplicationContext,playlist_link: discord.Option(str,description='Посилання на плейлист')):
@@ -388,7 +388,16 @@ class SRadio(commands.Cog):  # create a class for our cog that inherits from com
 		)
 
 		await paginator.respond(ctx.interaction)
-
+	@commands.Cog.listener()  # we can add event listeners to our cog
+	async def on_ready(self):  # this is called when a member joins the server
+		msg  =await (await (await self.bot.fetch_guild(1208129686031310848)).fetch_channel(1208129686572638214)).fetch_message(1250852725676310558)
+		emb = msg.embeds[0]
+		print(emb)
+		print(f"title: {emb.title}")
+		print(f"author: {emb.author.name}")
+		print(f"author_link: {emb.author.url}")
+		print(f"author_link_img: {emb.author.icon_url}")
+		print(f"url: {emb.author.icon_url}")
 	@commands.Cog.listener()  # we can add event listeners to our cog
 	async def on_guild_join(self, guild: discord.Guild):  # this is called when a member joins the server
 		# you must enable the proper intents
