@@ -178,17 +178,17 @@ class RadioPlaylistsView(discord.ui.View):
 				embed_info = discord.Embed(title=audio_info.title,
 				                           color=discord.Color.from_rgb(r=dcolor[0], g=dcolor[1],
 				                                                        b=dcolor[2]))
+				embed_info.set_author(name=radio_name,icon_url=radio_image,url=radio_url)
 				track_image = await (sradio_contoller.track_image(song_url))
 				if track_image is None:
 					track_image = radio_image
 				if not (track_image is None):
 					embed_info.set_thumbnail(url=track_image)
 
-				embed_info.add_field(name=audio_info.title, value=f"{audio_info.artist} • {audio_info.album}", inline=False)
-				embed_info.add_field(name="🧑‍🎤 Виконавець: ", value=audio_info.artist)
-				embed_info.description+=(f"### {audio_info.artist} • {audio_info.album}\n")
+				embed_info.description=f"**[{audio_info.title}]({song_url})**"
 
-				embed_info.description+=f"> Наступний трек - {songs_names[ci + 1] if ci + 1 < len(songs_names) else '???'}  <t:{round((datetime.datetime.now() + datetime.timedelta(seconds=audio_info.duration)).timestamp())}:R>"
+				embed_info.add_field(name='Автор', value=audio_info.artist)
+				embed_info.add_field(name='Альбом', value=audio_info.album)
 
 				embed_info.set_image(url=line_img_url)
 				embed2 = discord.Embed(title='Розпорядок наступних треків',
