@@ -190,7 +190,7 @@ class RadioPlaylistsView(discord.ui.View):
 				embed_info.set_image(url=line_img_url)
 				embed2 = discord.Embed(title='Розпорядок наступних треків',
 				                       color=discord.Color.from_rgb(r=dcolor[0], g=dcolor[1], b=dcolor[2]))
-
+				embed2.description = ''
 				embed2.description +=('**Наступні треки:**\n')
 
 
