@@ -105,15 +105,10 @@ async def playlist_name(url:str) -> typing.Tuple[typing.List[str], typing.List[s
 		return results['name']
 
 
-async def song_download(song_url: str):
-	print(song_url+'...')
-	downloader = spotdl.Spotdl(client_id="1a5350b67e5c4715b4ac9ac99e1b4b28",
-	                           client_secret="2b0a1dc0bb094cabbc4e01cef163e125").downloader
+def song_download(song_url: str):
+	os.system(f"ls;cd downloaded_songs;spotdl download {song_url} --port 2099 --threads 1")
 
 	print(song_url)
-	path = (asyncio.run(downloader.download_song(song_url)))[1]
-	shutil.move(path, 'downloaded_songs/')
-	print(path)
 
 async def playlist_image(url: str):
 	MAX_RETRIES=15
