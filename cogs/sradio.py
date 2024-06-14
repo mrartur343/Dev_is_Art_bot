@@ -312,7 +312,7 @@ class RadioPlaylistsView(discord.ui.View):
 	@discord.ui.button(label="Грати радіо", style=discord.ButtonStyle.gray,
 	                   emoji="📻")
 	async def button_callback1(self, button: discord.ui.Button, interaction: discord.Interaction):
-		asyncio.run(radio_play(interaction,self.general_radio_info_channel,self.msg_id,self.bot,self.cycled,self.voice_channel))
+		await asyncio.create_task(radio_play(interaction,self.general_radio_info_channel,self.msg_id,self.bot,self.cycled,self.voice_channel))
 class SRadio(commands.Cog):  # create a class for our cog that inherits from commands.Cog
 	# this class is used to create a cog, which is a module that can be added to the bot
 
