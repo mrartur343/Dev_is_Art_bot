@@ -102,7 +102,7 @@ class RadioPlaylistsView(discord.ui.View):
 				songs_names_paths, songs_paths = sradio_contoller.get_all_songs_paths()
 				if not (song_name in songs_names_paths):
 					if not new_downloads_check:
-						log_msg = await interaction.channel.send("Зачекайте, не всі треки з плейлиста були завантажені...",)
+						log_msg = await int_channel.send("Зачекайте, не всі треки з плейлиста були завантажені...",)
 						log_messages.append(log_msg)
 
 					new_downloads_check = True
@@ -113,10 +113,10 @@ class RadioPlaylistsView(discord.ui.View):
 						songs_names_paths, songs_paths = sradio_contoller.get_all_songs_paths()
 
 			if new_downloads_check:
-				log_msg = await interaction.channel.send("Плейлист було дозавантажено")
+				log_msg = await int_channel.send("Плейлист було дозавантажено")
 				log_messages.append(log_msg)
 			else:
-				log_msg = await interaction.channel.send("Плейлист повінстю вже був завантажений")
+				log_msg = await int_channel.send("Плейлист повінстю вже був завантажений")
 				log_messages.append(log_msg)
 
 			for lm in log_messages:
