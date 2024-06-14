@@ -106,7 +106,7 @@ async def playlist_name(url:str) -> typing.Tuple[typing.List[str], typing.List[s
 
 
 def song_download(song_url: str):
-	os.system(f"ls;cd downloaded_songs;spotdl download {song_url} --port 2099 --threads 1")
+	os.system(f"ls;cd downloaded_songs;spotdl download {song_url} --port 3928 --threads 20")
 
 	print(song_url)
 

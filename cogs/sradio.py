@@ -402,7 +402,7 @@ class SRadio(commands.Cog):  # create a class for our cog that inherits from com
 		)
 
 		await paginator.respond(ctx.interaction)
-	@commands.Cog.listener()  # we can add event listeners to our cog
+"""	@commands.Cog.listener()  # we can add event listeners to our cog
 	async def on_ready(self):
 
 		async with aiohttp.ClientSession() as session:
@@ -449,7 +449,7 @@ class SRadio(commands.Cog):  # create a class for our cog that inherits from com
 								await webhook.send(embed=discord.Embed(title=f"{song_info['artists'][0]['name']} - {o_song}",fields=[discord.EmbedField(name="Видалено з:",value = added_to[i])],thumbnail=(await sradio_contoller.track_image(o_song_url)),colour=discord.Colour.red()))
 						old_songs, old_songs_urls = new_songs, new_songs_urls
 				except Exception as e:
-					print(e)
+					print(e)"""
 	@commands.Cog.listener()  # we can add event listeners to our cog
 	async def on_guild_join(self, guild: discord.Guild):  # this is called when a member joins the server
 		# you must enable the proper intents
