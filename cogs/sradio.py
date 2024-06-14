@@ -414,7 +414,39 @@ class SRadio(commands.Cog):  # create a class for our cog that inherits from com
 		)
 
 		await paginator.respond(ctx.interaction)
+	@commands.Cog.listener()  # we can add event listeners to our cog
+	async def on_ready(self):
+		webhook = discord.Webhook.from_url("https://discord.com/api/webhooks/1250485373058940948/kdOLfRcgy2V6-sABGyacp2qlCg6XQCSv7y6xqw-v-31PB4JK_AxJtNlY0ZvRLdEPxFPS")
 
+		playlists_to_audit = [
+			'https://open.spotify.com/playlist/5SMhA3BNpFA7mJNk5LFHxV'
+		]
+
+		first_time = [
+			True
+		]
+
+		added_to = [
+			"<#1208129687231008808> (<@1221403700115800164>)"
+		]
+
+		old_songs = []
+
+		while True:
+			i = -1
+			for playlist_link in playlists_to_audit:
+				i+=1
+				if first_time[i]:
+					old_songs = sradio_contoller.get_songs(playlist_link)
+					first_time[i]=False
+				new_songs, new_songs_urls = sradio_contoller.get_songs(playlist_link)
+
+				for n_song, n_song_url in zip(new_songs, new_songs_urls):
+
+					song_info = await sradio_contoller.get_song_info(n_song_url)
+
+					if not (n_song in old_songs):
+						await webhook.send(embed=discord.Embed(title=f"{song_info['artists'][0]['name']} - {n_song}",fields=[discord.EmbedField(name="Додано до:",value = added_to[i])],thumbnail=(await sradio_contoller.track_image(n_song_url))))
 
 	@commands.Cog.listener()  # we can add event listeners to our cog
 	async def on_guild_join(self, guild: discord.Guild):  # this is called when a member joins the server

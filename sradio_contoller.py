@@ -28,6 +28,27 @@ def get_all_songs_paths() -> typing.Tuple[typing.List[str],typing.List[str]]:
 
 	return all_songs_names,all_songs_files
 
+async def get_song_info(url:str) -> dict:
+	MAX_RETRIES=15
+	retry_count=0
+
+	uri = url.split("/")[-1].split("?")[0]
+
+	while retry_count < MAX_RETRIES:
+		try:
+			results =  sp.track(uri)
+
+
+			return results
+		except Exception as e:
+			print(f"Error encountered: {e}")
+			print(f"Retrying... (Attempt {retry_count + 1} of {MAX_RETRIES})")
+			retry_count+=1
+			await asyncio.sleep(0.5)
+	else:
+		print(f"Failed to add chunk to playlist after {MAX_RETRIES} attempts. Skipping...")
+
+		results = sp.track(uri)
 
 async def get_songs(url:str) -> typing.Tuple[typing.List[str], typing.List[str]]:
 	MAX_RETRIES=15
