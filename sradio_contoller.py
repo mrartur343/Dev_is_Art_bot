@@ -5,7 +5,7 @@ import typing
 from os import listdir
 import os
 from os.path import join, isfile
-
+from spotdl.utils import web
 import requests
 import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials, SpotifyOAuth
@@ -103,9 +103,8 @@ async def playlist_name(url:str) -> typing.Tuple[typing.List[str], typing.List[s
 		return results['name']
 
 
-def songs_download(radio_url: str):
-	os.system(f"ls;cd downloaded_songs;spotdl download {radio_url} --port 2099 --threads 20")
-
+async def song_download(song_url: str):
+	await web.download_url(song_url)
 def songs_downloads(radio_url: str):
 	os.system(f"ls;cd downloaded_songs;spotdl download {radio_url} --port 2099 --threads 20")
 
