@@ -62,7 +62,7 @@ async def radio_play(interaction, general_radio_info_channel, msg_id, bot, cycle
 			if not (song_name in songs_names_paths):
 
 
-				await sradio_contoller.song_download(song_url)
+				sradio_contoller.song_download(song_url)
 
 		for song_name, song_url in zip(songs_names, songs_urls):
 			try:
@@ -78,7 +78,7 @@ async def radio_play(interaction, general_radio_info_channel, msg_id, bot, cycle
 				if not (song_name in songs_names_paths):
 					print(songs_paths)
 
-					await sradio_contoller.song_download(song_url)
+					sradio_contoller.song_download(song_url)
 
 				album_durations = {}
 				for d_song_path in songs_paths:
