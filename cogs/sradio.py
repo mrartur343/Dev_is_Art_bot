@@ -95,13 +95,15 @@ class RadioPlaylistsView(discord.ui.View):
 
 			new_downloads_check = False
 
+			log_messages: typing.List[discord.Message] = []
+
 			for song_name, song_url in zip(songs_names, songs_urls):
 
 				songs_names_paths, songs_paths = sradio_contoller.get_all_songs_paths()
 				if not (song_name in songs_names_paths):
 					if not new_downloads_check:
-						await interaction.respond("Зачекайте, не всі треки з плейлиста були завантажені...",
-						                          ephemeral=True)
+						log_msg = await interaction.channel.send("Зачекайте, не всі треки з плейлиста були завантажені...",)
+						log_messages.append(log_msg)
 
 					new_downloads_check = True
 
@@ -111,9 +113,14 @@ class RadioPlaylistsView(discord.ui.View):
 						songs_names_paths, songs_paths = sradio_contoller.get_all_songs_paths()
 
 			if new_downloads_check:
-				await interaction.respond("Плейлист було дозавантажено", ephemeral=True)
+				log_msg = await interaction.channel.send("Плейлист було дозавантажено")
+				log_messages.append(log_msg)
 			else:
-				await interaction.respond("Плейлист повінстю вже був завантажений", ephemeral=True)
+				log_msg = await interaction.channel.send("Плейлист повінстю вже був завантажений")
+				log_messages.append(log_msg)
+
+			for lm in log_messages:
+				await lm.delete()
 			for song_name, song_url in zip(songs_names, songs_urls):
 				try:
 					if first_play:
