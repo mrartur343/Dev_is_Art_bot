@@ -69,7 +69,7 @@ async def get_songs(url:str) -> typing.Tuple[typing.List[str], typing.List[str]]
 
 			songs_names = [t["track"]["name"] for t in songs_original]
 
-			songs_urls = ["https://open.spotify.com/track/" + t["track"]["uri"] for t in songs_original]
+			songs_urls = ["https://open.spotify.com/track/" + t["track"]["uri"].split(":")[-1] for t in songs_original]
 
 			return songs_names, songs_urls
 		except Exception as e:
