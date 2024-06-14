@@ -384,6 +384,15 @@ class SRadio(commands.Cog):  # create a class for our cog that inherits from com
 		custom_v = RadioPlaylistsView(pmsg.channel, pmsg.id, self.bot, cycled, voice_channel)
 
 		await paginator.update(pages=embeds, custom_view=custom_v)
+	@discord.slash_command()
+	@commands.has_permissions(administrator=True)
+	async def info(self, ctx: discord.ApplicationContext):
+
+		embed_info = discord.Embed(title="SRadio Bot")
+
+		embed_info.description = documentation_text
+
+		await ctx.respond(embed = embed_info)
 
 	@discord.slash_command()  # we can also add application commands
 	async def list(self, ctx: discord.ApplicationContext):
