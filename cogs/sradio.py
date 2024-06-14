@@ -27,7 +27,7 @@ async def radio_play(interaction, general_radio_info_channel, msg_id, bot, cycle
 	await interaction.message.delete()
 
 	int_channel: discord.TextChannel = interaction.channel
-	await interaction.respond(embed=discord.Embed(title='Радіо вмикається'), ephemeral=True)
+	await interaction.respond(embed=discord.Embed(title='Увімкнення радіо може зайняти деякий час, необхідно завантажити всі треки локально'), ephemeral=True)
 	msg = await int_channel.send(embed=discord.Embed(title='load...'))
 
 	cycle = True
@@ -55,17 +55,11 @@ async def radio_play(interaction, general_radio_info_channel, msg_id, bot, cycle
 		vc: discord.VoiceClient = await ctx_voice_channel.connect()
 		random_pos = random.randint(0, len(songs_names))
 
-		new_downloads_check = False
-
-		log_messages: typing.List[discord.Message] = []
 
 		for song_name, song_url in zip(songs_names, songs_urls):
 
 			songs_names_paths, songs_paths = sradio_contoller.get_all_songs_paths()
 			if not (song_name in songs_names_paths):
-				if not new_downloads_check:
-					log_msg = await int_channel.send("Зачекайте, не всі треки з плейлиста були завантажені...", )
-					log_messages.append(log_msg)
 
 				new_downloads_check = True
 
@@ -74,15 +68,6 @@ async def radio_play(interaction, general_radio_info_channel, msg_id, bot, cycle
 				while not (song_name in songs_names_paths):
 					songs_names_paths, songs_paths = sradio_contoller.get_all_songs_paths()
 
-		if new_downloads_check:
-			log_msg = await int_channel.send("Плейлист було дозавантажено")
-			log_messages.append(log_msg)
-		else:
-			log_msg = await int_channel.send("Плейлист повінстю вже був завантажений")
-			log_messages.append(log_msg)
-
-		for lm in log_messages:
-			await lm.delete()
 		for song_name, song_url in zip(songs_names, songs_urls):
 			try:
 				if first_play:
@@ -312,6 +297,7 @@ class RadioPlaylistsView(discord.ui.View):
 	@discord.ui.button(label="Грати радіо", style=discord.ButtonStyle.gray,
 	                   emoji="📻")
 	async def button_callback1(self, button: discord.ui.Button, interaction: discord.Interaction):
+
 		await asyncio.create_task(radio_play(interaction,self.general_radio_info_channel,self.msg_id,self.bot,self.cycled,self.voice_channel))
 class SRadio(commands.Cog):  # create a class for our cog that inherits from commands.Cog
 	# this class is used to create a cog, which is a module that can be added to the bot
