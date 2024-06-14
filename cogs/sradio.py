@@ -450,6 +450,7 @@ class SRadio(commands.Cog):  # create a class for our cog that inherits from com
 						old_songs, old_songs_urls = new_songs, new_songs_urls
 				except Exception as e:
 					print(e)"""
+
 	@commands.Cog.listener()  # we can add event listeners to our cog
 	async def on_guild_join(self, guild: discord.Guild):  # this is called when a member joins the server
 		# you must enable the proper intents
