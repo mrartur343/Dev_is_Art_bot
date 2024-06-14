@@ -7,6 +7,11 @@ from os import listdir
 import os
 from os.path import join, isfile
 
+import spotdl
+from spotdl import __main__ as start # To initialize
+from spotdl.utils.search import Song
+from pytube import YouTube
+
 from savify import Savify
 from savify.types import Type, Format, Quality
 import spotipy
@@ -108,9 +113,9 @@ async def playlist_name(url:str) -> typing.Tuple[typing.List[str], typing.List[s
 
 
 def song_download(song_url: str):
-	print(song_url+'...')
-	sfy.download(song_url)
-	print(song_url)
+	path = spotdl.Spotdl(client_id="1a5350b67e5c4715b4ac9ac99e1b4b28",client_secret="2b0a1dc0bb094cabbc4e01cef163e125").download(song=Song.from_url(song_url))[1]
+	shutil.move(path, 'downloaded_songs')
+
 
 async def playlist_image(url: str):
 	MAX_RETRIES=15
