@@ -456,7 +456,7 @@ class SRadio(commands.Cog):  # create a class for our cog that inherits from com
 							song_info = await sradio_contoller.get_song_info(n_song_url)
 
 							if not (n_song in old_songs):
-								await webhook.send(embed=discord.Embed(title=f"{song_info['artists'][0]['name']} - {n_song}",fields=[discord.EmbedField(name="Додано до:",value = added_to[i])],thumbnail=(await sradio_contoller.track_image(n_song_url))))
+								await webhook.send(embed=discord.Embed(title=f"{song_info['artists'][0]['name']} - {n_song}",fields=[discord.EmbedField(name="Додано до:",value = added_to[i])],thumbnail=(await sradio_contoller.track_image(n_song_url)),colour=discord.Colour.brand_green()))
 
 
 						for o_song, o_song_url in zip(old_songs, old_songs_urls):
