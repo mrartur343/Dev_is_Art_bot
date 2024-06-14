@@ -406,18 +406,6 @@ class SRadio(commands.Cog):  # create a class for our cog that inherits from com
 
 		await paginator.respond(ctx.interaction)
 
-	@commands.Cog.listener()  # we can add event listeners to our cog
-	async def on_ready(self):  # this is called when a member joins the server
-		msg = await (
-			await (await self.bot.fetch_guild(1208129686031310848)).fetch_channel(1208129686572638214)).fetch_message(
-			1250852725676310558)
-		emb = msg.embeds[0]
-		print(f"title: {emb.title}")
-		print(f"author: {emb.author.name}")
-		print(f"desc: {emb.description}")
-		print(f"author_link: {emb.author.url}")
-		print(f"author_link_img: {emb.author.icon_url}")
-		print(f"url: {emb.author.icon_url}")
 
 	@commands.Cog.listener()  # we can add event listeners to our cog
 	async def on_guild_join(self, guild: discord.Guild):  # this is called when a member joins the server
@@ -427,7 +415,7 @@ class SRadio(commands.Cog):  # create a class for our cog that inherits from com
 		with open(f'server_radios/{guild.id}.json', 'w') as file:
 			json.dump([
 				{
-					"name": "Background music",
+					"name": "Плейлист невідомого поета",
 					"link": "https://open.spotify.com/playlist/5SMhA3BNpFA7mJNk5LFHxV?si=1ee1481307f34f7b"
 				}], file)
 
