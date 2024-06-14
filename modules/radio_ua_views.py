@@ -12,7 +12,6 @@ from tinytag import TinyTag
 import sradio_contoller
 
 radio_bot_list = ['Alpha','Beta','Gamma','Delta']
-documentation_view = discord.ui.View(discord.ui.Button(label='Запросити бота на сервер', url='https://discord.com/oauth2/authorize?client_id=1221403700115800164', style=discord.ButtonStyle.url),discord.ui.Button(label='Наш сервер', url='https://discord.gg/hX8RzUVmcv', style=discord.ButtonStyle.url))
 documentation_text = """## Загально
 		> Це радіо бот якого розробив кодер з Хмельницького @optymist
 		> Цей бот вміє грати будь-який плейлист з Spotify 24/7 у будь-якому голосовому каналі
@@ -198,6 +197,11 @@ class AlbumSongs(discord.ui.View):
 	async def button_callback6(self, button, interaction: discord.Interaction):
 		embed_info = discord.Embed(title="SRadio Bot")
 
+		documentation_view = discord.ui.View(discord.ui.Button(label='Запросити бота на сервер',
+		                                                       url='https://discord.com/oauth2/authorize?client_id=1221403700115800164',
+		                                                       style=discord.ButtonStyle.url),
+		                                     discord.ui.Button(label='Наш сервер', url='https://discord.gg/hX8RzUVmcv',
+		                                                       style=discord.ButtonStyle.url))
 
 		embed_info.description=documentation_text
 

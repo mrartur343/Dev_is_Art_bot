@@ -391,6 +391,11 @@ class SRadio(commands.Cog):  # create a class for our cog that inherits from com
 		embed_info = discord.Embed(title="SRadio Bot")
 
 		embed_info.description = documentation_text
+		documentation_view = discord.ui.View(discord.ui.Button(label='Запросити бота на сервер',
+		                                                       url='https://discord.com/oauth2/authorize?client_id=1221403700115800164',
+		                                                       style=discord.ButtonStyle.url),
+		                                     discord.ui.Button(label='Наш сервер', url='https://discord.gg/hX8RzUVmcv',
+		                                                       style=discord.ButtonStyle.url))
 
 		await ctx.respond(embed=embed_info, view=documentation_view)
 
