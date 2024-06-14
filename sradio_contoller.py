@@ -111,7 +111,7 @@ async def song_download(song_url: str):
 	                           client_secret="2b0a1dc0bb094cabbc4e01cef163e125").downloader
 
 	print(song_url)
-	path = (await asyncio.run(downloader.pool_download(song_url)))[1]
+	path = (await asyncio.run(downloader.download_song(song_url)))[1]
 	shutil.move(path, 'downloaded_songs/')
 	print(path)
 
