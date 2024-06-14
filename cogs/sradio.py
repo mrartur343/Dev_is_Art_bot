@@ -402,6 +402,21 @@ class SRadio(commands.Cog):  # create a class for our cog that inherits from com
 		)
 
 		await paginator.respond(ctx.interaction)
+
+
+
+	@commands.Cog.listener()  # we can add event listeners to our cog
+	async def on_guild_join(self, guild: discord.Guild):  # this is called when a member joins the server
+		# you must enable the proper intents
+		# to access this event.
+		# See the Popular-Topics/Intents page for more info
+		with open(f'server_radios/{guild.id}.json', 'w') as file:
+			json.dump([
+				{
+					"link": "https://open.spotify.com/playlist/5SMhA3BNpFA7mJNk5LFHxV?si=1ee1481307f34f7b"
+				}], file)
+
+
 """	@commands.Cog.listener()  # we can add event listeners to our cog
 	async def on_ready(self):
 
@@ -451,16 +466,6 @@ class SRadio(commands.Cog):  # create a class for our cog that inherits from com
 				except Exception as e:
 					print(e)"""
 
-	@commands.Cog.listener()  # we can add event listeners to our cog
-	async def on_guild_join(self, guild: discord.Guild):  # this is called when a member joins the server
-		# you must enable the proper intents
-		# to access this event.
-		# See the Popular-Topics/Intents page for more info
-		with open(f'server_radios/{guild.id}.json', 'w') as file:
-			json.dump([
-				{
-					"link": "https://open.spotify.com/playlist/5SMhA3BNpFA7mJNk5LFHxV?si=1ee1481307f34f7b"
-				}], file)
 
 
 def setup(bot):  # this is called by Pycord to setup the cog
