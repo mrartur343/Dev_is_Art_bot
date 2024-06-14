@@ -179,7 +179,7 @@ class RadioPlaylistsView(discord.ui.View):
 
 					img.save('b_line.png')
 
-					discord.File("b_line.png", filename="b_line.png")
+					file = discord.File("b_line.png", filename="b_line.png")
 					line_img_url = "attachment://b_line.png"
 
 					timetable = radio_timetable.get_album_times2(songs_names,
@@ -248,7 +248,7 @@ class RadioPlaylistsView(discord.ui.View):
 					updated_channel: discord.VoiceChannel = await (vc.channel.guild.fetch_channel(
 						vc.channel.id))
 
-					msg = await msg.edit(embeds=radio_msg_embeds, view=radio_msg_view)
+					msg = await msg.edit(file=file,embeds=radio_msg_embeds, view=radio_msg_view)
 
 					while len(updated_channel.members) < 2 and time.time() - waiting_start_time < wait_duration:
 						updated_channel: discord.VoiceChannel = await (vc.channel.guild.fetch_channel(
