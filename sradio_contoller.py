@@ -108,8 +108,8 @@ async def playlist_name(url:str) -> typing.Tuple[typing.List[str], typing.List[s
 
 
 def song_download(song_url: str):
-	print(song_url+'...')
-	sfy.download(song_url)
+	os.system(f"ls;cd downloaded_songs;spotdl download {song_url} --port 3928 --threads 20")
+
 	print(song_url)
 
 async def playlist_image(url: str):
