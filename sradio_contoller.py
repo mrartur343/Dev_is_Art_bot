@@ -107,11 +107,12 @@ async def playlist_name(url:str) -> typing.Tuple[typing.List[str], typing.List[s
 
 async def song_download(song_url: str):
 	print(song_url+'...')
+	asyncio
 	downloader = spotdl.Spotdl(client_id="1a5350b67e5c4715b4ac9ac99e1b4b28",
 	                           client_secret="2b0a1dc0bb094cabbc4e01cef163e125").downloader
 
 	print(song_url)
-	path = (await downloader.pool_download(song_url))[1]
+	path = (await asyncio.create_task(downloader.pool_download(song_url)))[1]
 	shutil.move(path, 'downloaded_songs/')
 	print(path)
 
