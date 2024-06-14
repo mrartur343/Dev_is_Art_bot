@@ -16,7 +16,7 @@ from tinytag import TinyTag
 auth_manager = SpotifyClientCredentials(client_id="1a5350b67e5c4715b4ac9ac99e1b4b28",client_secret="2b0a1dc0bb094cabbc4e01cef163e125")
 sp = spotipy.Spotify(auth_manager=auth_manager)
 
-sfy = Savify( path_holder=PathHolder(downloads_path='downloaded_songs'), download_format=Format.MP3)
+sfy = Savify(api_credentials=("1a5350b67e5c4715b4ac9ac99e1b4b28","2b0a1dc0bb094cabbc4e01cef163e125"), path_holder=PathHolder(downloads_path='downloaded_songs'), download_format=Format.MP3)
 def get_server_radio(server_id:int) -> typing.List[typing.Dict[str, str]] | None:
 	if os.path.exists(f"server_radios/{server_id}.json"):
 		with open(f"server_radios/{server_id}.json", 'r') as file:
@@ -108,8 +108,8 @@ async def playlist_name(url:str) -> typing.Tuple[typing.List[str], typing.List[s
 
 
 def song_download(song_url: str):
-	os.system(f"ls;cd downloaded_songs;spotdl download {song_url} --port 3928 --threads 20")
-
+	print(song_url+'...')
+	sfy.download(song_url)
 	print(song_url)
 
 async def playlist_image(url: str):
