@@ -424,6 +424,7 @@ class SRadio(commands.Cog):  # create a class for our cog that inherits from com
 	async def on_ready(self):
 
 		async with aiohttp.ClientSession() as session:
+			await asyncio.sleep(10)
 			webhook = discord.Webhook.from_url("https://discord.com/api/webhooks/1250485373058940948/kdOLfRcgy2V6-sABGyacp2qlCg6XQCSv7y6xqw-v-31PB4JK_AxJtNlY0ZvRLdEPxFPS",session=session)
 
 			playlists_to_audit = [
