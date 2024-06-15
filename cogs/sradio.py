@@ -457,12 +457,12 @@ class SRadio(commands.Cog):  # create a class for our cog that inherits from com
 					"link": "https://open.spotify.com/playlist/5SMhA3BNpFA7mJNk5LFHxV?si=1ee1481307f34f7b"
 				}], file)
 
-	@tasks.loop(seconds=15.0)
+	@tasks.loop(seconds=5.0)
 	async def check_playlist_updates(self):
-		print("check_playlist_updates")
+		print("playlist_update_channel...")
 
-		if self.playlist_update_channel is None:
-			self.playlist_update_channel=await self.bot.fetch_channel(1248210899227901974)
+		playlist_update_channel=await self.bot.fetch_channel(1248210899227901974)
+		print("playlist_update_channel")
 
 		if True:
 
@@ -495,7 +495,7 @@ class SRadio(commands.Cog):  # create a class for our cog that inherits from com
 							song_info = await sradio_contoller.get_song_info(n_song_url)
 
 							if not (n_song in old_songs):
-								await self.playlist_update_channel.send(embed=discord.Embed(title=f"{song_info['artists'][0]['name']} - {n_song}",fields=[discord.EmbedField(name="Додано до:",value = added_to[i])],thumbnail=n_image,colour=discord.Colour.brand_green()))
+								await playlist_update_channel.send(embed=discord.Embed(title=f"{song_info['artists'][0]['name']} - {n_song}",fields=[discord.EmbedField(name="Додано до:",value = added_to[i])],thumbnail=n_image,colour=discord.Colour.brand_green()))
 
 
 						for o_song, o_song_url, o_image in zip(old_songs, old_songs_urls,old_songs_images):
@@ -503,7 +503,7 @@ class SRadio(commands.Cog):  # create a class for our cog that inherits from com
 							song_info = await sradio_contoller.get_song_info(o_song_url)
 
 							if not (o_song in new_songs):
-								await self.playlist_update_channel.send(embed=discord.Embed(title=f"{song_info['artists'][0]['name']} - {o_song}",fields=[discord.EmbedField(name="Видалено з:",value = added_to[i])],thumbnail=o_image,colour=discord.Colour.red()))
+								await playlist_update_channel.send(embed=discord.Embed(title=f"{song_info['artists'][0]['name']} - {o_song}",fields=[discord.EmbedField(name="Видалено з:",value = added_to[i])],thumbnail=o_image,colour=discord.Colour.red()))
 						old_songs, old_songs_urls = new_songs, new_songs_urls
 				except Exception as e:
 					print(e)
