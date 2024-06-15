@@ -75,10 +75,15 @@ async def radio_play(interaction, general_radio_info_channel, msg_id, bot, cycle
 						ci += 1
 						continue
 
-				print(f"Play {song_name} - {song_url}")
+				print(f"Play {song_name} - {song_url}...")
 				ci += 1
 
+
+				print("get_all_songs_paths...")
 				songs_names_paths, songs_paths = sradio_contoller.get_all_songs_paths()
+				print("get_all_songs_paths")
+
+				print("not (song_name in songs_names_paths) check...")
 				if not (song_name in songs_names_paths):
 					print(songs_paths)
 
@@ -87,6 +92,9 @@ async def radio_play(interaction, general_radio_info_channel, msg_id, bot, cycle
 						await asyncio.sleep(3)
 						print(f'wait {song_name}...')
 						songs_names_paths, songs_paths = sradio_contoller.get_all_songs_paths()
+
+				print("not (song_name in songs_names_paths) check")
+
 
 				album_durations = {}
 				for d_song_path in songs_paths:
@@ -114,8 +122,6 @@ async def radio_play(interaction, general_radio_info_channel, msg_id, bot, cycle
 
 				audio_info = TinyTag.get(song_path, image=True)
 
-				admin_logs = (
-					await (await bot.fetch_guild(1208129686031310848)).fetch_channel(1208129687067303940))
 
 				dcolor = avarage_color_getter.get_avarage_color_path(audio_info.album)
 
@@ -161,10 +167,12 @@ async def radio_play(interaction, general_radio_info_channel, msg_id, bot, cycle
 				embed2.description += ('**Наступні треки:**\n')
 
 				embed2.set_image(url=line_img_url)
+				print("radio_msg_view...")
 				radio_msg_view = AlbumSongs(current_play=song_name, timeout=None, timetable=timetable,
 				                            next_cycle_time=next_cycle_time,
 				                            cycle_duration=cycle_duration, current_album=song_path,
 				                            radio_url=radio_url, audio_info=audio_info)
+				print('radio_msg_view')
 
 				i = 0
 				single_check = True
@@ -197,24 +205,32 @@ async def radio_play(interaction, general_radio_info_channel, msg_id, bot, cycle
 				waiting_start_time = time.time()
 				wait_duration = audio_info.duration
 
+				print("updated_channel...")
 				updated_channel: discord.VoiceChannel = await (vc.channel.guild.fetch_channel(
 					vc.channel.id))
+				print('updated_channel')
 
 				msg = await msg.edit(file=file, embeds=radio_msg_embeds, view=radio_msg_view)
 
 				while len(updated_channel.members) < 2 and time.time() - waiting_start_time < wait_duration:
+					print("updated_channel while...")
 					updated_channel: discord.VoiceChannel = await (vc.channel.guild.fetch_channel(
 						vc.channel.id))
 					await asyncio.sleep(1)
+				print("updated_channel while")
 				FFMPEG_OPTIONS = {
 					'options': f'-vn -b:a 320k -ss {round(time.time() - waiting_start_time)}'}
 				audio_source = discord.FFmpegPCMAudio(song_path,
 				                                      **FFMPEG_OPTIONS)
 
+				print("connect...")
 				if not (bot.user.id in [m.id for m in updated_channel.members]):
 					vc = await ctx_voice_channel.connect()
+				print("connect")
 
+				print("play...")
 				await vc.play(audio_source, wait_finish=True)
+				print('play')
 
 				with open("other/radio_sleep_timers.json", 'r') as file:
 					radio_sleep_timers: typing.Dict[str, typing.List[int]] = json.loads(file.read())
