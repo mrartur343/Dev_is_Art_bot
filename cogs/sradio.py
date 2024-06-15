@@ -453,14 +453,13 @@ class SRadio(commands.Cog):  # create a class for our cog that inherits from com
 					"link": "https://open.spotify.com/playlist/5SMhA3BNpFA7mJNk5LFHxV?si=1ee1481307f34f7b"
 				}], file)
 
-	@tasks.loop(seconds=5)
+	@tasks.loop(seconds=15)
 	async def check_playlist_updates(self):
 
 		if self.playlist_update_channel is None:
 			self.playlist_update_channel=await self.bot.fetch_channel(1248210899227901974)
 
 		if True:
-			await asyncio.sleep(10)
 
 			playlists_to_audit = [
 				'https://open.spotify.com/playlist/5SMhA3BNpFA7mJNk5LFHxV'
