@@ -175,8 +175,9 @@ class AlbumSongs(discord.ui.View):
 
 		if cancel_check:
 			view.options.insert(0, discord.SelectOption(label='Вимкнути таймер', value='stop'))
-		await interaction.respond("Таймер сну автоматично від'єднає вас з голосового каналу тоді, коли вам потрібно:",
-		                          view=view, ephemeral=True)
+		await interaction.user.send("Таймер сну автоматично від'єднає вас з голосового каналу тоді, коли вам потрібно:",
+		                          view=view)
+		await interaction.respond('Глянь в особисті')
 
 
 	@discord.ui.button(style=discord.ButtonStyle.gray,

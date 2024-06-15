@@ -474,33 +474,38 @@ class SRadio(commands.Cog):  # create a class for our cog that inherits from com
 				'https://open.spotify.com/playlist/5SMhA3BNpFA7mJNk5LFHxV'
 			]
 
-			first_time = [
-				True
-			]
 
 			added_to = [
 				"<#1208129687231008808> (<@1221403700115800164>)"
 			]
 
-			old_songs, old_songs_urls, old_songs_images,full_old_songs_info = [], [],[],[]
+
 
 			if True:
 				try:
 					i = -1
 					for playlist_link in playlists_to_audit:
-						i+=1
-						if first_time[i]:
-							print("get_songs old...")
-							old_songs, old_songs_urls,old_songs_images = await sradio_contoller.get_songs(playlist_link)
-							print("get_songs old")
+						i += 1
 
-							full_old_songs_info = await sradio_contoller.get_songs_full_info(playlist_link)
-							first_time[i]=False
+
 						print("get_songs new...")
 						new_songs, new_songs_urls,new_songs_images = await sradio_contoller.get_songs(playlist_link)
 						full_new_songs_info = await sradio_contoller.get_songs_full_info(playlist_link)
 
 						print("get_songs new")
+
+
+						with open('cache/playlists_updates.json', 'r') as file:
+							playlists_updates_cache = json.loads(file.read())
+							if playlist_link in playlists_updates_cache:
+								playlist_cache=playlists_updates_cache[playlist_link]
+								old_songs = playlist_cache['old_songs']
+								old_songs_urls = playlist_cache['old_songs_urls']
+								old_songs_images = playlist_cache['old_songs_images']
+								full_old_songs_info = playlist_cache['full_old_songs_info']
+							else:
+								old_songs, old_songs_urls, old_songs_images, full_old_songs_info = new_songs, new_songs_urls,new_songs_images, full_new_songs_info
+
 
 						for n_song, n_song_url, n_image,n_full in zip(new_songs, new_songs_urls,new_songs_images,full_new_songs_info):
 
@@ -517,6 +522,16 @@ class SRadio(commands.Cog):  # create a class for our cog that inherits from com
 							if not (o_song in new_songs):
 								await playlist_update_channel.send(embed=discord.Embed(title=f"{o_full['artists'][0]['name']} - {o_song}",fields=[discord.EmbedField(name="Видалено з:",value = added_to[i])],thumbnail=o_image,colour=discord.Colour.red()))
 						old_songs, old_songs_urls,old_songs_images,full_old_songs_info = new_songs, new_songs_urls,new_songs_images,full_new_songs_info
+
+						with open('cache/playlists_updates.json', 'w') as file:
+							playlists_updates_cache[playlist_link]= {
+								'old_songs':old_songs,
+								'old_songs_urls':old_songs_urls,
+								'old_songs_images':old_songs_images,
+								'full_old_songs_info':full_old_songs_info
+							}
+							json.dump(playlists_updates_cache,file)
+
 				except Exception as e:
 					print(e)
 
