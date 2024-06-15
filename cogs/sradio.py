@@ -486,19 +486,28 @@ class SRadio(commands.Cog):  # create a class for our cog that inherits from com
 					for playlist_link in playlists_to_audit:
 						i+=1
 						if first_time[i]:
+							print("get_songs old...")
 							old_songs, old_songs_urls,old_songs_images = await sradio_contoller.get_songs(playlist_link)
+							print("get_songs old")
 							first_time[i]=False
+						print("get_songs new...")
 						new_songs, new_songs_urls,new_songs_images = await sradio_contoller.get_songs(playlist_link)
+
+						print("get_songs new")
 
 						for n_song, n_song_url, n_image in zip(new_songs, new_songs_urls,new_songs_images):
 
+							print('get_song_info...')
 							song_info = await sradio_contoller.get_song_info(n_song_url)
+							print('get_song_info')
 
 							if not (n_song in old_songs):
+								print("playlist_update_channel.send...")
 								await playlist_update_channel.send(embed=discord.Embed(title=f"{song_info['artists'][0]['name']} - {n_song}",fields=[discord.EmbedField(name="Додано до:",value = added_to[i])],thumbnail=n_image,colour=discord.Colour.brand_green()))
-
+								print("playlist_update_channel.send")
 
 						for o_song, o_song_url, o_image in zip(old_songs, old_songs_urls,old_songs_images):
+
 
 							song_info = await sradio_contoller.get_song_info(o_song_url)
 
