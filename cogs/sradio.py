@@ -457,7 +457,7 @@ class SRadio(commands.Cog):  # create a class for our cog that inherits from com
 					"link": "https://open.spotify.com/playlist/5SMhA3BNpFA7mJNk5LFHxV?si=1ee1481307f34f7b"
 				}], file)
 
-	@tasks.loop(seconds=5.0)
+	@tasks.loop(seconds=30.0)
 	async def check_playlist_updates(self):
 		print("playlist_update_channel...")
 
