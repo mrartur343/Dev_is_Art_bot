@@ -90,11 +90,14 @@ class AlbumSongs(discord.ui.View):
 			if not line[0] in dict_timetable:
 				dict_timetable[line[0]] = line[1]
 
-		songs_names, songs_urls = await sradio_contoller.get_songs(self.radio_url)
+		songs_names, songs_urls,songs_images = await sradio_contoller.get_songs(self.radio_url)
 
 		url_by_name = {}
+		image_by_name = {}
 		for s_name, s_url in zip(songs_names,songs_urls):
 			url_by_name[s_name] = s_url
+		for s_name, s_url in zip(songs_names,songs_images):
+			image_by_name[s_name] = s_url
 
 		def sort_albums(album_key):
 			if album_key in dict_timetable:

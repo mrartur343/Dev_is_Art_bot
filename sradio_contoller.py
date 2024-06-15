@@ -55,7 +55,7 @@ async def get_song_info(url:str) -> dict:
 
 		results = sp.track(uri)
 
-async def get_songs(url:str) -> typing.Tuple[typing.List[str], typing.List[str]]:
+async def get_songs(url:str) -> typing.Tuple[typing.List[str], typing.List[str], typing.List[str]]:
 	MAX_RETRIES=15
 	retry_count=0
 
@@ -74,9 +74,9 @@ async def get_songs(url:str) -> typing.Tuple[typing.List[str], typing.List[str]]
 
 			songs_urls = ["https://open.spotify.com/track/" + t["track"]["uri"].split(":")[-1] for t in songs_original]
 
-			songs_images = ["https://open.spotify.com/track/" + t["track"]["uri"].split(":")[-1] for t in songs_original]
+			songs_images = [t["track"]["album"]["images"][0]['url'] for t in songs_original]
 
-			return songs_names, songs_urls
+			return songs_names, songs_urls,songs_images
 		except Exception as e:
 			print(f"Error encountered: {e}")
 			print(f"Retrying... (Attempt {retry_count + 1} of {MAX_RETRIES})")
@@ -124,25 +124,6 @@ async def playlist_image(url: str):
 			print(f"Retrying... (Attempt {retry_count + 1} of {MAX_RETRIES})")
 			retry_count+=1
 			await asyncio.sleep(0.5)
-	else:
-		print(f"Failed to add chunk to playlist after {MAX_RETRIES} attempts. Skipping...")
-		return
-async def track_image(url: str):
-	print("track_image.....")
-	MAX_RETRIES=15
-	retry_count=0
-	while retry_count<MAX_RETRIES:
-		try:
-			print("sp.track...")
-			returned= sp.track(url.split("/")[-1].split("?")[0])["album"]['images'][0]['url']
-
-			print("sp.track")
-			return returned
-		except Exception as e:
-			print(f"Error encountered: {e}")
-			print(f"Retrying... (Attempt {retry_count + 1} of {MAX_RETRIES})")
-			retry_count+=1
-			await asyncio.sleep(1)
 	else:
 		print(f"Failed to add chunk to playlist after {MAX_RETRIES} attempts. Skipping...")
 		return

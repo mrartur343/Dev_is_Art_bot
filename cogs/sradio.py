@@ -23,6 +23,7 @@ with open("other/radio_sleep_timers.json", 'r') as file:
 
 async def radio_play(interaction, general_radio_info_channel, msg_id, bot, cycled, voice_channel):
 
+	global time_emoji
 	radio_url = interaction.message.embeds[0].url
 	await interaction.message.delete()
 
@@ -47,7 +48,11 @@ async def radio_play(interaction, general_radio_info_channel, msg_id, bot, cycle
 		print("radio_image")
 
 		print("songs_names, songs_urls...")
-		songs_names, songs_urls = await sradio_contoller.get_songs(radio_url)
+		songs_names, songs_urls,songs_images = await sradio_contoller.get_songs(radio_url)
+
+		image_by_name = {}
+		for s_name, s_url in zip(songs_names,songs_images):
+			image_by_name[s_name] = s_url
 		print("songs_names, songs_urls")
 
 		ci = -1
@@ -133,6 +138,7 @@ async def radio_play(interaction, general_radio_info_channel, msg_id, bot, cycle
 
 				# create  rectangleimage
 				img1 = ImageDraw.Draw(img)
+				# noinspection PyTypeChecker
 				img1.rectangle(shape, fill='#%02x%02x%02x' % (dcolor[0], dcolor[1], dcolor[2]))
 
 				img.save('b_line.png')
@@ -152,7 +158,7 @@ async def radio_play(interaction, general_radio_info_channel, msg_id, bot, cycle
 				embed_info.set_author(name=radio_name, icon_url=radio_image, url=radio_url)
 
 				print("track_image...")
-				track_image = await (sradio_contoller.track_image(song_url))
+				track_image = image_by_name[song_name]
 				print('track_image')
 				if track_image is None:
 					track_image = radio_image
@@ -246,6 +252,7 @@ async def radio_play(interaction, general_radio_info_channel, msg_id, bot, cycle
 						if user != None:
 							if user.voice != None:
 								if user.voice.channel.id == voice_channel.id:
+									# noinspection PyTypeChecker
 									await user.move_to(None)
 									radio_sleep_timers['song_end'].remove(member_id)
 							try:
@@ -262,6 +269,7 @@ async def radio_play(interaction, general_radio_info_channel, msg_id, bot, cycle
 									if user != None:
 										if user.voice != None:
 											if user.voice.channel.id == voice_channel.id:
+												# noinspection PyTypeChecker
 												await user.move_to(None)
 												radio_sleep_timers[timer_str].remove(m_id)
 										try:
