@@ -126,6 +126,7 @@ async def playlist_image(url: str):
 		print(f"Failed to add chunk to playlist after {MAX_RETRIES} attempts. Skipping...")
 		return
 async def track_image(url: str):
+	print("track_image.....")
 	MAX_RETRIES=15
 	retry_count=0
 	while retry_count<MAX_RETRIES:
