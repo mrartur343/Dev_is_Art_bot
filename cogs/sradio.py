@@ -333,7 +333,7 @@ class SRadio(commands.Cog):  # create a class for our cog that inherits from com
 
 	def __init__(self, bot):  # this is a special method that is called when the cog is loaded
 		self.bot: discord.Bot = bot
-		self.playlist_update_channel = asyncio.get_event_loop().run_until_complete(self.bot.fetch_channel(1248210899227901974))
+		self.playlist_update_channel = None
 		self.check_playlist_updates.start()
 	@discord.slash_command()
 	@commands.has_permissions(administrator=True)
@@ -455,6 +455,9 @@ class SRadio(commands.Cog):  # create a class for our cog that inherits from com
 
 	@tasks.loop(seconds=5)
 	async def check_playlist_updates(self):
+
+		if self.playlist_update_channel is None:
+			self.playlist_update_channel=await self.bot.fetch_channel(1248210899227901974)
 
 		if True:
 			await asyncio.sleep(10)
