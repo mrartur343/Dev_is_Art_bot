@@ -150,13 +150,17 @@ async def radio_play(interaction, general_radio_info_channel, msg_id, bot, cycle
 				                           color=discord.Color.from_rgb(r=dcolor[0], g=dcolor[1],
 				                                                        b=dcolor[2]))
 				embed_info.set_author(name=radio_name, icon_url=radio_image, url=radio_url)
+
+				print("track_image...")
 				track_image = await (sradio_contoller.track_image(song_url))
+				print('track_image')
 				if track_image is None:
 					track_image = radio_image
 				if not (track_image is None):
 					embed_info.set_thumbnail(url=track_image)
 
 				embed_info.url = song_url
+
 
 				embed_info.description = f"{audio_info.artist}  •  {audio_info.album}"
 
