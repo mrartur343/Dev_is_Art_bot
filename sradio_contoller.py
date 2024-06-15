@@ -80,7 +80,7 @@ async def get_songs_full_info(url:str) -> list:
 				results = sp.next(results)
 				songs_original.extend(results['items'])
 
-			songs = [t for t in songs_original]
+			songs = [t['track'] for t in songs_original]
 
 			return songs
 		except Exception as e:
