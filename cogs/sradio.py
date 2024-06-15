@@ -333,7 +333,8 @@ class SRadio(commands.Cog):  # create a class for our cog that inherits from com
 
 	def __init__(self, bot):  # this is a special method that is called when the cog is loaded
 		self.bot: discord.Bot = bot
-
+		self.playlist_update_channel = asyncio.run(self.bot.fetch_channel(1248210899227901974))
+		self.check_playlist_updates.start()
 	@discord.slash_command()
 	@commands.has_permissions(administrator=True)
 	async def add(self, ctx: discord.ApplicationContext,
@@ -454,6 +455,7 @@ class SRadio(commands.Cog):  # create a class for our cog that inherits from com
 
 	@tasks.loop(seconds=5)
 	async def check_playlist_updates(self):
+
 		if True:
 			await asyncio.sleep(10)
 
@@ -486,7 +488,7 @@ class SRadio(commands.Cog):  # create a class for our cog that inherits from com
 							song_info = await sradio_contoller.get_song_info(n_song_url)
 
 							if not (n_song in old_songs):
-								await playlist_update_channel.send(embed=discord.Embed(title=f"{song_info['artists'][0]['name']} - {n_song}",fields=[discord.EmbedField(name="Додано до:",value = added_to[i])],thumbnail=n_image,colour=discord.Colour.brand_green()))
+								await self.playlist_update_channel.send(embed=discord.Embed(title=f"{song_info['artists'][0]['name']} - {n_song}",fields=[discord.EmbedField(name="Додано до:",value = added_to[i])],thumbnail=n_image,colour=discord.Colour.brand_green()))
 
 
 						for o_song, o_song_url, o_image in zip(old_songs, old_songs_urls,old_songs_images):
@@ -494,7 +496,7 @@ class SRadio(commands.Cog):  # create a class for our cog that inherits from com
 							song_info = await sradio_contoller.get_song_info(o_song_url)
 
 							if not (o_song in new_songs):
-								await playlist_update_channel.send(embed=discord.Embed(title=f"{song_info['artists'][0]['name']} - {o_song}",fields=[discord.EmbedField(name="Видалено з:",value = added_to[i])],thumbnail=o_image,colour=discord.Colour.red()))
+								await self.playlist_update_channel.send(embed=discord.Embed(title=f"{song_info['artists'][0]['name']} - {o_song}",fields=[discord.EmbedField(name="Видалено з:",value = added_to[i])],thumbnail=o_image,colour=discord.Colour.red()))
 						old_songs, old_songs_urls = new_songs, new_songs_urls
 				except Exception as e:
 					print(e)
