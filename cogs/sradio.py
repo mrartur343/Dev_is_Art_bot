@@ -475,7 +475,7 @@ class SRadio(commands.Cog):  # create a class for our cog that inherits from com
 
 			old_songs, old_songs_urls, old_songs_images = [], [],[]
 
-			while True:
+			if True:
 				try:
 					i = -1
 					for playlist_link in playlists_to_audit:
