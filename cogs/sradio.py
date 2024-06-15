@@ -332,9 +332,13 @@ class SRadio(commands.Cog):  # create a class for our cog that inherits from com
 	# this class is used to create a cog, which is a module that can be added to the bot
 
 	def __init__(self, bot):  # this is a special method that is called when the cog is loaded
+		print("sradio __init__...")
+
 		self.bot: discord.Bot = bot
 		self.playlist_update_channel = None
+
 		self.check_playlist_updates.start()
+		print("sradio __init__")
 	@discord.slash_command()
 	@commands.has_permissions(administrator=True)
 	async def add(self, ctx: discord.ApplicationContext,
