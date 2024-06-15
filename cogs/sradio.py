@@ -277,6 +277,10 @@ async def radio_play(interaction, general_radio_info_channel, msg_id, bot, cycle
 										except:
 											pass
 
+				with open("other/radio_sleep_timers.json", 'w') as file:
+					json.dump(radio_sleep_timers,file)
+
+
 				if first_play:
 					first_play = False
 			except Exception as e:
