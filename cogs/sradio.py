@@ -508,7 +508,7 @@ class SRadio(commands.Cog):  # create a class for our cog that inherits from com
 
 
 						for n_song, n_song_url, n_image,n_full in zip(new_songs, new_songs_urls,new_songs_images,full_new_songs_info):
-
+							print(n_full)
 
 							if not (n_song in old_songs):
 								print("playlist_update_channel.send...")
@@ -518,7 +518,7 @@ class SRadio(commands.Cog):  # create a class for our cog that inherits from com
 						for o_song, o_song_url, o_image,o_full in zip(old_songs, old_songs_urls,old_songs_images,full_old_songs_info):
 
 
-
+							print(o_full)
 							if not (o_song in new_songs):
 								await playlist_update_channel.send(embed=discord.Embed(title=f"{o_full['artists'][0]['name']} - {o_song}",fields=[discord.EmbedField(name="Видалено з:",value = added_to[i])],thumbnail=o_image,colour=discord.Colour.red()))
 						old_songs, old_songs_urls,old_songs_images,full_old_songs_info = new_songs, new_songs_urls,new_songs_images,full_new_songs_info
