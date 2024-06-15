@@ -459,6 +459,7 @@ class SRadio(commands.Cog):  # create a class for our cog that inherits from com
 
 	@tasks.loop(seconds=15.0)
 	async def check_playlist_updates(self):
+		print("check_playlist_updates")
 
 		if self.playlist_update_channel is None:
 			self.playlist_update_channel=await self.bot.fetch_channel(1248210899227901974)
