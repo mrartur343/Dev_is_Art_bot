@@ -131,7 +131,10 @@ async def track_image(url: str):
 	retry_count=0
 	while retry_count<MAX_RETRIES:
 		try:
+			print("sp.track...")
 			returned= sp.track(url.split("/")[-1].split("?")[0])["album"]['images'][0]['url']
+
+			print("sp.track")
 			return returned
 		except Exception as e:
 			print(f"Error encountered: {e}")
