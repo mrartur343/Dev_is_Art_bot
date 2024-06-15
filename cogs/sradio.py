@@ -12,7 +12,7 @@ from PIL import Image, ImageDraw
 from tinytag import TinyTag
 import discord
 import sradio_contoller
-from discord.ext import commands, pages
+from discord.ext import commands, pages, tasks
 import avarage_color_getter
 from modules import radio_timetable
 
@@ -452,13 +452,10 @@ class SRadio(commands.Cog):  # create a class for our cog that inherits from com
 					"link": "https://open.spotify.com/playlist/5SMhA3BNpFA7mJNk5LFHxV?si=1ee1481307f34f7b"
 				}], file)
 
-
-"""	@commands.Cog.listener()  # we can add event listeners to our cog
-	async def on_ready(self):
-
-		async with aiohttp.ClientSession() as session:
+	@tasks.loop(seconds=5)
+	async def check_playlist_updates(self):
+		if True:
 			await asyncio.sleep(10)
-			webhook = discord.Webhook.from_url("https://discord.com/api/webhooks/1250485373058940948/kdOLfRcgy2V6-sABGyacp2qlCg6XQCSv7y6xqw-v-31PB4JK_AxJtNlY0ZvRLdEPxFPS",session=session)
 
 			playlists_to_audit = [
 				'https://open.spotify.com/playlist/5SMhA3BNpFA7mJNk5LFHxV'
@@ -472,7 +469,7 @@ class SRadio(commands.Cog):  # create a class for our cog that inherits from com
 				"<#1208129687231008808> (<@1221403700115800164>)"
 			]
 
-			old_songs, old_songs_urls = [], []
+			old_songs, old_songs_urls, old_songs_images = [], [],[]
 
 			while True:
 				try:
@@ -480,27 +477,27 @@ class SRadio(commands.Cog):  # create a class for our cog that inherits from com
 					for playlist_link in playlists_to_audit:
 						i+=1
 						if first_time[i]:
-							old_songs, old_songs_urls = await sradio_contoller.get_songs(playlist_link)
+							old_songs, old_songs_urls,old_songs_images = await sradio_contoller.get_songs(playlist_link)
 							first_time[i]=False
-						new_songs, new_songs_urls = await sradio_contoller.get_songs(playlist_link)
+						new_songs, new_songs_urls,new_songs_images = await sradio_contoller.get_songs(playlist_link)
 
-						for n_song, n_song_url in zip(new_songs, new_songs_urls):
+						for n_song, n_song_url, n_image in zip(new_songs, new_songs_urls,new_songs_images):
 
 							song_info = await sradio_contoller.get_song_info(n_song_url)
 
 							if not (n_song in old_songs):
-								await webhook.send(embed=discord.Embed(title=f"{song_info['artists'][0]['name']} - {n_song}",fields=[discord.EmbedField(name="Додано до:",value = added_to[i])],thumbnail=(await sradio_contoller.track_image(n_song_url)),colour=discord.Colour.brand_green()))
+								await playlist_update_channel.send(embed=discord.Embed(title=f"{song_info['artists'][0]['name']} - {n_song}",fields=[discord.EmbedField(name="Додано до:",value = added_to[i])],thumbnail=n_image,colour=discord.Colour.brand_green()))
 
 
-						for o_song, o_song_url in zip(old_songs, old_songs_urls):
+						for o_song, o_song_url, o_image in zip(old_songs, old_songs_urls,old_songs_images):
 
 							song_info = await sradio_contoller.get_song_info(o_song_url)
 
 							if not (o_song in new_songs):
-								await webhook.send(embed=discord.Embed(title=f"{song_info['artists'][0]['name']} - {o_song}",fields=[discord.EmbedField(name="Видалено з:",value = added_to[i])],thumbnail=(await sradio_contoller.track_image(o_song_url)),colour=discord.Colour.red()))
+								await playlist_update_channel.send(embed=discord.Embed(title=f"{song_info['artists'][0]['name']} - {o_song}",fields=[discord.EmbedField(name="Видалено з:",value = added_to[i])],thumbnail=o_image,colour=discord.Colour.red()))
 						old_songs, old_songs_urls = new_songs, new_songs_urls
 				except Exception as e:
-					print(e)"""
+					print(e)
 
 
 
