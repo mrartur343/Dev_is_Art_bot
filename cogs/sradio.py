@@ -478,7 +478,7 @@ class SRadio(commands.Cog):  # create a class for our cog that inherits from com
 				"<#1208129687231008808> (<@1221403700115800164>)"
 			]
 
-			old_songs, old_songs_urls, old_songs_images = [], [],[]
+			old_songs, old_songs_urls, old_songs_images,full_old_songs_info = [], [],[],[]
 
 			if True:
 				try:
@@ -489,31 +489,30 @@ class SRadio(commands.Cog):  # create a class for our cog that inherits from com
 							print("get_songs old...")
 							old_songs, old_songs_urls,old_songs_images = await sradio_contoller.get_songs(playlist_link)
 							print("get_songs old")
+
+							full_old_songs_info = await sradio_contoller.get_songs_full_info(playlist_link)
 							first_time[i]=False
 						print("get_songs new...")
 						new_songs, new_songs_urls,new_songs_images = await sradio_contoller.get_songs(playlist_link)
+						full_new_songs_info = await sradio_contoller.get_songs_full_info(playlist_link)
 
 						print("get_songs new")
 
-						for n_song, n_song_url, n_image in zip(new_songs, new_songs_urls,new_songs_images):
+						for n_song, n_song_url, n_image,n_full in zip(new_songs, new_songs_urls,new_songs_images,full_new_songs_info):
 
-							print('get_song_info...')
-							song_info = await sradio_contoller.get_song_info(n_song_url)
-							print('get_song_info')
 
 							if not (n_song in old_songs):
 								print("playlist_update_channel.send...")
-								await playlist_update_channel.send(embed=discord.Embed(title=f"{song_info['artists'][0]['name']} - {n_song}",fields=[discord.EmbedField(name="Додано до:",value = added_to[i])],thumbnail=n_image,colour=discord.Colour.brand_green()))
+								await playlist_update_channel.send(embed=discord.Embed(title=f"{n_full['artists'][0]['name']} - {n_song}",fields=[discord.EmbedField(name="Додано до:",value = added_to[i])],thumbnail=n_image,colour=discord.Colour.brand_green()))
 								print("playlist_update_channel.send")
 
-						for o_song, o_song_url, o_image in zip(old_songs, old_songs_urls,old_songs_images):
+						for o_song, o_song_url, o_image,o_full in zip(old_songs, old_songs_urls,old_songs_images,full_old_songs_info):
 
 
-							song_info = await sradio_contoller.get_song_info(o_song_url)
 
 							if not (o_song in new_songs):
-								await playlist_update_channel.send(embed=discord.Embed(title=f"{song_info['artists'][0]['name']} - {o_song}",fields=[discord.EmbedField(name="Видалено з:",value = added_to[i])],thumbnail=o_image,colour=discord.Colour.red()))
-						old_songs, old_songs_urls = new_songs, new_songs_urls
+								await playlist_update_channel.send(embed=discord.Embed(title=f"{o_full['artists'][0]['name']} - {o_song}",fields=[discord.EmbedField(name="Видалено з:",value = added_to[i])],thumbnail=o_image,colour=discord.Colour.red()))
+						old_songs, old_songs_urls,old_songs_images,full_old_songs_info = new_songs, new_songs_urls,new_songs_images,full_new_songs_info
 				except Exception as e:
 					print(e)
 
