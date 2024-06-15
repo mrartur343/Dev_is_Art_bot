@@ -63,8 +63,8 @@ async def radio_play(interaction, general_radio_info_channel, msg_id, bot, cycle
 
 
 				await sradio_contoller.song_download(song_url)
-				await asyncio.sleep(3)
 				while not (song_name in songs_names_paths):
+					await asyncio.sleep(3)
 					print(f'wait {song_name}...')
 					songs_names_paths, songs_paths = sradio_contoller.get_all_songs_paths()
 
@@ -83,8 +83,8 @@ async def radio_play(interaction, general_radio_info_channel, msg_id, bot, cycle
 					print(songs_paths)
 
 					await sradio_contoller.song_download(song_url)
-					await asyncio.sleep(3)
 					while not (song_name in songs_names_paths):
+						await asyncio.sleep(3)
 						print(f'wait {song_name}...')
 						songs_names_paths, songs_paths = sradio_contoller.get_all_songs_paths()
 
