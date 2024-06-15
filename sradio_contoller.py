@@ -7,11 +7,7 @@ from os import listdir
 import os
 from os.path import join, isfile
 
-import spotdl
-from spotdl import __main__ as start # To initialize
-from spotdl.utils.search import Song
-from pytube import YouTube
-
+from subprocess import Popen
 from savify import Savify
 from savify.types import Type, Format, Quality
 import spotipy
@@ -113,8 +109,7 @@ async def playlist_name(url:str) -> typing.Tuple[typing.List[str], typing.List[s
 
 
 async def song_download(song_url: str):
-	os.system(f'nohup python3 ctdl.py {song_url} &')
-
+	p = Popen(['spotdl', song_url])
 async def playlist_image(url: str):
 	MAX_RETRIES=15
 	retry_count=0
