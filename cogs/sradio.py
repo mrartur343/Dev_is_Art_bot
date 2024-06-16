@@ -495,12 +495,14 @@ class SRadio(commands.Cog):  # create a class for our cog that inherits from com
 		if True:
 
 			playlists_to_audit = [
-				'https://open.spotify.com/playlist/5SMhA3BNpFA7mJNk5LFHxV'
+				'https://open.spotify.com/playlist/5SMhA3BNpFA7mJNk5LFHxV',
+				'https://open.spotify.com/playlist/3ruL1axt1ojMWMBfDMPccE'
 			]
 
 
 			added_to = [
-				"<#1208129687231008808> (<@1221403700115800164>)"
+				"<#1208129687231008808> (<@1221403700115800164>)",
+				"<#1241401097034268702> (<@1241401845587378237>)"
 			]
 
 
