@@ -347,6 +347,7 @@ class SRadio(commands.Cog):  # create a class for our cog that inherits from com
 	@commands.has_permissions(administrator=True)
 	async def add(self, ctx: discord.ApplicationContext,
 	              playlist_link: discord.Option(str, description='Посилання на плейлист')):
+		await ctx.defer()
 		guild = ctx.guild
 		with open(f'server_radios/{guild.id}.json', 'r') as file:
 			server_radios = json.loads(file.read())
@@ -361,6 +362,8 @@ class SRadio(commands.Cog):  # create a class for our cog that inherits from com
 	@commands.has_permissions(administrator=True)
 	async def remove(self, ctx: discord.ApplicationContext,
 	                 playlist_link: discord.Option(str, description='Посилання на плейлист')):
+
+		await ctx.defer()
 
 		server_radios = sradio_contoller.get_server_radio(ctx.guild.id)
 
@@ -389,6 +392,8 @@ class SRadio(commands.Cog):  # create a class for our cog that inherits from com
 	@commands.has_permissions(administrator=True)
 	async def play(self, ctx: discord.ApplicationContext, voice_channel: discord.Option(discord.VoiceChannel),
 	               cycled: discord.Option(bool, required=False) = True):
+		await ctx.defer()
+
 
 		server_radios = sradio_contoller.get_server_radio(ctx.guild.id)
 
@@ -428,6 +433,9 @@ class SRadio(commands.Cog):  # create a class for our cog that inherits from com
 
 	@discord.slash_command()  # we can also add application commands
 	async def list(self, ctx: discord.ApplicationContext):
+
+		await ctx.defer()
+
 		server_radios = sradio_contoller.get_server_radio(ctx.guild.id)
 
 		embeds = []
