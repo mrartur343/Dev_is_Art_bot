@@ -117,7 +117,7 @@ async def playlist_name(url:str) -> typing.Tuple[typing.List[str], typing.List[s
 
 
 async def song_download(song_url: str):
-	p = Popen(['spotdl', song_url])
+	p = Popen(['spotdl', song_url], cwd='downloaded_songs')
 async def playlist_image(url: str):
 	MAX_RETRIES=15
 	retry_count=0
