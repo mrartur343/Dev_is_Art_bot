@@ -60,16 +60,27 @@ async def radio_play(interaction, general_radio_info_channel, msg_id, bot, cycle
 		vc: discord.VoiceClient = await ctx_voice_channel.connect()
 		random_pos = random.randint(0, len(songs_names))
 
+		undownloaded = []
+
 
 		for song_name, song_url in zip(songs_names, songs_urls):
 
 			songs_names_paths, songs_paths = sradio_contoller.get_all_songs_paths()
 			if not (song_name in songs_names_paths):
+				undownloaded.append(song_name)
 
+		d=-1
 
+		for song_name, song_url in zip(songs_names, songs_urls):
+
+			songs_names_paths, songs_paths = sradio_contoller.get_all_songs_paths()
+			if song_name in undownloaded:
+				d+=1
 				await sradio_contoller.song_download(song_url)
+				await msg.edit(embed=discord.Embed(title= f'Завантажуємо {song_name}',fields=[discord.EmbedField(name='Вже завантажено:',value=f"{d}/{len(undownloaded)}")]))
 				while not (song_name in songs_names_paths):
 					await asyncio.sleep(3)
+
 					print(f'wait {song_name}...')
 					songs_names_paths, songs_paths = sradio_contoller.get_all_songs_paths()
 
