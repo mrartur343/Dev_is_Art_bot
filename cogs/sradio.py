@@ -458,7 +458,10 @@ class SRadio(commands.Cog):  # create a class for our cog that inherits from com
 		with open(f'server_radios/{guild.id}.json', 'w') as file:
 			json.dump([
 				{
-					"link": "https://open.spotify.com/playlist/5SMhA3BNpFA7mJNk5LFHxV?si=1ee1481307f34f7b"
+					"link": "https://open.spotify.com/playlist/5SMhA3BNpFA7mJNk5LFHxV",
+				},
+				{
+					"link": "https://open.spotify.com/playlist/3ruL1axt1ojMWMBfDMPccE",
 				}], file)
 
 	@tasks.loop(seconds=30.0)
