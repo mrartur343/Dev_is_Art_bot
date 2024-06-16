@@ -360,8 +360,7 @@ class SRadio(commands.Cog):  # create a class for our cog that inherits from com
 
 	@discord.slash_command()
 	@commands.has_permissions(administrator=True)
-	async def remove(self, ctx: discord.ApplicationContext,
-	                 playlist_link: discord.Option(str, description='Посилання на плейлист')):
+	async def remove(self, ctx: discord.ApplicationContext):
 
 		await ctx.defer()
 
