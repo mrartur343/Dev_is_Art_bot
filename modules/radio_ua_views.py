@@ -133,7 +133,7 @@ class AlbumSongs(discord.ui.View):
 					items_embed.add_field(name='Сповіщення про увімкнення:', value='🔔 Увімкнуто')
 
 
-			if audio_info.title in url_by_name:
+			if audio_info.title in image_by_name:
 				song_image = image_by_name[audio_info.title]
 				if not (song_image is None):
 					items_embed.set_image(url=song_image)
