@@ -413,7 +413,6 @@ class SRadio(commands.Cog):  # create a class for our cog that inherits from com
 
 		await paginator.update(pages=embeds, custom_view=custom_v)
 	@discord.slash_command()
-	@commands.has_permissions()
 	async def info(self, ctx: discord.ApplicationContext):
 
 		embed_info = discord.Embed(title="SRadio Bot")
