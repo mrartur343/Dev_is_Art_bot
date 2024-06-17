@@ -31,9 +31,9 @@ def get_all_songs_paths() -> typing.Tuple[typing.List[str],typing.List[str]]:
 	task_list = []
 	async def get_title(path):
 		nonlocal all_songs_names
-		if isfile(join(f"downloaded_songs", f)):
-			print(f"load title {'downloaded_songs/'+f}")
-			all_songs_names.append(TinyTag.get("downloaded_songs/"+f).title)
+		if isfile(join(f"downloaded_songs", path)):
+			print(f"load title {'downloaded_songs/'+path}")
+			all_songs_names.append(TinyTag.get("downloaded_songs/"+path).title)
 
 
 	for f in listdir(f"downloaded_songs"):
