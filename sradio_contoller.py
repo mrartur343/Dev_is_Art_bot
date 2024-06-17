@@ -24,12 +24,12 @@ def get_server_radio(server_id:int) -> typing.List[typing.Dict[str, str]] | None
 			return json.loads(file.read())
 
 def update_all_songs_paths():
-	all_songs_names = []
+	all_songs_names = {}
 
 	for path in listdir(f"downloaded_songs"):
 		if isfile(join(f"downloaded_songs", path)):
 			print(f"load title {'downloaded_songs/'+path}")
-			all_songs_names.append(TinyTag.get("downloaded_songs/"+path).title)
+			all_songs_names['downloaded_songs/'+path] = (TinyTag.get("downloaded_songs/"+path).title)
 
 
 	with open('other/songs_names_cache.json', 'w')as file:
@@ -41,8 +41,12 @@ def get_all_songs_paths() -> typing.Tuple[typing.List[str],typing.List[str]]:
 	all_songs_files = ["downloaded_songs/"+f for f in listdir(f"downloaded_songs") if
 	                   isfile(join(f"downloaded_songs", f))]
 
+	all_songs_names= []
+
 	with open('other/songs_names_cache.json','r')as file:
-		all_songs_names = json.loads(file.read())
+		cache = json.loads(file.read())
+		for f in all_songs_files:
+			all_songs_names.append(cache[f])
 
 
 
@@ -146,7 +150,7 @@ async def song_download(song_url: str):
 
 	if isfile(join(f"downloaded_songs", latest_file)):
 		print(f"load title {'downloaded_songs/' + latest_file}")
-		all_songs_names.append(TinyTag.get("downloaded_songs/" + latest_file).title)
+		all_songs_names['downloaded_songs/' + latest_file] = TinyTag.get("downloaded_songs/" + latest_file).title
 
 
 	with open('other/songs_names_cache.json', 'w')as file:
