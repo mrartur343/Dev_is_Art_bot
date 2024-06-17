@@ -28,7 +28,6 @@ async def radio_play(interaction, general_radio_info_channel, msg_id, bot, cycle
 	await interaction.message.delete()
 
 	int_channel: discord.TextChannel = interaction.channel
-	await interaction.respond(embed=discord.Embed(title='Увімкнення радіо може зайняти деякий час, необхідно завантажити всі треки локально'), ephemeral=True)
 	msg = await int_channel.send(embed=discord.Embed(title='load...'))
 
 	cycle = True
@@ -345,7 +344,11 @@ class RadioPlaylistsView(discord.ui.View):
 	                   emoji="📻")
 	async def button_callback1(self, button: discord.ui.Button, interaction: discord.Interaction):
 
-		await asyncio.create_task(radio_play(interaction,self.general_radio_info_channel,self.msg_id,self.bot,self.cycled,self.voice_channel))
+		asyncio.get_event_loop().run_until_complete(radio_play(interaction,self.general_radio_info_channel,self.msg_id,self.bot,self.cycled,self.voice_channel))
+		await interaction.respond(embed=discord.Embed(
+			title='Увімкнення радіо може зайняти деякий час, необхідно завантажити всі треки локально'), ephemeral=True)
+
+
 class SRadio(commands.Cog):  # create a class for our cog that inherits from commands.Cog
 	# this class is used to create a cog, which is a module that can be added to the bot
 
