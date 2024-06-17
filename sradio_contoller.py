@@ -23,26 +23,30 @@ def get_server_radio(server_id:int) -> typing.List[typing.Dict[str, str]] | None
 		with open(f"server_radios/{server_id}.json", 'r') as file:
 			return json.loads(file.read())
 
-def get_all_songs_paths() -> typing.Tuple[typing.List[str],typing.List[str]]:
-	all_songs_files = ["downloaded_songs/"+f for f in listdir(f"downloaded_songs") if
-	                   isfile(join(f"downloaded_songs", f))]
-
+def update_all_songs_paths():
 	all_songs_names = []
-	task_list = []
-	async def get_title(path):
-		nonlocal all_songs_names
+
+	for path in listdir(f"downloaded_songs"):
 		if isfile(join(f"downloaded_songs", path)):
 			print(f"load title {'downloaded_songs/'+path}")
 			all_songs_names.append(TinyTag.get("downloaded_songs/"+path).title)
 
 
-	for f in listdir(f"downloaded_songs"):
-		task_list.append(asyncio.get_event_loop().create_task(get_title(f)))
-
-	asyncio.gather(*task_list)
+	with open('other/songs_names_cache.json', 'w')as file:
+		json.dump(all_songs_names,file)
 
 
-	return all_songs_names,all_songs_files
+
+def get_all_songs_paths() -> typing.Tuple[typing.List[str],typing.List[str]]:
+	all_songs_files = ["downloaded_songs/"+f for f in listdir(f"downloaded_songs") if
+	                   isfile(join(f"downloaded_songs", f))]
+
+	with open('other/songs_names_cache.json','r')as file:
+		all_songs_names = json.loads(file.read())
+
+
+
+	return all_songs_names, all_songs_files
 
 
 async def get_songs(url:str) -> typing.Tuple[typing.List[str], typing.List[str], typing.List[str]]:
@@ -128,7 +132,25 @@ async def playlist_name(url:str) -> typing.Tuple[typing.List[str], typing.List[s
 
 
 async def song_download(song_url: str):
+
+	with open('other/songs_names_cache.json','r')as file:
+		all_songs_names = json.loads(file.read())
+
 	p = Popen(['spotdl', song_url], cwd='downloaded_songs')
+
+	def sort(p):
+		return os.path.getctime(join(f"downloaded_songs", p))
+
+	list_of_files = listdir(f"downloaded_songs")  # * means all if need specific format then *.csv
+	latest_file = max(list_of_files, key=sort)
+
+	if isfile(join(f"downloaded_songs", latest_file)):
+		print(f"load title {'downloaded_songs/' + latest_file}")
+		all_songs_names.append(TinyTag.get("downloaded_songs/" + latest_file).title)
+
+
+	with open('other/songs_names_cache.json', 'w')as file:
+		json.dump(all_songs_names,file)
 async def playlist_image(url: str):
 	MAX_RETRIES=15
 	retry_count=0
@@ -144,3 +166,5 @@ async def playlist_image(url: str):
 	else:
 		print(f"Failed to add chunk to playlist after {MAX_RETRIES} attempts. Skipping...")
 		return
+
+update_all_songs_paths()
