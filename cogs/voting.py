@@ -36,13 +36,20 @@ class VoteSystem(commands.Cog):  # create a class for our cog that inherits from
 
 	@events_group.command(name = 'start_vote')
 	@commands.has_permissions(administrator=True)# we can also add application commands
-	async def start_vote(self, ctx:discord.ApplicationContext):
+	async def start_vote(self, ctx:discord.ApplicationContext, msg_id: discord.Option(str, required=False)=None):
+
 		embed = discord.Embed(title='Другий тур виборів')
 		embed.description = ("Ось й починається другий тур виборів президента серверу. Оберіть 1 з 2 кандидатів:"
 		                     "\n> <:femboy:1263597372013809757> Міша <@965216192530890853>"
 		                     "\n> <:zIg:1263980733219868852> Плашка <@654019681534869505>")
 		embed.colour = discord.Colour.purple()
-		await ctx.respond(embed=embed,view=VoteView(timeout=None))
+		if msg_id is None:
+			await ctx.respond(embed=embed,view=VoteView(timeout=None))
+		else:
+			msg = await ctx.channel.fetch_message(msg_id)
+			if msg.author.id ==self.bot.user.id:
+				await msg.edit(embed=embed,view=VoteView(timeout=None))
+				await ctx.respond("Оновлено вибори!", ephemeral=True)
 
 	@events_group.command(name = 'end_vote')
 	@commands.has_permissions(administrator=True)# we can also add application commands
