@@ -49,7 +49,6 @@ class VoteSystem(commands.Cog):  # create a class for our cog that inherits from
 			msg = await ctx.channel.fetch_message(int(msg_id))
 			if msg.author.id ==self.bot.user.id:
 				await msg.edit(embed=embed,view=VoteView(timeout=None))
-				await ctx.respond("Оновлено вибори!", ephemeral=True)
 
 	@events_group.command(name = 'end_vote')
 	@commands.has_permissions(administrator=True)# we can also add application commands
