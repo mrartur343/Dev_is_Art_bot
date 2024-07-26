@@ -43,6 +43,7 @@ class VoteSystem(commands.Cog):  # create a class for our cog that inherits from
 		                     "\n> <:femboy:1263597372013809757> Міша <@965216192530890853>"
 		                     "\n> <:zIg:1263980733219868852> Плашка <@654019681534869505>")
 		embed.colour = discord.Colour.purple()
+		embed.set_image(url='https://cdn.discordapp.com/attachments/1208129686572638214/1266472809127743598/6dca97d579c9b317.png?ex=66a54637&is=66a3f4b7&hm=19c3ef7ce77d7c98be68a9808f3240ef3a2d1a6c3afc69c70807dd460b54986d&')
 		if msg_id is None:
 			await ctx.respond(embed=embed,view=VoteView(timeout=None))
 		else:
