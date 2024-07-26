@@ -42,7 +42,7 @@ class VoteSystem(commands.Cog):  # create a class for our cog that inherits from
 		                     "\n> <:femboy:1263597372013809757> Міша <@965216192530890853>"
 		                     "\n> <:zIg:1263980733219868852> Плашка <@654019681534869505>")
 		embed.colour = discord.Colour.purple()
-		await ctx.respond(embed=embed,view=VoteView())
+		await ctx.respond(embed=embed,view=VoteView(timeout=None))
 
 	@events_group.command(name = 'end_vote')
 	@commands.has_permissions(administrator=True)# we can also add application commands
