@@ -10,11 +10,17 @@ from modules import vote_systems
 class VoteView(discord.ui.View): # Create a class called MyView that subclasses discord.ui.View
 	@discord.ui.button(label="Міша @abemys_5272", style=discord.ButtonStyle.blurple) # Create a button with the label "😎 Click me!" with color Blurple
 	async def button_callback(self, button, interaction: discord.Interaction):
+		if interaction.user.id in [965216192530890853,654019681534869505]:
+			await interaction.respond("Кандидати не можуть голосувати", ephemeral=True)
+			return
 		vote_systems.vote(interaction.user.id, 0)
 		await interaction.respond("Ви проголосували за Міша <@965216192530890853>, якщо ви передумали то просто виберіть інший варіант.",ephemeral=True) # Send a message when the button is clicked
 
 	@discord.ui.button(label="Плашка @playushki", style=discord.ButtonStyle.red) # Create a button with the label "😎 Click me!" with color Blurple
 	async def button_callback2(self, button, interaction: discord.Interaction):
+		if interaction.user.id in [965216192530890853,654019681534869505]:
+			await interaction.respond("Кандидати не можуть голосувати", ephemeral=True)
+			return
 		vote_systems.vote(interaction.user.id, 1)
 		await interaction.respond("Ви проголосували за Плашка <@654019681534869505>, якщо ви передумали то просто виберіть інший варіант.",ephemeral=True) # Send a message when the button is clicked
 
