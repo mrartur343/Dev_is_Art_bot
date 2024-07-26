@@ -46,7 +46,7 @@ class VoteSystem(commands.Cog):  # create a class for our cog that inherits from
 		if msg_id is None:
 			await ctx.respond(embed=embed,view=VoteView(timeout=None))
 		else:
-			msg = await ctx.channel.fetch_message(msg_id)
+			msg = await ctx.channel.fetch_message(int(msg_id))
 			if msg.author.id ==self.bot.user.id:
 				await msg.edit(embed=embed,view=VoteView(timeout=None))
 				await ctx.respond("Оновлено вибори!", ephemeral=True)
