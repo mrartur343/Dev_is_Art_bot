@@ -1,6 +1,6 @@
 import discord
 from discord.ext import commands
-from cogs import interevents
+from cogs import interevents, voting
 
 
 Token = "MTIyMTQwMzcwMDExNTgwMDE2NA.G-wjCw.gsVwNQwPKVbsELllSMGQwLy36iPeBbN-AnEEUI"
@@ -12,6 +12,7 @@ bot = commands.Bot(intents=intents,command_prefix='....')
 
 
 bot.add_cog(interevents.InterEvents(bot))
+bot.add_cog(voting.VoteSystem(bot))
 
 print("run Alpha radio!")
 
