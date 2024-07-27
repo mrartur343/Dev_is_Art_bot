@@ -1,0 +1,236 @@
+import asyncio
+import datetime
+import json
+import os.path
+from os import listdir
+from typing import Dict, Tuple, List, Type, Any
+import server_request_inputs
+import discord
+from discord.ext import commands, pages
+
+actions: List[Tuple[discord.Embed, Type[discord.ui.View]]] = [
+	(discord.Embed(title="Власна пропозиція",
+	               fields=[discord.EmbedField(name='name', value=''), discord.EmbedField(name='comment', value='')])
+	 , server_request_inputs.OwnRequest),
+]
+
+
+
+council_role_id = 1249713455787671583
+
+
+
+class VoteView(discord.ui.View):
+	def __init__(self, request_name, *args, **kwargs):
+		super().__init__(*args, **kwargs)
+		self.request_name = request_name
+
+	@discord.ui.select(  # the decorator that lets you specify the properties of the select menu
+		placeholder="Ваш голос:",  # the placeholder text that will be displayed if nothing is selected
+		min_values=1,  # the minimum number of values that must be selected by the users
+		max_values=1,  # the maximum number of values that can be selected by the users
+		options=[  # the list of options from which users can choose, a required field
+			discord.SelectOption(
+				label="Підтримати",
+				description="Проголосувати за пропозицію",
+				value='y',
+				emoji='✅'
+			),
+			discord.SelectOption(
+				label="Не підтримати",
+				description="Проголосувати проти пропозиції",
+				value='n',
+				emoji='⛔'
+			),
+			discord.SelectOption(
+				label="Утриматись",
+				description="Не голосувати. Значення за замовчуванням",
+				value='h',
+				emoji='😴'
+			)
+		]
+	)
+	async def select_callback(self, select: discord.ui.Select,
+	                          interaction: discord.Interaction):  # the function called when the user is done selecting options
+		with open(f'server_requests/{self.request_name}.json', 'r') as file:
+			request_info = json.loads(file.read())
+
+		s = select.values[0]
+
+		if str(interaction.user.id) in request_info['voting'].keys():
+			request_info['voting'][str(interaction.user.id)]= True if s=='y' else (False if s=='n' else None)
+
+			await interaction.respond(f"Ваш вибір {'погодитись' if s=='y' else ('не погодитись' if s=='n' else 'утриматись')} буде враховано!", ephemeral= True)
+
+			with open(f'server_requests/{self.request_name}.json', 'w') as file:
+				json.dump(request_info, file)
+
+
+
+class RequestView(discord.ui.View):
+	def __init__(self,server_council_ids, *args, **kwargs):
+		self.server_council_ids=server_council_ids
+		super().__init__(timeout=None, *args)
+	@discord.ui.select(  # the decorator that lets you specify the properties of the select menu
+		placeholder="Виберіть тип пропозиції",  # the placeholder text that will be displayed if nothing is selected
+		min_values=1,  # the minimum number of values that must be selected by the users
+		max_values=1,  # the maximum number of values that can be selected by the users
+		options=[  # the list of options from which users can choose, a required field
+			discord.SelectOption(
+				label="Ідея",
+				description="Напиши що на твою думку повинна зробити адміністрація!",
+				value='0',
+				emoji='💡'
+			)
+		]
+	)
+	async def select_callback(self, select: discord.ui.Select,
+	                          interaction: discord.Interaction):  # the function called when the user is done selecting options
+		action = actions[int(select.values[0])]
+
+
+
+		await interaction.respond(embed=action[0],view=action[1](self.server_council_ids))
+
+
+class ServerCouncil(commands.Cog):
+
+	def __init__(self, bot):  # this is a special method that is called when the cog is loaded
+		self.bot: discord.Bot = bot
+
+	@commands.Cog.listener()
+	async def on_ready(self):
+		council_channel = self.bot.get_channel(1247198900775944202)
+
+
+
+		council_messages = await council_channel.history().flatten()
+		for message in council_messages:
+			try:
+				if message.author.id == self.bot.user.id:
+					await message.edit(view=VoteView(message.embeds[0].title))
+			except Exception as excpt:
+				print(excpt.__str__())
+
+
+		while True:
+			all_requests_names = [f.split(".")[0] for f in listdir('server_requests')]
+			unused_names = all_requests_names
+			print(all_requests_names)
+			await asyncio.sleep(5)
+			council_messages = await council_channel.history(limit=1000).flatten()
+			for message in council_messages:
+				try:
+					if len(message.embeds)>0:
+						embed = message.embeds[0]
+						if message.author.id==self.bot.user.id and os.path.exists(f'server_requests/{embed.title}.json'):
+							if embed.title in unused_names:
+								unused_names.remove(embed.title)
+
+							if not message.pinned:
+								await message.pin()
+
+							with open(f'server_requests/{embed.title}.json', 'r') as file:
+								timestamp: int = json.loads(file.read())['timestamp']
+							if (datetime.datetime.now() - datetime.datetime.fromtimestamp(timestamp)).seconds>=60*60*24:
+
+								with open(f'server_requests/{embed.title}.json', 'r') as file:
+									voting: Dict[str,bool|None] = json.loads(file.read())['voting']
+
+								y = 0
+								n = 0
+								h = 0
+								for v in voting.values():
+									if v is True:
+										y+=1
+									elif v is False:
+										n+=1
+									else:
+										h +=1
+
+
+
+								if y==n:
+									await council_channel.send(f"Голосування по запиту {embed.title} завершилось тим, що рада серверу не знайшла однозначного рішення\n\n"
+									                           f"❌ Пропозицію не прийнято\n"
+									                           f"> - {y} - Підтримали\n"
+									                           f"> - {n} - Не підтримали\n"
+									                           f"> - {h} - Утримались")
+								elif y>n:
+									await council_channel.send(f"Голосування по запиту {embed.title} завершилось прийняттям\n\n"
+									                           f"✅ Пропозицію прийнято\n"
+									                           f"> - {y} - Підтримали\n"
+									                           f"> - {n} - Не підтримали\n"
+									                           f"> - {h} - Утримались")
+								elif n>y:
+									await council_channel.send(f"Голосування по запиту {embed.title} завершилось не прийняттям\n\n"
+									                           f"❌ Пропозицію не прийнято\n"
+									                           f"> - {y} - Підтримали\n"
+									                           f"> - {n} - Не підтримали\n"
+									                           f"> - {h} - Утримались")
+
+								await message.delete()
+								os.replace(f'server_requests/{embed.title}.json',f'ended_requests/{embed.title}.json')
+							else:
+								with open(f'server_requests/{embed.title}.json', 'r') as file:
+									voting: Dict[str,bool|None] = json.loads(file.read())['voting']
+
+								voters = []
+
+								for k, v in voting.items():
+									if not v is None:
+										voters.append(int(k))
+
+								old_voters_str = embed.fields[1].value
+								new_voters_str = '*(ніхто)*'
+								if len(voters)>0:
+									new_voters_str=''
+								for vtr in voters:
+									new_voters_str+=f"<@{vtr}> "
+
+								if new_voters_str!=old_voters_str:
+									embed.fields[1].value = new_voters_str
+									await message.edit(embed = embed)
+				except Exception as exception:
+					print(exception.__str__())
+
+			print(f'Unused: {unused_names}')
+			for request_name in unused_names:
+				try:
+					embed = discord.Embed(title=request_name)
+					with open(f'server_requests/{request_name}.json', 'r') as file:
+						request_info: Dict[str, Any] = json.loads(file.read())
+
+					start_timestamp= request_info['timestamp']
+					if 'voting' in request_info:
+						del(request_info['voting'])
+						del(request_info['timestamp'])
+					embed.description=''
+					nl = '\n'
+					for k,v in request_info.items():
+						embed.description+=f"\n- {k}\n> {v.replace(nl, nl+'> ')}"
+					embed.add_field(name="Кінець голосування: ",
+					                value=f'<t:{round((datetime.datetime.fromtimestamp(start_timestamp)+datetime.timedelta(seconds=60*60*24)).timestamp())}:R> (<t:{round((datetime.datetime.fromtimestamp(start_timestamp)+datetime.timedelta(seconds=60*60*24)).timestamp())}:d> <t:{round((datetime.datetime.fromtimestamp(start_timestamp)+datetime.timedelta(seconds=60*60*24)).timestamp())}:t>)')
+					embed.add_field(name="Проголосували: ",
+					                value=f'*(ніхто)*')
+
+					uids_str = ''
+					for member in (await council_channel.guild._fetch_role(council_role_id)).members:
+						uids_str+=f"> - <@{member.id}>"+'\n'
+					await council_channel.send(f'Можуть проголосувати: \n{uids_str}',embed=embed,view=VoteView(request_name, timeout=None))
+				except Exception as e:
+					print(e.__str__())
+
+	@discord.slash_command()  # we can also add application commands
+	async def request(self, ctx: discord.ApplicationContext):
+		if ctx.guild.id == 1208129686031310848:
+	
+			server_council_ids = []
+	
+			for member in (await ctx.guild._fetch_role(council_role_id)).members:
+				server_council_ids.append(member.id)
+			await ctx.respond(view=RequestView(server_council_ids))
+
+
+def setup(bot):  # this is called by Pycord to setup the cog
+	bot.add_cog(ServerCouncil(bot))  # add the cog to the bot
