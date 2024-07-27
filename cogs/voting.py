@@ -13,6 +13,7 @@ class MyView(discord.ui.View):
 		placeholder = "Виберіть 3 людей", # the placeholder text that will be displayed if nothing is selected
 		min_values = 3, # the minimum number of values that must be selected by the users
 		max_values = 3, # the maximum number of values that can be selected by the users
+		custom_id='s',
 		options = [ # the list of options from which users can choose, a required field
 			discord.SelectOption(
 				label="@artemcurious",
@@ -68,16 +69,16 @@ class MyView(discord.ui.View):
 		654019681534869505,
 		767783132031352884]
 
-		for sel in select.values:
-			selected_str+=f"\n- {sel.title()}"
+
 
 
 
 		choices_int = (int(select.values[0]), int(select.values[1]), int(select.values[2]))
 
 		for ch in choices_int:
+			selected_str += f"\n- <@{council_select_ids[ch]}>"
 			if interaction.user.id==council_select_ids[ch]:
-				await interaction.respond(f"Ви не можете обрати самих себе!", ephemeral=True)
+				await interaction.respond(f"Ви не можете обрати самого себе!", ephemeral=True)
 				break
 		else:
 			vote_systems.vote(interaction.user.id, list(choices_int))
