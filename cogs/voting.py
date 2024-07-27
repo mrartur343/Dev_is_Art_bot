@@ -132,7 +132,7 @@ class VoteSystem(commands.Cog):  # create a class for our cog that inherits from
 				voices[i]=0
 			voice_num.append(voices[i])
 
-		total_voices = sum(voice_num)
+		total_voices = sum(voice_num)/3
 
 
 		embed = discord.Embed(title='Обрано раду серверу!')
