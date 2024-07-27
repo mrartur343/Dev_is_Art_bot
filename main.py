@@ -17,4 +17,4 @@ bot.add_cog(server_council.ServerCouncil(bot))
 
 print("run bot!")
 
-bot.run(TestToken)
+bot.run(Token)
