@@ -7,22 +7,70 @@ from modules import vote_systems
 
 
 
-class VoteView(discord.ui.View): # Create a class called MyView that subclasses discord.ui.View
-	@discord.ui.button(label="Міша @abemys_5272", style=discord.ButtonStyle.blurple) # Create a button with the label "😎 Click me!" with color Blurple
-	async def button_callback(self, button, interaction: discord.Interaction):
-		if interaction.user.id in [965216192530890853,654019681534869505]:
-			await interaction.respond("Кандидати не можуть голосувати", ephemeral=True)
-			return
-		vote_systems.vote(interaction.user.id, 0)
-		await interaction.respond("Ви проголосували за Міша <@965216192530890853>, якщо ви передумали то просто виберіть інший варіант.",ephemeral=True) # Send a message when the button is clicked
 
-	@discord.ui.button(label="Плашка @playushki", style=discord.ButtonStyle.red) # Create a button with the label "😎 Click me!" with color Blurple
-	async def button_callback2(self, button, interaction: discord.Interaction):
-		if interaction.user.id in [965216192530890853,654019681534869505]:
-			await interaction.respond("Кандидати не можуть голосувати", ephemeral=True)
-			return
-		vote_systems.vote(interaction.user.id, 1)
-		await interaction.respond("Ви проголосували за Плашка <@654019681534869505>, якщо ви передумали то просто виберіть інший варіант.",ephemeral=True) # Send a message when the button is clicked
+class MyView(discord.ui.View):
+	@discord.ui.select( # the decorator that lets you specify the properties of the select menu
+		placeholder = "Виберіть 3 людей", # the placeholder text that will be displayed if nothing is selected
+		min_values = 3, # the minimum number of values that must be selected by the users
+		max_values = 3, # the maximum number of values that can be selected by the users
+		options = [ # the list of options from which users can choose, a required field
+			discord.SelectOption(
+				label="@artemcurious",
+				description="Партія #newdevisart",
+				value="0"
+			),
+			discord.SelectOption(
+				label="@yanekyz",
+				description="Партія #newdevisart",
+				value="1"
+			),
+			discord.SelectOption(
+				label="@optymist",
+				description="Партія #newdevisart",
+				value="2"
+			),
+			discord.SelectOption(
+				label="@q7d19b_",
+				description="Партія #newdevisart",
+				value="3"
+			),
+			discord.SelectOption(
+				label="@chickenganfan228",
+				description="Незалежний",
+				value="4"
+			),
+			discord.SelectOption(
+				label="@m1b0t",
+				description="Незалежний",
+				value="5"
+			),
+			discord.SelectOption(
+				label="@playushki",
+				description="Коаліція z.I.g",
+				value="6"
+			),
+			discord.SelectOption(
+				label="@cap_banana",
+				description="Коаліція z.I.g",
+				value="7"
+			)
+		]
+	)
+	async def select_callback(self, select: discord.ui.Select, interaction: discord.Interaction): # the function called when the user is done selecting options
+		selected_str = ''
+
+		for sel in select.values:
+			selected_str+=f"\n - {sel}"
+
+
+
+		choices_int = (int(select.values[0]), int(select.values[1]), int(select.values[2]))
+
+
+		vote_systems.vote(interaction.user.id, list(choices_int))
+
+
+		await interaction.respond(f"Ви обрали: {selected_str}", ephemeral=True)
 
 
 class VoteSystem(commands.Cog):  # create a class for our cog that inherits from commands.Cog
@@ -38,45 +86,50 @@ class VoteSystem(commands.Cog):  # create a class for our cog that inherits from
 	@commands.has_permissions(administrator=True)# we can also add application commands
 	async def start_vote(self, ctx:discord.ApplicationContext):
 
-		embed = discord.Embed(title='Другий тур виборів')
-		embed.description = ("Ось й починається другий тур виборів президента серверу. Оберіть 1 з 2 кандидатів:"
-		                     "\n> <:femboy:1263597372013809757> Міша <@965216192530890853>"
-		                     "\n> <:zIg:1263980733219868852> Плашка <@654019681534869505>")
+		embed = discord.Embed(title='Вибори у раду')
+		embed.description = ("Ось й починаються вибори у раду серверу, виберіть 3 кандидата за яких ви проголосуєте, ви маєте право потім змінити свій вибір")
 		embed.colour = discord.Colour.purple()
-		embed.set_image(url='https://cdn.discordapp.com/attachments/1208129686572638214/1266472809127743598/6dca97d579c9b317.png?ex=66a54637&is=66a3f4b7&hm=19c3ef7ce77d7c98be68a9808f3240ef3a2d1a6c3afc69c70807dd460b54986d&')
-		await ctx.respond(embed=embed,view=VoteView(timeout=None))
+		embed.set_image(url='https://cdn.discordapp.com/attachments/1208129687067303944/1266852165188714606/7.png?ex=66a6a785&is=66a55605&hm=0a77c7e477d06436d2d48c7a10971b3a87c013817376ed619d9f36aa39275e89&')
+		await ctx.respond(embed=embed,view=MyView(timeout=None))
 
 	@events_group.command(name = 'update_vote')
 	@commands.has_permissions(administrator=True)# we can also add application commands
 	async def update_vote(self, ctx:discord.ApplicationContext, msg_id: discord.Option(str)):
-		embed = discord.Embed(title='Другий тур виборів')
-		embed.description = ("Ось й починається другий тур виборів президента серверу. Оберіть 1 з 2 кандидатів:"
-		                     "\n> <:femboy:1263597372013809757> Міша <@965216192530890853>"
-		                     "\n> <:zIg:1263980733219868852> Плашка <@654019681534869505>")
+		embed = discord.Embed(title='Вибори у раду')
+		embed.description = ("Ось й починаються вибори у раду серверу, виберіть 3 кандидата за яких ви проголосуєте, ви маєте право потім змінити свій вибір")
 		embed.colour = discord.Colour.purple()
-		embed.set_image(url='https://cdn.discordapp.com/attachments/1208129686572638214/1266472809127743598/6dca97d579c9b317.png?ex=66a54637&is=66a3f4b7&hm=19c3ef7ce77d7c98be68a9808f3240ef3a2d1a6c3afc69c70807dd460b54986d&')
+		embed.set_image(url='https://cdn.discordapp.com/attachments/1208129687067303944/1266852165188714606/7.png?ex=66a6a785&is=66a55605&hm=0a77c7e477d06436d2d48c7a10971b3a87c013817376ed619d9f36aa39275e89&')
 
 
 
 		msg = await ctx.channel.fetch_message(int(msg_id))
 		if msg.author.id == self.bot.user.id:
-			await msg.edit(embed=embed, view=VoteView(timeout=None))
+			await msg.edit(embed=embed, view=MyView(timeout=None))
 
 	@events_group.command(name = 'end_vote')
 	@commands.has_permissions(administrator=True)# we can also add application commands
 	async def end_vote(self, ctx:discord.ApplicationContext):
 		voices = vote_systems.calculate_voices()
-		if 0 in voices:
-			v0 = voices[0]
-		else:
-			v0=0
-		if 1 in voices:
-			v1 = voices[1]
-		else:
-			v1=0
-		embed = discord.Embed(title='Обрано президента серверу!' if v0!=v1 else 'Сталась неочікувана ситуація')
-		embed.description = (f"> <:femboy:1263597372013809757> Міша <@965216192530890853> {round((v0/(v0+v1))*100)}%"
-		                     f"\n> <:zIg:1263980733219868852> Плашка <@654019681534869505> {round((v1/(v0+v1))*100)}%")
+
+		voice_num= []
+
+		for i in range(8):
+			if not (i in voices):
+				voices[i]=0
+			voice_num.append(voices[i])
+
+		total_voices = sum(voice_num)
+
+
+		embed = discord.Embed(title='Обрано раду серверу!')
+		embed.description = (f"> <@591690683509768223> {round((total_voices/voice_num[0])*100)}%"
+							 f"\n> <@1014161256019664977> {round((total_voices/voice_num[1])*100)}%"
+							 f"\n> <@658217734814957578> {round((total_voices/voice_num[2])*100)}%"
+							 f"\n> <@1154105417283150034> {round((total_voices/voice_num[3])*100)}%"
+							 f"\n> <@499940320088293377> {round((total_voices/voice_num[4])*100)}%"
+							 f"\n> <@804694699364319253> {round((total_voices/voice_num[5])*100)}%"
+							 f"\n> <@654019681534869505> {round((total_voices/voice_num[6])*100)}%"
+							 f"\n> <@767783132031352884> {round((total_voices/voice_num[7])*100)}%")
 		embed.colour = discord.Colour.purple()
 		await ctx.respond(embed=embed)
 
