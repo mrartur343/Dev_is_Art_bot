@@ -136,14 +136,14 @@ class VoteSystem(commands.Cog):  # create a class for our cog that inherits from
 
 
 		embed = discord.Embed(title='Обрано раду серверу!')
-		embed.description = (f"> <@591690683509768223> {round((total_voices/voice_num[0])*100)}%"
-							 f"\n> <@1014161256019664977> {round((total_voices/voice_num[1])*100)}%"
-							 f"\n> <@658217734814957578> {round((total_voices/voice_num[2])*100)}%"
-							 f"\n> <@1154105417283150034> {round((total_voices/voice_num[3])*100)}%"
-							 f"\n> <@499940320088293377> {round((total_voices/voice_num[4])*100)}%"
-							 f"\n> <@804694699364319253> {round((total_voices/voice_num[5])*100)}%"
-							 f"\n> <@654019681534869505> {round((total_voices/voice_num[6])*100)}%"
-							 f"\n> <@767783132031352884> {round((total_voices/voice_num[7])*100)}%")
+		embed.description = (f"> <@591690683509768223> {round((voice_num[0]/total_voices)*100)}%"
+							 f"\n> <@1014161256019664977> {round((voice_num[1]/total_voices)*100)}%"
+							 f"\n> <@658217734814957578> {round((voice_num[2]/total_voices)*100)}%"
+							 f"\n> <@1154105417283150034> {round((voice_num[3]/total_voices)*100)}%"
+							 f"\n> <@499940320088293377> {round((voice_num[4]/total_voices)*100)}%"
+							 f"\n> <@804694699364319253> {round((voice_num[5]/total_voices)*100)}%"
+							 f"\n> <@654019681534869505> {round((voice_num[6]/total_voices)*100)}%"
+							 f"\n> <@767783132031352884> {round((voice_num[7]/total_voices)*100)}%")
 		embed.colour = discord.Colour.purple()
 		await ctx.respond(embed=embed)
 
