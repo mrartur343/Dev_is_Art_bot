@@ -77,9 +77,6 @@ class MyView(discord.ui.View):
 
 		for ch in choices_int:
 			selected_str += f"\n- <@{council_select_ids[ch]}>"
-			if interaction.user.id==council_select_ids[ch]:
-				await interaction.respond(f"Ви не можете обрати самого себе!", ephemeral=True)
-				break
 		else:
 			vote_systems.vote(interaction.user.id, list(choices_int))
 
