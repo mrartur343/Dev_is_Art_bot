@@ -30,6 +30,8 @@ class OwnRequest(discord.ui.View):
 		with open(f'tmp_requests/{self.request_tmp_id}.json', 'r') as file:
 			request = json.loads(file.read())
 
+		os.remove(f'tmp_requests/{self.request_tmp_id}.json')
+
 		request_name =request['name']
 
 		if request['comment']=='':
