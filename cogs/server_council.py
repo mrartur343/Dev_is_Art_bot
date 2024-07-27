@@ -64,6 +64,9 @@ class VoteView(discord.ui.View):
 
 			with open(f'server_requests/{self.request_name}.json', 'w') as file:
 				json.dump(request_info, file)
+		else:
+			await interaction.respond(f"Вас немає у раді серверу!", ephemeral= True)
+
 
 
 
