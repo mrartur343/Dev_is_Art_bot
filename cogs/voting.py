@@ -59,18 +59,31 @@ class MyView(discord.ui.View):
 	async def select_callback(self, select: discord.ui.Select, interaction: discord.Interaction): # the function called when the user is done selecting options
 		selected_str = ''
 
+		council_select_ids = [591690683509768223,
+		1014161256019664977,
+		658217734814957578,
+		1154105417283150034,
+		499940320088293377,
+		804694699364319253,
+		654019681534869505,
+		767783132031352884]
+
 		for sel in select.values:
-			selected_str+=f"\n - {sel}"
+			selected_str+=f"\n- {sel.title()}"
 
 
 
 		choices_int = (int(select.values[0]), int(select.values[1]), int(select.values[2]))
 
+		for ch in choices_int:
+			if interaction.user.id==council_select_ids[ch]:
+				await interaction.respond(f"Ви не можете обрати самих себе!", ephemeral=True)
+				break
+		else:
+			vote_systems.vote(interaction.user.id, list(choices_int))
 
-		vote_systems.vote(interaction.user.id, list(choices_int))
 
-
-		await interaction.respond(f"Ви обрали: {selected_str}", ephemeral=True)
+			await interaction.respond(f"Ви обрали: {selected_str}", ephemeral=True)
 
 
 class VoteSystem(commands.Cog):  # create a class for our cog that inherits from commands.Cog
