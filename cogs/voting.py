@@ -92,23 +92,19 @@ class VoteSystem(commands.Cog):  # create a class for our cog that inherits from
 
 		voice_num= []
 
-		for i in range(8):
+		for i in range(3):
 			if not (i in voices):
 				voices[i]=0
 			voice_num.append(voices[i])
 
-		total_voices = sum(voice_num)/3
+		total_voices = sum(voice_num)
 
 
-		embed = discord.Embed(title='Обрано раду серверу!')
-		embed.description = (f"> <@591690683509768223> {round((voice_num[0]/total_voices)*100)}%"
-							 f"\n> <@1014161256019664977> {round((voice_num[1]/total_voices)*100)}%"
-							 f"\n> <@658217734814957578> {round((voice_num[2]/total_voices)*100)}%"
-							 f"\n> <@1154105417283150034> {round((voice_num[3]/total_voices)*100)}%"
-							 f"\n> <@499940320088293377> {round((voice_num[4]/total_voices)*100)}%"
-							 f"\n> <@804694699364319253> {round((voice_num[5]/total_voices)*100)}%"
-							 f"\n> <@654019681534869505> {round((voice_num[6]/total_voices)*100)}%"
-							 f"\n> <@767783132031352884> {round((voice_num[7]/total_voices)*100)}%")
+		embed = discord.Embed(title='Дообрано третього радника серверу!')
+		embed.description = (
+							 f"> <@658217734814957578> {round((voice_num[0]/total_voices)*100)}%"
+							 f"\n> <@654019681534869505> {round((voice_num[1]/total_voices)*100)}%"
+							 f"\n> <@767783132031352884> {round((voice_num[2]/total_voices)*100)}%")
 		embed.colour = discord.Colour.purple()
 		await ctx.respond(embed=embed)
 
