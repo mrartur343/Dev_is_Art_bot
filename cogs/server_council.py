@@ -106,8 +106,7 @@ class ServerCouncil(commands.Cog):
 		council_channel = self.bot.get_channel(1247198900775944202)
 
 
-
-		council_messages = await council_channel.history().flatten()
+		council_messages = await council_channel.history(limit=1000).flatten()
 		for message in council_messages:
 			try:
 				if message.author.id == self.bot.user.id:

@@ -5,80 +5,57 @@ from modules import vote_systems
 
 
 
+vote_embed = discord.Embed(title='Вибори у раду (Другий тур)')
+vote_embed.description = ("Виберіть 1 кандидата, вибір можна змінити, неможна голосувати кандидатам")
+vote_embed.colour = discord.Colour.purple()
+vote_embed.set_image(
+	url='https://cdn.discordapp.com/attachments/1208129686572638214/1267213123555823777/9.png?ex=66a7f7b0&is=66a6a630&hm=d420ac2dab972e393c8663a70dbe3c348990300d3838f67ac12ad7230daaba77&')
 
 
-
-class MyView(discord.ui.View):
+class VotingMenu(discord.ui.View):
 	@discord.ui.select( # the decorator that lets you specify the properties of the select menu
-		placeholder = "Виберіть 3 людей", # the placeholder text that will be displayed if nothing is selected
-		min_values = 3, # the minimum number of values that must be selected by the users
-		max_values = 3, # the maximum number of values that can be selected by the users
+		placeholder = "Виберіть 1 людину", # the placeholder text that will be displayed if nothing is selected
+		min_values = 1, # the minimum number of values that must be selected by the users
+		max_values = 1, # the maximum number of values that can be selected by the users
 		custom_id='s',
 		options = [ # the list of options from which users can choose, a required field
 			discord.SelectOption(
-				label="@artemcurious",
+				label="@optymist",
 				description="Партія #newdevisart",
 				value="0"
 			),
 			discord.SelectOption(
-				label="@yanekyz",
-				description="Партія #newdevisart",
+				label="@cap_banana",
+				description="Коаліція z.I.g",
 				value="1"
-			),
-			discord.SelectOption(
-				label="@optymist",
-				description="Партія #newdevisart",
-				value="2"
-			),
-			discord.SelectOption(
-				label="@q7d19b_",
-				description="Партія #newdevisart",
-				value="3"
-			),
-			discord.SelectOption(
-				label="@chickenganfan228",
-				description="Незалежний",
-				value="4"
-			),
-			discord.SelectOption(
-				label="@m1b0t",
-				description="Незалежний",
-				value="5"
 			),
 			discord.SelectOption(
 				label="@playushki",
 				description="Коаліція z.I.g",
-				value="6"
-			),
-			discord.SelectOption(
-				label="@cap_banana",
-				description="Коаліція z.I.g",
-				value="7"
+				value="2"
 			)
 		]
 	)
 	async def select_callback(self, select: discord.ui.Select, interaction: discord.Interaction): # the function called when the user is done selecting options
 		selected_str = ''
 
-		council_select_ids = [591690683509768223,
-		1014161256019664977,
+		council_select_ids = [
 		658217734814957578,
-		1154105417283150034,
-		499940320088293377,
-		804694699364319253,
 		654019681534869505,
 		767783132031352884]
 
 
+		if interaction.user.id in council_select_ids:
+			await interaction.respond(f"Кандидати немають права голосувати", ephemeral=True)
+			return
 
 
-
-		choices_int = (int(select.values[0]), int(select.values[1]), int(select.values[2]))
+		choices_int = [int(select.values[0])]
 
 		for ch in choices_int:
 			selected_str += f"\n- <@{council_select_ids[ch]}>"
 		else:
-			vote_systems.vote(interaction.user.id, list(choices_int))
+			vote_systems.vote(interaction.user.id, choices_int)
 
 
 			await interaction.respond(f"Ви обрали: {selected_str}", ephemeral=True)
@@ -97,25 +74,16 @@ class VoteSystem(commands.Cog):  # create a class for our cog that inherits from
 	@commands.has_permissions(administrator=True)# we can also add application commands
 	async def start_vote(self, ctx:discord.ApplicationContext):
 
-		embed = discord.Embed(title='Вибори у раду')
-		embed.description = ("Ось й починаються вибори у раду серверу, виберіть 3 кандидата за яких ви проголосуєте, ви маєте право потім змінити свій вибір")
-		embed.colour = discord.Colour.purple()
-		embed.set_image(url='https://cdn.discordapp.com/attachments/1208129687067303944/1266852165188714606/7.png?ex=66a6a785&is=66a55605&hm=0a77c7e477d06436d2d48c7a10971b3a87c013817376ed619d9f36aa39275e89&')
-		await ctx.respond(embed=embed,view=MyView(timeout=None))
+		await ctx.respond(embed=vote_embed, view=VotingMenu(timeout=None))
 
 	@events_group.command(name = 'update_vote')
 	@commands.has_permissions(administrator=True)# we can also add application commands
 	async def update_vote(self, ctx:discord.ApplicationContext, msg_id: discord.Option(str)):
-		embed = discord.Embed(title='Вибори у раду')
-		embed.description = ("Ось й починаються вибори у раду серверу, виберіть 3 кандидата за яких ви проголосуєте, ви маєте право потім змінити свій вибір")
-		embed.colour = discord.Colour.purple()
-		embed.set_image(url='https://cdn.discordapp.com/attachments/1208129687067303944/1266852165188714606/7.png?ex=66a6a785&is=66a55605&hm=0a77c7e477d06436d2d48c7a10971b3a87c013817376ed619d9f36aa39275e89&')
-
 
 
 		msg = await ctx.channel.fetch_message(int(msg_id))
 		if msg.author.id == self.bot.user.id:
-			await msg.edit(embed=embed, view=MyView(timeout=None))
+			await msg.edit(embed=vote_embed, view=VotingMenu(timeout=None))
 
 	@events_group.command(name = 'end_vote')
 	@commands.has_permissions(administrator=True)# we can also add application commands
