@@ -177,19 +177,19 @@ class ServerCouncil(commands.Cog):
 									                           f"❌ Пропозицію не прийнято\n"
 									                           f"> - {y} - Підтримали\n"
 									                           f"> - {n} - Не підтримали\n"
-									                           f"> - {h} - Утримались", embed=discord.Embed(title=embed.title,description=comment))
+									                           f"> - {h} - Утримались", embed=discord.Embed(title=embed.title,description=comment, colour=discord.Colour.from_rgb(79,84,92)))
 								elif y>n:
 									await council_channel.send(f"Голосування по запиту {embed.title} завершилось прийняттям\n\n"
 									                           f"✅ Пропозицію прийнято\n"
 									                           f"> - {y} - Підтримали\n"
 									                           f"> - {n} - Не підтримали\n"
-									                           f"> - {h} - Утримались", embed=discord.Embed(title=embed.title,description=comment))
+									                           f"> - {h} - Утримались", embed=discord.Embed(title=embed.title,description=comment, colour=discord.Colour.from_rgb(79,84,92)))
 								elif n>y:
 									await council_channel.send(f"Голосування по запиту {embed.title} завершилось не прийняттям\n\n"
 									                           f"❌ Пропозицію не прийнято\n"
 									                           f"> - {y} - Підтримали\n"
 									                           f"> - {n} - Не підтримали\n"
-									                           f"> - {h} - Утримались", embed=discord.Embed(title=embed.title,description=comment))
+									                           f"> - {h} - Утримались", embed=discord.Embed(title=embed.title,description=comment, colour=discord.Colour.from_rgb(79,84,92)))
 
 								await message.delete()
 								os.replace(f'server_requests/{embed.title}.json',f'ended_requests/{embed.title}.json')
