@@ -20,10 +20,10 @@ class OwnRequest(discord.ui.View):
 
 	@discord.ui.button(label="Назва", style=discord.ButtonStyle.gray, emoji='✏️')
 	async def button_callback(self, button, interaction: discord.Interaction):
-		await interaction.response.send_modal(StrInput(self.request_tmp_id, 'name', self.message))
+		await interaction.response.send_modal(StrInput(self.request_tmp_id, 'name', self.message,200))
 	@discord.ui.button(label="Коментар", style=discord.ButtonStyle.gray,emoji='✏️')
 	async def button_callback3(self, button, interaction: discord.Interaction):
-		await interaction.response.send_modal(StrInput(self.request_tmp_id,'comment',self.message))
+		await interaction.response.send_modal(StrInput(self.request_tmp_id,'comment',self.message,2000))
 	@discord.ui.button(label="Готово", style=discord.ButtonStyle.green,emoji='✅')
 	async def button_callback2(self, button, interaction: discord.Interaction):
 
@@ -61,12 +61,13 @@ class OwnRequest(discord.ui.View):
 			await interaction.respond("Помилка! Ви або не ввели назву запиту або запит з такою назвою вже існує!", ephemeral=True)
 
 class StrInput(discord.ui.Modal):
-	def __init__(self,request_tmp_id:str,request_option:str,or_message : discord.Message, *args, **kwargs) -> None:
+	def __init__(self,request_tmp_id:str,request_option:str,or_message : discord.Message,text_limit:int, *args, **kwargs) -> None:
 		super().__init__(title=request_option,*args, **kwargs)
 		self.or_message = or_message
 		self.request_tmp_id = request_tmp_id
 		self.request_option = request_option
-		self.add_item(discord.ui.InputText(label="Введіть текст:", style=discord.InputTextStyle.long))
+
+		self.add_item(discord.ui.InputText(label="Введіть текст:", style=discord.InputTextStyle.long,max_length=text_limit))
 
 	async def callback(self, interaction: discord.Interaction):
 		with open(f'tmp_requests/{self.request_tmp_id}.json' ,'r') as file:
