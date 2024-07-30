@@ -208,6 +208,7 @@ class ServerCouncil(commands.Cog):
 					if 'voting' in request_info:
 						del(request_info['voting'])
 						del(request_info['timestamp'])
+						del(request_info['author_id'])
 					embed.description=''
 					nl = '\n'
 					for k,v in request_info.items():
