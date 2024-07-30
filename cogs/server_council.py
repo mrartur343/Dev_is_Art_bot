@@ -95,7 +95,7 @@ class RequestView(discord.ui.View):
 				label="Ролі й посади (скоро)",
 				description="Додати або забрати роль у людини",
 				value='2',
-				emoji=':triangular_flag_on_post:'
+				emoji='🚩'
 			)
 		]
 	)
