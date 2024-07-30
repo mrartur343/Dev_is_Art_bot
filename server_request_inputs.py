@@ -40,9 +40,21 @@ class OwnRequest(discord.ui.View):
 			del(request['name'])
 			self.disable_all_items()
 			await self.message.edit(view=self)
+			request['author_id'] = interaction.user.id
 			request['timestamp'] = round(datetime.datetime.now().timestamp())
 			with open(f'server_requests/{request_name}.json' ,'w') as file:
 				json.dump(request, file)
+
+
+			with open(f'data/last_requests.json' ,'r') as file:
+				last_requests = json.loads(file.read())
+
+			last_requests[str(interaction.user.id)]= round(datetime.datetime.now().timestamp())
+
+
+			with open(f'data/last_requests.json' ,'w') as file:
+				json.dump(last_requests, file)
+
 
 			await interaction.respond("Запит успішно створено! Чекайте на його прийняття радою серверу")
 		else:

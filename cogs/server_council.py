@@ -134,10 +134,11 @@ class ServerCouncil(commands.Cog):
 
 							with open(f'server_requests/{embed.title}.json', 'r') as file:
 								timestamp: int = json.loads(file.read())['timestamp']
-							if (datetime.datetime.now() - datetime.datetime.fromtimestamp(timestamp)).seconds>=60*60*24:
+							with open(f'server_requests/{embed.title}.json', 'r') as file:
+								voting: Dict[str, bool | None] = json.loads(file.read())['voting']
+							if ((datetime.datetime.now() - datetime.datetime.fromtimestamp(timestamp)).seconds>=60*60*24) or not (None in voting.values()):
 
-								with open(f'server_requests/{embed.title}.json', 'r') as file:
-									voting: Dict[str,bool|None] = json.loads(file.read())['voting']
+
 
 								y = 0
 								n = 0
@@ -225,12 +226,25 @@ class ServerCouncil(commands.Cog):
 
 	@discord.slash_command()  # we can also add application commands
 	async def request(self, ctx: discord.ApplicationContext):
+
+
+
+
 		if ctx.guild.id == 1208129686031310848:
 	
 			server_council_ids = []
 	
 			for member in (await ctx.guild._fetch_role(council_role_id)).members:
 				server_council_ids.append(member.id)
+
+
+			with open(f'data/last_requests.json' ,'r') as file:
+				last_requests = json.loads(file.read())
+
+			if (str(ctx.author.id) in last_requests) and not (ctx.author.id in server_council_ids):
+				if (datetime.datetime.now()- datetime.datetime.fromtimestamp(last_requests[str(ctx.author.id)])).seconds<60*60*24:
+					await ctx.respond(f"Не радники можуть створювати лише 1 запит на добу. Наступний запит ви зможете створити: <t:{round((datetime.datetime.fromtimestamp(last_requests[str(ctx.author.id)])+datetime.timedelta(seconds=60*60*24)).timestamp())}:R>", ephemeral=True)
+					return
 			await ctx.respond(view=RequestView(server_council_ids))
 
 
