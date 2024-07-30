@@ -81,7 +81,7 @@ class RequestView(discord.ui.View):
 		options=[  # the list of options from which users can choose, a required field
 			discord.SelectOption(
 				label="Текстова ідея",
-				description="Напиши що на твою думку повинна зробити адміністрація!",
+				description="Напиши що на твою думку повинна зробити рада!",
 				value='0',
 				emoji='💡'
 			),
