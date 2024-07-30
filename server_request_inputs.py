@@ -23,7 +23,7 @@ class OwnRequest(discord.ui.View):
 		await interaction.response.send_modal(StrInput(self.request_tmp_id, 'name', self.message,200))
 	@discord.ui.button(label="Коментар", style=discord.ButtonStyle.gray,emoji='✏️')
 	async def button_callback3(self, button, interaction: discord.Interaction):
-		await interaction.response.send_modal(StrInput(self.request_tmp_id,'comment',self.message,2000))
+		await interaction.response.send_modal(StrInput(self.request_tmp_id,'comment',self.message,1950))
 	@discord.ui.button(label="Готово", style=discord.ButtonStyle.green,emoji='✅')
 	async def button_callback2(self, button, interaction: discord.Interaction):
 
