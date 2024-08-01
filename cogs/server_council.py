@@ -121,7 +121,8 @@ class ServerCouncil(commands.Cog):
 
 	@commands.Cog.listener()
 	async def on_message(self,msg:discord.Message):
-		if msg.author.id == 767783132031352884 and msg.channel.id == 1227710915072495740 and msg.thread is None:
+		print(msg.application)
+		if (msg.author.id == 767783132031352884 and msg.channel.id == 1227710915072495740 and msg.thread is None):
 			await msg.delete()
 			await msg.author.send("Рада серверу Dev is Art заборонила вам писати в новини, твоє повідомлення видалене")
 	@commands.Cog.listener()
