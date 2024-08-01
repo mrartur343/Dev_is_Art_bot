@@ -257,9 +257,12 @@ class ServerCouncil(commands.Cog):
 	@discord.slash_command()  # we can also add application commands
 	@commands.has_permissions(administrator=True)
 	async def clean(self, ctx: discord.ApplicationContext, num: int):
+		await ctx.defer()
 		messages = await ctx.channel.history(limit=num).flatten()
 		for m in messages:
 			await m.delete()
+
+		await ctx.respond(f"Успішно видалено {num} повідомлень!", ephemeral=True)
 
 	@discord.slash_command()  # we can also add application commands
 	async def request(self, ctx: discord.ApplicationContext):
