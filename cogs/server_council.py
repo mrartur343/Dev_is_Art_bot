@@ -156,7 +156,7 @@ class ServerCouncil(commands.Cog):
 								voting: Dict[str, int] = json.loads(file.read())['voting']
 							with open(f'server_requests/{embed.title}.json', 'r') as file:
 								comment: str = json.loads(file.read())['comment']
-							if ((datetime.datetime.now() - datetime.datetime.fromtimestamp(timestamp)).seconds>=60*60*24) or (not (None in voting.values())):
+							if ((datetime.datetime.now() - datetime.datetime.fromtimestamp(timestamp)).seconds>=60*60*24) or (not (0 in voting.values())):
 
 
 
