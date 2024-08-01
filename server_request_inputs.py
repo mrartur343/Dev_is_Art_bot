@@ -21,10 +21,19 @@ class OwnRequest(discord.ui.View):
 
 	@discord.ui.button(label="Назва", style=discord.ButtonStyle.gray, emoji='✏️')
 	async def button_callback(self, button, interaction: discord.Interaction):
-		await interaction.response.send_modal(StrInput(self.request_tmp_id, 'name', self.message,200))
+		if interaction.user.id == self.author_id:
+			await interaction.response.send_modal(StrInput(self.request_tmp_id, 'name', self.message,200))
+		else:
+			await interaction.respond("Помилка! Це запит іншої людини!",
+			                          ephemeral=True)
 	@discord.ui.button(label="Коментар", style=discord.ButtonStyle.gray,emoji='✏️')
 	async def button_callback3(self, button, interaction: discord.Interaction):
-		await interaction.response.send_modal(StrInput(self.request_tmp_id,'comment',self.message,1950))
+		if interaction.user.id == self.author_id:
+			await interaction.response.send_modal(StrInput(self.request_tmp_id,'comment',self.message,1950))
+
+		else:
+			await interaction.respond("Помилка! Це запит іншої людини!",
+	                          ephemeral=True)
 	@discord.ui.button(label="Готово", style=discord.ButtonStyle.green,emoji='✅')
 	async def button_callback2(self, button, interaction: discord.Interaction):
 		if interaction.user.id==self.author_id:
