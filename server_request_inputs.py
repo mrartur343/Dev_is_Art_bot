@@ -9,8 +9,9 @@ import discord
 
 
 class OwnRequest(discord.ui.View):
-	def __init__(self,server_council_ids:List[int], *args, **kwargs) -> None:
+	def __init__(self,server_council_ids:List[int],author_id:int, *args, **kwargs) -> None:
 		self.request_tmp_id = str(round(datetime.datetime.now().timestamp()))
+		self.author_id = author_id
 		super().__init__(timeout=None,*args, **kwargs)
 		with open(f'tmp_requests/{self.request_tmp_id}.json' ,'w') as file:
 			voting = {}
@@ -26,39 +27,44 @@ class OwnRequest(discord.ui.View):
 		await interaction.response.send_modal(StrInput(self.request_tmp_id,'comment',self.message,1950))
 	@discord.ui.button(label="Готово", style=discord.ButtonStyle.green,emoji='✅')
 	async def button_callback2(self, button, interaction: discord.Interaction):
+		if interaction.user.id==self.author_id:
 
-		with open(f'tmp_requests/{self.request_tmp_id}.json', 'r') as file:
-			request = json.loads(file.read())
+			with open(f'tmp_requests/{self.request_tmp_id}.json', 'r') as file:
+				request = json.loads(file.read())
 
-		os.remove(f'tmp_requests/{self.request_tmp_id}.json')
+			os.remove(f'tmp_requests/{self.request_tmp_id}.json')
 
-		request_name =request['name']
+			request_name =request['name']
 
-		if request['comment']=='':
-			await interaction.respond("Ви не ввели коментар до запиту, введіть туди вашу ідею яку ви хочете донести в раду серверу!", ephemeral=True)
-		if request_name!='' and not os.path.exists(f'server_requests/{request_name}.json'):
-			del(request['name'])
-			self.disable_all_items()
-			await self.message.edit(view=self)
-			request['author_id'] = interaction.user.id
-			request['timestamp'] = round(datetime.datetime.now().timestamp())
-			with open(f'server_requests/{request_name}.json' ,'w') as file:
-				json.dump(request, file)
-
-
-			with open(f'data/last_requests.json' ,'r') as file:
-				last_requests = json.loads(file.read())
-
-			last_requests[str(interaction.user.id)]= round(datetime.datetime.now().timestamp())
+			if request['comment']=='':
+				await interaction.respond("Ви не ввели коментар до запиту, введіть туди вашу ідею яку ви хочете донести в раду серверу!", ephemeral=True)
+			if request_name!='' and not os.path.exists(f'server_requests/{request_name}.json'):
+				del(request['name'])
+				self.disable_all_items()
+				await self.message.edit(view=self)
+				request['author_id'] = interaction.user.id
+				request['timestamp'] = round(datetime.datetime.now().timestamp())
+				with open(f'server_requests/{request_name}.json' ,'w') as file:
+					json.dump(request, file)
 
 
-			with open(f'data/last_requests.json' ,'w') as file:
-				json.dump(last_requests, file)
+				with open(f'data/last_requests.json' ,'r') as file:
+					last_requests = json.loads(file.read())
+
+				last_requests[str(interaction.user.id)]= round(datetime.datetime.now().timestamp())
 
 
-			await interaction.respond("Запит успішно створено! Чекайте на його прийняття радою серверу")
+				with open(f'data/last_requests.json' ,'w') as file:
+					json.dump(last_requests, file)
+
+
+				await interaction.respond("Запит успішно створено! Чекайте на його прийняття радою серверу")
+			else:
+				await interaction.respond("Помилка! Ви або не ввели назву запиту або запит з такою назвою вже існує!", ephemeral=True)
 		else:
-			await interaction.respond("Помилка! Ви або не ввели назву запиту або запит з такою назвою вже існує!", ephemeral=True)
+			await interaction.respond("Помилка! Це запит іншої людини!",
+			                          ephemeral=True)
+
 
 class StrInput(discord.ui.Modal):
 	def __init__(self,request_tmp_id:str,request_option:str,or_message : discord.Message,text_limit:int, *args, **kwargs) -> None:

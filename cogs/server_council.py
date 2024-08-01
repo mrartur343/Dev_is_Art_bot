@@ -8,7 +8,7 @@ import server_request_inputs
 import discord
 from discord.ext import commands, pages
 
-actions: List[Tuple[discord.Embed, Type[discord.ui.View]]] = [
+actions: List[Tuple[discord.Embed, Type[object]]] = [
 	(discord.Embed(title="Власна пропозиція",
 	               fields=[discord.EmbedField(name='name', value=''), discord.EmbedField(name='comment', value='')])
 	 , server_request_inputs.OwnRequest),
@@ -110,7 +110,7 @@ class RequestView(discord.ui.View):
 
 
 
-		await interaction.respond(embed=action[0],view=action[1](self.server_council_ids))
+		await interaction.respond(embed=action[0],view=action[1](self.server_council_ids, interaction.user.id))
 
 
 class ServerCouncil(commands.Cog):
