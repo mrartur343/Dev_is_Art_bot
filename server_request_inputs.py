@@ -16,7 +16,7 @@ class OwnRequest(discord.ui.View):
 		with open(f'tmp_requests/{self.request_tmp_id}.json' ,'w') as file:
 			voting = {}
 			for uid in server_council_ids:
-				voting[str(uid)] = None
+				voting[str(uid)] = 0
 			json.dump({"name":"",'comment':'','voting':voting,'timestamp':round(datetime.datetime.now().timestamp())}, file)
 
 	@discord.ui.button(label="Назва", style=discord.ButtonStyle.gray, emoji='✏️')
