@@ -143,7 +143,7 @@ class ServerCouncil(commands.Cog):
 			all_requests_names = [f.split(".")[0] for f in listdir('server_requests')]
 			unused_names = all_requests_names
 			print(all_requests_names)
-			await asyncio.sleep(5)
+			await asyncio.sleep(10)
 			council_messages = await council_channel.history(limit=1000).flatten()
 			for message in council_messages:
 				try:
