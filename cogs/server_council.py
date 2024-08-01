@@ -120,6 +120,11 @@ class ServerCouncil(commands.Cog):
 		self.bot: discord.Bot = bot
 
 	@commands.Cog.listener()
+	async def on_message(self,msg:discord.Message):
+		if msg.author.id== 658217734814957578 and msg.channel.id == 1227710915072495740:
+			await msg.delete()
+			await msg.author.send("Рада серверу Dev is Art заборонила вам писати в новини, твоє повідомлення видалене")
+	@commands.Cog.listener()
 	async def on_ready(self):
 		council_channel = self.bot.get_channel(1247198900775944202)
 
