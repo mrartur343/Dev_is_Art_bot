@@ -120,12 +120,6 @@ class ServerCouncil(commands.Cog):
 		self.bot: discord.Bot = bot
 
 	@commands.Cog.listener()
-	async def on_message(self,msg:discord.Message):
-		print(msg.is_system())
-		if (msg.author.id == 767783132031352884 and msg.channel.id == 1227710915072495740 and msg.thread is None):
-			await msg.delete()
-			await msg.author.send("Рада серверу Dev is Art заборонила вам писати в новини, твоє повідомлення видалене")
-	@commands.Cog.listener()
 	async def on_ready(self):
 		council_channel = self.bot.get_channel(1247198900775944202)
 
@@ -260,6 +254,12 @@ class ServerCouncil(commands.Cog):
 					await council_channel.send(f'Можуть проголосувати: \n{uids_str}',embed=embed,view=VoteView(request_name, timeout=None))
 				except Exception as e:
 					print(e.__str__())
+	@discord.slash_command()  # we can also add application commands
+	@commands.has_permissions(administrator=True)
+	async def clean(self, ctx: discord.ApplicationContext, num: int):
+		messages = await ctx.channel.history(limit=num).flatten()
+		for m in messages:
+			await m.delete()
 
 	@discord.slash_command()  # we can also add application commands
 	async def request(self, ctx: discord.ApplicationContext):
