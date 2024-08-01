@@ -135,6 +135,7 @@ class ServerCouncil(commands.Cog):
 				if message.author.id == self.bot.user.id:
 					await message.edit(view=VoteView(message.embeds[0].title))
 			except Exception as excpt:
+				print("ERROR")
 				print(excpt.__str__())
 
 
