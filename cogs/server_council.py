@@ -175,7 +175,21 @@ class ServerCouncil(commands.Cog):
 								comment: str = server_request_dict['comment']
 							elif 'add_roles' in server_request_dict:
 								add_roles_id: List[int] = server_request_dict['add_roles'].split(" ")
+								i = -1
+								new_list = []
+								for e in add_roles_id:
+									i+=1
+									if e!="":
+										new_list.append(e)
+								add_roles_id=new_list
 								remove_roles_id: List[int] = server_request_dict['remove_roles'].split(" ")
+								i = -1
+								new_list = []
+								for e in remove_roles_id:
+									i+=1
+									if e!="":
+										new_list.append(e)
+								remove_roles_id=new_list
 								comment = ''
 
 								for role_id in add_roles_id:
