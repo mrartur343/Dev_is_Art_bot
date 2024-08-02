@@ -120,7 +120,7 @@ class RequestView(discord.ui.View):
 
 		elif int(select.values[0])==1:
 			embed = discord.Embed(title="Ролі й посади",
-	               fields=[discord.EmbedField(name='add_roles', value=''), discord.EmbedField(name='remove_roles', value='')])
+	               fields=[discord.EmbedField(name='add_roles', value=''), discord.EmbedField(name='remove_roles', value=''), discord.EmbedField(name='target', value='')])
 
 			role_i = 0
 			roles_nums = {}
