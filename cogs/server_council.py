@@ -301,7 +301,7 @@ class ServerCouncil(commands.Cog):
 
 					uids_str = ''
 					for member in (await council_channel.guild._fetch_role(council_role_id)).members:
-						uids_str+=f"><@{member.id}> "
+						uids_str+=f"<@{member.id}> "
 					await council_channel.send(f'Можуть проголосувати: \n{uids_str}',embed=embed,view=VoteView(request_name, timeout=None))
 				except Exception as e:
 					print("ERROR")
