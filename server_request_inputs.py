@@ -90,14 +90,14 @@ class RolesChange(discord.ui.View):
 	@discord.ui.button(label="Додати ролі", style=discord.ButtonStyle.gray, emoji='✏️')
 	async def button_callback(self, button, interaction: discord.Interaction):
 		if interaction.user.id == self.author_id:
-			await interaction.response.send_modal(StrInput(self.request_tmp_id, 'add_roles', self.message,4000))
+			await interaction.response.send_modal(StrInput(self.request_tmp_id, 'add_roles', self.message,4000,self.roles_nums))
 		else:
 			await interaction.respond("Помилка! Це запит іншої людини!",
 			                          ephemeral=True)
 	@discord.ui.button(label="Забрати ролі", style=discord.ButtonStyle.gray,emoji='✏️')
 	async def button_callback3(self, button, interaction: discord.Interaction):
 		if interaction.user.id == self.author_id:
-			await interaction.response.send_modal(StrInput(self.request_tmp_id,'remove_roles',self.message,4000))
+			await interaction.response.send_modal(StrInput(self.request_tmp_id,'remove_roles',self.message,4000,self.roles_nums))
 
 		else:
 			await interaction.respond("Помилка! Це запит іншої людини!",
@@ -105,7 +105,7 @@ class RolesChange(discord.ui.View):
 	@discord.ui.button(label="У кого", style=discord.ButtonStyle.gray,emoji='✏️')
 	async def button_callback4(self, button, interaction: discord.Interaction):
 		if interaction.user.id == self.author_id:
-			await interaction.response.send_modal(StrInput(self.request_tmp_id,'target',self.message,4000))
+			await interaction.response.send_modal(StrInput(self.request_tmp_id,'target',self.message,100))
 
 		else:
 			await interaction.respond("Помилка! Це запит іншої людини!",
