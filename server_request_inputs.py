@@ -123,7 +123,6 @@ class RolesChange(discord.ui.View):
 			if request['add_roles']=='' and request['remove_roles']=='':
 				await interaction.respond("Ви не написали які ролі необхідно змінити!", ephemeral=True)
 			else:
-				del(request['name'])
 				self.disable_all_items()
 				await self.message.edit(view=self)
 				request['author_id'] = interaction.user.id
