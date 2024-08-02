@@ -302,6 +302,7 @@ class ServerCouncil(commands.Cog):
 						uids_str+=f"><@{member.id}> "
 					await council_channel.send(f'Можуть проголосувати: \n{uids_str}',embed=embed,view=VoteView(request_name, timeout=None))
 				except Exception as e:
+					print("ERROR")
 					print(e.__str__())
 	@discord.slash_command()  # we can also add application commands
 	@commands.has_permissions(administrator=True)
