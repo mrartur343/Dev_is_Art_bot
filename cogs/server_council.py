@@ -106,7 +106,7 @@ class RequestView(discord.ui.View):
 	async def select_callback(self, select: discord.ui.Select,
 	                          interaction: discord.Interaction):  # the function called when the user is done selecting options
 
-		if select.values[0] in ["1","2"]:
+		if select.values[0] in ["2"]:
 			await interaction.respond("Ці види пропозицій будуть додані вже скоро!",ephemeral=True)
 
 
