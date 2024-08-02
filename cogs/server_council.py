@@ -148,14 +148,6 @@ class ServerCouncil(commands.Cog):
 
 
 		council_messages = await council_channel.history(limit=1000).flatten()
-		for message in council_messages:
-			try:
-				if message.author.id == self.bot.user.id:
-					await message.edit(view=VoteView(message.embeds[0].title))
-			except Exception as excpt:
-				print("ERROR")
-				print(excpt.__str__())
-
 
 		while True:
 			all_requests_names = [f.split(".")[0] for f in listdir('server_requests')]
@@ -168,6 +160,7 @@ class ServerCouncil(commands.Cog):
 					if len(message.embeds)>0:
 						embed = message.embeds[0]
 						if message.author.id==self.bot.user.id and os.path.exists(f'server_requests/{embed.title}.json'):
+							await message.edit(view=VoteView(message.embeds[0].title))
 							if embed.title in unused_names:
 								unused_names.remove(embed.title)
 
