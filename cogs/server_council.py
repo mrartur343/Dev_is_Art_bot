@@ -273,9 +273,9 @@ class ServerCouncil(commands.Cog):
 						for k,v in request_info.items():
 							embed.description+=f"\n- {k}\n> {v.replace(nl, nl+'> ')}"
 					else:
-						add_roles_id: List[int] = server_request_dict['add_roles'].split(" ")
-						remove_roles_id: List[int] = server_request_dict['remove_roles'].split(" ")
-						target: List[int] = server_request_dict['target']
+						add_roles_id: List[int] = request_info['add_roles'].split(" ")
+						remove_roles_id: List[int] = request_info['remove_roles'].split(" ")
+						target: List[int] = request_info['target']
 						comment = f'Змінити ролі для <@{target}>'
 
 						comment += '\n'
