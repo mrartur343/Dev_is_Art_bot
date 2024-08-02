@@ -122,12 +122,12 @@ class RequestView(discord.ui.View):
 			embed = discord.Embed(title="Ролі й посади",
 	               fields=[discord.EmbedField(name='add_roles', value=''), discord.EmbedField(name='remove_roles', value='')])
 
-			role_i = -1
+			role_i = 0
 			roles_nums = {}
 			for role in await interaction.guild.fetch_roles():
 				if role.id in [1249713455787671583,1249711571798720512,1208129686031310850,1208129686031310849] or not (role.is_assignable()):
 					continue
-				roles_str+=f'\n{role_i}. <@&{role.id}>'
+				roles_str+=f'\n{role_i} - <@&{role.id}>'
 				roles_nums[role_i]=role.id
 				role_i+=1
 			embed.description=f'Щоб задати які ролі додати чи видалити напишіть всі номера ролей (знизу всі номера) через пробіл\n{roles_str}'
