@@ -181,6 +181,7 @@ class StrInput(discord.ui.Modal):
 					roles_str = ''
 					for role_id in roles_id:
 						roles_str+=f"\n{'+' if f.name=='add_roles' else '-'} <@&{role_id}>"
+					or_embed.set_field_at(i, name=self.request_option, value=roles_str)
 				elif f.name == 'target':
 					try:
 						member_id = interaction.guild.get_member_named(self.children[0].value.replace("@","")).id
