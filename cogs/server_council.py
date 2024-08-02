@@ -175,12 +175,14 @@ class ServerCouncil(commands.Cog):
 								comment: str = server_request_dict['comment']
 							elif 'add_roles' in server_request_dict:
 								add_roles_str = server_request_dict['add_roles']
-								if add_roles_str[-1]==' ':
-									add_roles_str = add_roles_str[:-1]
+								if len(add_roles_str)>0:
+									if add_roles_str[-1]==' ':
+										add_roles_str = add_roles_str[:-1]
 								add_roles_id: List[int] = add_roles_str.split(" ")
 								remove_roles_str = server_request_dict['remove_roles']
-								if remove_roles_str[-1]==' ':
-									remove_roles_str = remove_roles_str[:-1]
+								if len(remove_roles_str)>0:
+									if remove_roles_str[-1]==' ':
+										remove_roles_str = remove_roles_str[:-1]
 								remove_roles_id: List[int] = remove_roles_str.split(" ")
 								comment = ''
 
