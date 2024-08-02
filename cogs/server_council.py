@@ -12,6 +12,9 @@ actions: List[Tuple[discord.Embed, Type[object]]] = [
 	(discord.Embed(title="Власна пропозиція",
 	               fields=[discord.EmbedField(name='name', value=''), discord.EmbedField(name='comment', value='')])
 	 , server_request_inputs.OwnRequest),
+	(discord.Embed(title="Ролі й посади",
+	               fields=[discord.EmbedField(name='add_roles', value=''), discord.EmbedField(name='remove_roles', value='')])
+	 , server_request_inputs.RolesChange)
 ]
 
 
@@ -87,16 +90,16 @@ class RequestView(discord.ui.View):
 				emoji='💡'
 			),
 			discord.SelectOption(
-				label="Демократія (скоро)",
-				description="Дострокові вибори, переобрання міністрів, тощо",
+				label="Ролі й посади",
+				description="Додати або забрати ролі у людини",
 				value='1',
-				emoji='🪧'
+				emoji='🚩'
 			),
 			discord.SelectOption(
-				label="Ролі й посади (скоро)",
-				description="Додати або забрати роль у людини",
+				label="Демократія (скоро)",
+				description="Дострокові вибори, переобрання міністрів, тощо",
 				value='2',
-				emoji='🚩'
+				emoji='🪧'
 			)
 		]
 	)
@@ -108,10 +111,30 @@ class RequestView(discord.ui.View):
 
 
 		action = actions[int(select.values[0])]
+		roles_str =''
+		if int(select.values[0])==0:
+			await interaction.respond(embed=discord.Embed(title="Власна пропозиція",
+	               fields=[discord.EmbedField(name='name', value=''), discord.EmbedField(name='comment', value='')])
+	 , view=server_request_inputs.OwnRequest(self.server_council_ids, interaction.user.id))
+
+
+		elif int(select.values[0])==1:
+			embed = discord.Embed(title="Ролі й посади",
+	               fields=[discord.EmbedField(name='add_roles', value=''), discord.EmbedField(name='remove_roles', value='')])
+
+			role_i = 0
+			roles_nums = {}
+			for role in await interaction.guild.fetch_roles():
+				if role.id in [1249713455787671583,1249711571798720512,1208129686031310850,1208129686031310849] or not (role.is_assignable()):
+					continue
+				roles_str+=f'\n{role_i}. <@&{role.id}>'
+				roles_nums[role_i]=role.id
+				role_i+=1
+			embed.description=f'Щоб задати які ролі додати чи видалити напишіть всі номера ролей (знизу всі номера) через пробіл\n{roles_str}'
 
 
 
-		await interaction.respond(embed=action[0],view=action[1](self.server_council_ids, interaction.user.id))
+			await interaction.respond(embed =embed, view=server_request_inputs.RolesChange(self.server_council_ids, interaction.user.id,roles_nums))
 
 
 class ServerCouncil(commands.Cog):
@@ -150,13 +173,27 @@ class ServerCouncil(commands.Cog):
 
 							if not message.pinned:
 								await message.pin()
+							with open(f'server_requests/{embed.title}.json', 'r') as file:
+								server_request_dict = json.loads(file.read())
 
-							with open(f'server_requests/{embed.title}.json', 'r') as file:
-								timestamp: int = json.loads(file.read())['timestamp']
-							with open(f'server_requests/{embed.title}.json', 'r') as file:
-								voting: Dict[str, int] = json.loads(file.read())['voting']
-							with open(f'server_requests/{embed.title}.json', 'r') as file:
-								comment: str = json.loads(file.read())['comment']
+							timestamp: int = server_request_dict['timestamp']
+							voting: Dict[str, int] = server_request_dict['voting']
+							if 'comment' in server_request_dict:
+								comment: str = server_request_dict['comment']
+							elif 'add_roles' in server_request_dict:
+								add_roles_id: List[int] = server_request_dict['add_roles'].split(" ")
+								remove_roles_id: List[int] = server_request_dict['remove_roles'].split(" ")
+								comment = ''
+
+								for role_id in add_roles_id:
+									comment+=f'\n Додати <@&{role_id}>'
+
+								comment+='\n'
+
+								for role_id in remove_roles_id:
+									comment+=f'\n Забрати <@&{role_id}>'
+
+
 							if ((datetime.datetime.now() - datetime.datetime.fromtimestamp(timestamp)).seconds>=60*60*24) or (not (0 in voting.values())) or (list(voting.values()).count(1) > list(voting.values()).count(0)+list(voting.values()).count(2)) or (list(voting.values()).count(2) > list(voting.values()).count(0)+list(voting.values()).count(1)):
 
 
@@ -239,8 +276,27 @@ class ServerCouncil(commands.Cog):
 						del(request_info['author_id'])
 					embed.description=''
 					nl = '\n'
-					for k,v in request_info.items():
-						embed.description+=f"\n- {k}\n> {v.replace(nl, nl+'> ')}"
+					if 'comment' in request_info:
+						for k,v in request_info.items():
+							embed.description+=f"\n- {k}\n> {v.replace(nl, nl+'> ')}"
+					else:
+						add_roles_id: List[int] = server_request_dict['add_roles'].split(" ")
+						remove_roles_id: List[int] = server_request_dict['remove_roles'].split(" ")
+						target: List[int] = server_request_dict['target']
+						comment = f'Змінити ролі для <@{target}>'
+
+						comment += '\n'
+
+						for role_id in add_roles_id:
+							comment += f'\n Додати <@&{role_id}>'
+
+						comment += '\n'
+
+						for role_id in remove_roles_id:
+							comment += f'\n Забрати <@&{role_id}>'
+
+						embed.description=comment
+
 					embed.add_field(name="Кінець голосування: ",
 					                value=f'<t:{round((datetime.datetime.fromtimestamp(start_timestamp)+datetime.timedelta(seconds=60*60*24)).timestamp())}:R> (<t:{round((datetime.datetime.fromtimestamp(start_timestamp)+datetime.timedelta(seconds=60*60*24)).timestamp())}:d> <t:{round((datetime.datetime.fromtimestamp(start_timestamp)+datetime.timedelta(seconds=60*60*24)).timestamp())}:t>)')
 					embed.add_field(name="Проголосували: ",
