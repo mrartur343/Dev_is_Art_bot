@@ -221,6 +221,21 @@ class ServerCouncil(commands.Cog):
 									                           f"> - {n} - Не підтримали\n"
 									                           f"> - {h} - Утримались\n"
 									                           f"> - {d} - Не проголосували", embed=discord.Embed(title=embed.title,description=comment, colour=discord.Colour.from_rgb(79,84,92)))
+									if 'add_roles' in server_request_dict:
+										target_member = await council_channel.guild.fetch_member(server_request_dict['target'])
+
+										add_roles: List[discord.Role] = []
+										for role_id in add_roles_id:
+											add_roles.append(await council_channel.guild._fetch_role(int(role_id)))
+
+										remove_roles: List[discord.Role] = []
+										for role_id in remove_roles_id:
+											remove_roles.append(await council_channel.guild._fetch_role(int(role_id)))
+										await target_member.add_roles(add_roles)
+										await target_member.add_roles(remove_roles)
+
+
+
 								elif n>y:
 									await council_channel.send(f"Голосування по запиту {embed.title} завершилось не прийняттям\n\n"
 									                           f"❌ Пропозицію не прийнято\n"
