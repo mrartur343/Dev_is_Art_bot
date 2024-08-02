@@ -179,12 +179,18 @@ class ServerCouncil(commands.Cog):
 									if add_roles_str[-1]==' ':
 										add_roles_str = add_roles_str[:-1]
 								add_roles_id: List[int] = add_roles_str.split(" ")
+								if len(add_roles_id)==1:
+									if add_roles_id[0]=='':
+										add_roles_id.pop(0)
 								print(add_roles_id)
 								remove_roles_str = server_request_dict['remove_roles']
 								if len(remove_roles_str)>0:
 									if remove_roles_str[-1]==' ':
 										remove_roles_str = remove_roles_str[:-1]
 								remove_roles_id: List[int] = remove_roles_str.split(" ")
+								if len(remove_roles_id)==1:
+									if remove_roles_id[0]=='':
+										remove_roles_id.pop(0)
 								print(remove_roles_id)
 								comment = ''
 
