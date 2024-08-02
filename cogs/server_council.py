@@ -275,18 +275,20 @@ class ServerCouncil(commands.Cog):
 					else:
 						add_roles_id: List[int] = request_info['add_roles'].split(" ")
 						remove_roles_id: List[int] = request_info['remove_roles'].split(" ")
-						target: List[int] = request_info['target']
+						target: int = request_info['target']
 						comment = f'Змінити ролі для <@{target}>'
 
 						comment += '\n'
 
 						for role_id in add_roles_id:
-							comment += f'\n Додати <@&{role_id}>'
+							if role_id!='':
+								comment += f'\n Додати <@&{role_id}>'
 
 						comment += '\n'
 
 						for role_id in remove_roles_id:
-							comment += f'\n Забрати <@&{role_id}>'
+							if role_id!='':
+								comment += f'\n Забрати <@&{role_id}>'
 
 						embed.description=comment
 
