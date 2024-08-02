@@ -156,7 +156,7 @@ class ServerCouncil(commands.Cog):
 			await asyncio.sleep(4)
 			council_messages = await council_channel.history(limit=1000).flatten()
 			for message in council_messages:
-				try:
+				if True:
 					if len(message.embeds)>0:
 						embed = message.embeds[0]
 						if message.author.id==self.bot.user.id and os.path.exists(f'server_requests/{embed.title}.json'):
@@ -282,8 +282,6 @@ class ServerCouncil(commands.Cog):
 								if new_voters_str!=old_voters_str:
 									embed.fields[1].value = new_voters_str
 									await message.edit(embed = embed)
-				except Exception as exception:
-					print(exception.__str__())
 
 			print(f'Unused: {unused_names}')
 			for request_name in unused_names:
