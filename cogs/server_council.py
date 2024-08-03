@@ -202,7 +202,7 @@ class ServerCouncil(commands.Cog):
 								for role_id in remove_roles_id:
 									comment+=f'\n Забрати <@&{role_id}>'
 
-
+							print(f"Time check for {embed.title} - {(datetime.datetime.now() - datetime.datetime.fromtimestamp(timestamp)).seconds-60*60*24} seconds")
 							if ((datetime.datetime.now() - datetime.datetime.fromtimestamp(timestamp)).seconds>=60*60*24) or (not (0 in voting.values())) or (list(voting.values()).count(1) > list(voting.values()).count(0)+list(voting.values()).count(2)) or (list(voting.values()).count(2) > list(voting.values()).count(0)+list(voting.values()).count(1)):
 								print(f"END {embed.title}")
 
