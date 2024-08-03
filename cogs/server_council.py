@@ -204,7 +204,7 @@ class ServerCouncil(commands.Cog):
 
 
 							if ((datetime.datetime.now() - datetime.datetime.fromtimestamp(timestamp)).seconds>=60*60*24) or (not (0 in voting.values())) or (list(voting.values()).count(1) > list(voting.values()).count(0)+list(voting.values()).count(2)) or (list(voting.values()).count(2) > list(voting.values()).count(0)+list(voting.values()).count(1)):
-
+								print(f"END {embed.title}")
 
 
 								y = 0
