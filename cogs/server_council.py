@@ -337,7 +337,7 @@ class ServerCouncil(commands.Cog):
 						print(e.__str__())
 				await asyncio.sleep(60)
 			except Exception as e:
-				with open(f'ERROR_LOG_{round(datetime.datetime.now().timestamp())}', 'w') as file:
+				with open(f'ERROR_LOG_{round(datetime.datetime.now().timestamp())}.json', 'w') as file:
 					json.dump(['Error in cycle start', e.__str__(), datetime.datetime.now().strftime("%c")],file)
 	@discord.slash_command()  # we can also add application commands
 	@commands.has_permissions(administrator=True)
