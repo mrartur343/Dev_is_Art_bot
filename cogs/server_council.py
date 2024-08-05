@@ -334,7 +334,7 @@ class ServerCouncil(commands.Cog):
 				except Exception as e:
 					print("ERROR")
 					print(e.__str__())
-			await asyncio.sleep(4)
+			await asyncio.sleep(60)
 	@discord.slash_command()  # we can also add application commands
 	@commands.has_permissions(administrator=True)
 	async def clean(self, ctx: discord.ApplicationContext, num: int):
