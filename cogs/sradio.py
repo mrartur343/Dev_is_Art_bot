@@ -7,6 +7,7 @@ import time
 from os import listdir
 from os.path import isfile, join
 from modules.radio_ua_views import *
+
 import aiohttp
 from PIL import Image, ImageDraw
 from tinytag import TinyTag
@@ -31,7 +32,7 @@ class RadioRemove(discord.ui.View):
 	                   emoji="🗑️")
 	async def button_callback1(self, button: discord.ui.Button, interaction: discord.Interaction):
 
-		playlist_link = interaction.message.embeds[0].url
+		radio_name = interaction.message.embeds[0].footer.text
 		await interaction.message.delete()
 
 		guild = interaction.guild
@@ -41,7 +42,7 @@ class RadioRemove(discord.ui.View):
 
 		result = []
 		for p in server_radios:
-			if p['link'] != playlist_link:
+			if p['name'] != radio_name:
 				result.append(p)
 
 		with open(f'server_radios/{guild.id}.json', 'w') as file:
@@ -61,7 +62,7 @@ class RadioPlaylistsView(discord.ui.View):
 	                   emoji="📻")
 	async def button_callback1(self, button: discord.ui.Button, interaction: discord.Interaction):
 
-		radio_url = interaction.message.embeds[0].url
+		radio_name = interaction.message.embeds[0].footer.text
 		await interaction.message.delete()
 
 		int_channel: discord.TextChannel = interaction.channel
@@ -75,11 +76,14 @@ class RadioPlaylistsView(discord.ui.View):
 		while cycle:
 
 			all_radios = sradio_contoller.get_server_radio(interaction.guild.id)
+			radio_url = ''
 
 			print(all_radios)
-			print(radio_url)
+			print(radio_name)
 
-			radio_name = await sradio_contoller.playlist_name(radio_url)
+			for radio in all_radios:
+				if radio['name'] == radio_name:
+					radio_url = radio['link']
 			print("radio_image...")
 			radio_image = await sradio_contoller.playlist_image(radio_url)
 			print("radio_image")
@@ -105,7 +109,7 @@ class RadioPlaylistsView(discord.ui.View):
 
 					new_downloads_check = True
 
-					await sradio_contoller.song_download(song_url)
+					sradio_contoller.songs_download(radio_url)
 					await asyncio.sleep(3)
 					while not (song_name in songs_names_paths):
 						songs_names_paths, songs_paths = sradio_contoller.get_all_songs_paths()
@@ -128,7 +132,7 @@ class RadioPlaylistsView(discord.ui.View):
 					if not (song_name in songs_names_paths):
 						print(songs_paths)
 
-						await sradio_contoller.song_download(song_url)
+						sradio_contoller.songs_download(radio_url)
 						await asyncio.sleep(3)
 						while not (song_name in songs_names_paths):
 							songs_names_paths, songs_paths = sradio_contoller.get_all_songs_paths()
@@ -317,8 +321,9 @@ class SRadio(commands.Cog):  # create a class for our cog that inherits from com
 		with open(f'server_radios/{guild.id}.json', 'r') as file:
 			server_radios = json.loads(file.read())
 
+		radio_name = sradio_contoller.playlist_name(playlist_link)
 
-		server_radios.append({'link': playlist_link})
+		server_radios.append({'name': radio_name, 'link': playlist_link})
 
 		with open(f'server_radios/{guild.id}.json', 'w') as file:
 			json.dump(server_radios, file)
@@ -333,11 +338,12 @@ class SRadio(commands.Cog):  # create a class for our cog that inherits from com
 		embeds = []
 
 		for radio in server_radios:
-			embed = discord.Embed(title=await sradio_contoller.playlist_name(radio['link']))
+			embed = discord.Embed(title=radio['name'])
 			embed.url = radio['link']
 			playlist_image = await sradio_contoller.playlist_image(radio['link'])
 			if not (playlist_image is None):
 				embed.set_image(url=playlist_image)
+			embed.set_footer(text=radio['name'])
 
 			embeds.append(embed)
 
@@ -361,11 +367,12 @@ class SRadio(commands.Cog):  # create a class for our cog that inherits from com
 		embeds = []
 
 		for radio in server_radios:
-			embed = discord.Embed(title=await sradio_contoller.playlist_name(radio['link']))
+			embed = discord.Embed(title=radio['name'])
 			embed.url = radio['link']
 			playlist_image = await sradio_contoller.playlist_image(radio['link'])
 			if not (playlist_image is None):
 				embed.set_image(url=playlist_image)
+			embed.set_footer(text=radio['name'])
 
 			embeds.append(embed)
 
@@ -400,7 +407,7 @@ class SRadio(commands.Cog):  # create a class for our cog that inherits from com
 		embeds = []
 
 		for radio in server_radios:
-			embed = discord.Embed(title=await sradio_contoller.playlist_name(radio['link']))
+			embed = discord.Embed(title=radio['name'])
 			embed.url = radio['link']
 			playlist_image = await sradio_contoller.playlist_image(radio['link'])
 			if not (playlist_image is None):
@@ -469,6 +476,7 @@ class SRadio(commands.Cog):  # create a class for our cog that inherits from com
 		with open(f'server_radios/{guild.id}.json', 'w') as file:
 			json.dump([
 				{
+					"name": "Плейлист невідомого поета",
 					"link": "https://open.spotify.com/playlist/5SMhA3BNpFA7mJNk5LFHxV?si=1ee1481307f34f7b"
 				}], file)
 
