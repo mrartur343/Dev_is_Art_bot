@@ -152,19 +152,6 @@ class AlbumSongs(discord.ui.View):
 		                          view=view, ephemeral=True)
 
 
-	@discord.ui.button(label="Зупинити радіо", style=discord.ButtonStyle.gray,
-	                   emoji="⛔")  # Create a button with the label "😎 Click me!" with color Blurple
-	async def button_callback5(self, button, interaction: discord.Interaction):
-		if interaction.permissions.administrator:
-			await interaction.guild.voice_client.disconnect(force=True)
-			await interaction.respond("Радіо було вимкнено адміністратором",
-		                           ephemeral=True)
-		else:
-			await interaction.respond("Це може зробити лише адміністратор!",
-		                           ephemeral=True)
-
-
-
 class RadioPlaylistsView(discord.ui.View):
 	def __init__(self,general_radio_ingo_channel,msg_id, *args, **kwargs):
 		self.general_radio_ingo_channel: discord.Thread = general_radio_ingo_channel
