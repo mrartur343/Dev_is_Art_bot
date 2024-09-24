@@ -156,7 +156,7 @@ class ServerCouncil(commands.Cog):
 			await asyncio.sleep(4)
 			council_messages = await council_channel.history(limit=1000).flatten()
 			for message in council_messages:
-				try:
+				if True:
 					if len(message.embeds)>0:
 						embed = message.embeds[0]
 						if message.author.id==self.bot.user.id and os.path.exists(f'server_requests/{embed.title}.json'):
@@ -242,11 +242,13 @@ class ServerCouncil(commands.Cog):
 
 										add_roles: List[discord.Role] = []
 										for role_id in add_roles_id:
-											await target_member.add_roles(await council_channel.guild._fetch_role(int(role_id)))
+											add_roles.append(await council_channel.guild._fetch_role(int(role_id)))
 
 										remove_roles: List[discord.Role] = []
 										for role_id in remove_roles_id:
-											await target_member.remove_roles(await council_channel.guild._fetch_role(int(role_id)))
+											remove_roles.append(await council_channel.guild._fetch_role(int(role_id)))
+										await target_member.add_roles(add_roles)
+										await target_member.add_roles(remove_roles)
 
 
 
@@ -280,8 +282,6 @@ class ServerCouncil(commands.Cog):
 								if new_voters_str!=old_voters_str:
 									embed.fields[1].value = new_voters_str
 									await message.edit(embed = embed)
-				except Exception as exception:
-					print(exception.__str__())
 
 			print(f'Unused: {unused_names}')
 			for request_name in unused_names:
