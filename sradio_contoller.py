@@ -6,14 +6,12 @@ import typing
 from os import listdir
 import os
 from os.path import join, isfile
-
-import spotdl
 from spotdl.utils import web
 import requests
 import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials, SpotifyOAuth
 from tinytag import TinyTag
-downloader = spotdl.Spotdl(client_id="1a5350b67e5c4715b4ac9ac99e1b4b28",client_secret="2b0a1dc0bb094cabbc4e01cef163e125").downloader
+
 auth_manager = SpotifyClientCredentials(client_id="1a5350b67e5c4715b4ac9ac99e1b4b28",client_secret="2b0a1dc0bb094cabbc4e01cef163e125")
 sp = spotipy.Spotify(auth_manager=auth_manager)
 def get_server_radio(server_id:int) -> typing.List[typing.Dict[str, str]] | None:
@@ -107,7 +105,7 @@ async def playlist_name(url:str) -> typing.Tuple[typing.List[str], typing.List[s
 
 
 async def song_download(song_url: str):
-	path = downloader.download_song(song_url)[1]
+	path = await web.download_url(song_url)
 	shutil.move(path, 'downloaded_songs/')
 	print(path)
 
