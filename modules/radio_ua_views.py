@@ -1,6 +1,5 @@
 import datetime
 import json
-import math
 import typing
 from os import listdir
 from os.path import isfile, join
@@ -23,18 +22,17 @@ with open("other/albums_images_cache.json", 'r') as file:
 class AlbumSongs(discord.ui.View):
 	def __init__(self,  current_play: str, current_album: str, timeout: float | None,
 	             timetable: typing.Dict[str, datetime.datetime], next_cycle_time: datetime.datetime,
-	             cycle_duration: float,radio_url:str, audio_info, *args, **kwargs):
+	             cycle_duration: float,radio_url:str, e_pages=typing.List[discord.Embed], *args, **kwargs):
 		self.cycle_duration = cycle_duration
 		self.next_cycle_time = next_cycle_time
 		self.timetable = timetable
 		self.current_album = current_album
 		self.current_play = current_play
-		self.audio_info: TinyTag = audio_info
 		self.radio_url = radio_url
 		super().__init__(timeout=timeout, *args)
 
 	# Create a class called MyView that subclasses discord.ui.View
-	@discord.ui.button(style=discord.ButtonStyle.gray,
+	@discord.ui.button(label="До обраних", style=discord.ButtonStyle.gray,
 	                   emoji="❤️")  # Create a button with the label "😎 Click me!" with color Blurple
 	async def button_callback2(self, button, interaction: discord.Interaction):
 
@@ -52,7 +50,7 @@ class AlbumSongs(discord.ui.View):
 			ephemeral=True, view=DislikeAlbum(liked_album=self.current_album,
 			                                  timeout=None))  # Send a message when the button is clicked
 
-	@discord.ui.button(style=discord.ButtonStyle.gray,
+	@discord.ui.button(label="Список обраних", style=discord.ButtonStyle.gray,
 	                   emoji="💕")  # Create a button with the label "😎 Click me!" with color Blurple
 	async def button_callback3(self, button, interaction: discord.Interaction):
 
@@ -138,7 +136,7 @@ class AlbumSongs(discord.ui.View):
 		custom_view = DislikeAlbumFromList(pmsg.id, pmsg.channel)
 		await paginator.update(custom_view=custom_view)
 
-	@discord.ui.button(style=discord.ButtonStyle.gray,
+	@discord.ui.button(label="Таймер сну", style=discord.ButtonStyle.gray,
 	                   emoji="🌙")  # Create a button with the label "😎 Click me!" with color Blurple
 	async def button_callback4(self, button, interaction: discord.Interaction):
 		view = SleepTimer()
@@ -156,37 +154,16 @@ class AlbumSongs(discord.ui.View):
 		                          view=view, ephemeral=True)
 
 
-	@discord.ui.button(style=discord.ButtonStyle.gray,
-	                   emoji="❓")  # Create a button with the label "😎 Click me!" with color Blurple
+	@discord.ui.button(label="Зупинити радіо", style=discord.ButtonStyle.gray,
+	                   emoji="⛔")  # Create a button with the label "😎 Click me!" with color Blurple
 	async def button_callback5(self, button, interaction: discord.Interaction):
-		embed_info = discord.Embed(title=self.audio_info.title)
-
-
-		embed_info.add_field(name="⌛ Рік випуску: ",
-		                     value=self.audio_info.year if str(self.audio_info.year) != '1970' else '???')
-		embed_info.add_field(name="💿 Альбом: ",
-		                     value=self.audio_info.album)
-
-		embed_info.add_field(name="⏲️ Тривалість: ",
-		                     value=f"{math.floor(self.audio_info.duration / 60)}m {math.floor(self.audio_info.duration) % 60}s")
-
-		await interaction.respond(embed = embed_info, ephemeral=True)
-
-	@discord.ui.button(style=discord.ButtonStyle.gray,
-	                   emoji="📖")  # Create a button with the label "😎 Click me!" with color Blurple
-	async def button_callback6(self, button, interaction: discord.Interaction):
-		embed_info = discord.Embed(title="SRadio Bot")
-
-
-		embed_info.description="""## Загально
-		> Це радіо бот якого розробив кодер з Хмельницького @optymist
-		> Цей бот вміє грати будь-який плейлист з Spotify 24/7 у будь-якому голосовому каналі
-		
-		## Як запустити радіо на своєму сервері?
-		> 1. Додайте бота на свій сервер (кнопка знизу)
-		> 2. Можете додати свій плейлист командою """
-
-		await interaction.respond(embed = embed_info, ephemeral=True)
+		if interaction.permissions.administrator:
+			await interaction.guild.voice_client.disconnect(force=True)
+			await interaction.respond("Радіо було вимкнено адміністратором",
+		                           ephemeral=True)
+		else:
+			await interaction.respond("Це може зробити лише адміністратор!",
+		                           ephemeral=True)
 
 
 
