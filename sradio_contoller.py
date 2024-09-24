@@ -5,8 +5,6 @@ import typing
 from os import listdir
 import os
 from os.path import join, isfile
-
-import requests
 import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials, SpotifyOAuth
 from tinytag import TinyTag
@@ -87,7 +85,7 @@ async def track_image(url: str):
 		try:
 			returned= sp.track(url.split("/")[-1].split("?")[0])["album"]['images'][0]['url']
 			return returned
-		except Exception as e:
+		except ConnectionError as e:
 			print(f"Error encountered: {e}")
 			print(f"Retrying... (Attempt {retry_count + 1} of {MAX_RETRIES})")
 			retry_count+=1
