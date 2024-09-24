@@ -33,9 +33,6 @@ class SRadio(commands.Cog):  # create a class for our cog that inherits from com
 	                     radio_name: discord.Option(str, autocomplete=discord.utils.basic_autocomplete(get_radios)),
 	                     cycled: discord.Option(bool, required=False) = True
 	                     ):
-
-
-		msg = ctx.respond(embed=discord.Embed(title='load...'))
 		all_radios = sradio_contoller.get_server_radio(ctx.interaction.guild.id)
 		radio_url = ''
 
@@ -57,6 +54,7 @@ class SRadio(commands.Cog):  # create a class for our cog that inherits from com
 			if message.author.id == self.bot.user.id:
 				await message.delete()
 
+		msg = ctx.respond(embed=discord.Embed(title='load...'))
 
 
 		while cycle:
