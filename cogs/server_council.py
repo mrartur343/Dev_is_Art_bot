@@ -80,32 +80,15 @@ class RequestView(discord.ui.View):
 		max_values=1,  # the maximum number of values that can be selected by the users
 		options=[  # the list of options from which users can choose, a required field
 			discord.SelectOption(
-				label="Текстова ідея",
+				label="Ідея",
 				description="Напиши що на твою думку повинна зробити адміністрація!",
 				value='0',
 				emoji='💡'
-			),
-			discord.SelectOption(
-				label="Демократія (скоро)",
-				description="Дострокові вибори, переобрання міністрів, тощо",
-				value='1',
-				emoji='🪧'
-			),
-			discord.SelectOption(
-				label="Ролі й посади (скоро)",
-				description="Додати або забрати роль у людини",
-				value='2',
-				emoji=':triangular_flag_on_post:'
 			)
 		]
 	)
 	async def select_callback(self, select: discord.ui.Select,
 	                          interaction: discord.Interaction):  # the function called when the user is done selecting options
-
-		if select.values[0] in ["1","2"]:
-			await interaction.respond("Ці види пропозицій будуть додані вже скоро!",ephemeral=True)
-
-
 		action = actions[int(select.values[0])]
 
 
@@ -224,7 +207,6 @@ class ServerCouncil(commands.Cog):
 						request_info: Dict[str, Any] = json.loads(file.read())
 
 					start_timestamp= request_info['timestamp']
-					author_id= request_info['author_id']
 					if 'voting' in request_info:
 						del(request_info['voting'])
 						del(request_info['timestamp'])
@@ -237,8 +219,6 @@ class ServerCouncil(commands.Cog):
 					                value=f'<t:{round((datetime.datetime.fromtimestamp(start_timestamp)+datetime.timedelta(seconds=60*60*24)).timestamp())}:R> (<t:{round((datetime.datetime.fromtimestamp(start_timestamp)+datetime.timedelta(seconds=60*60*24)).timestamp())}:d> <t:{round((datetime.datetime.fromtimestamp(start_timestamp)+datetime.timedelta(seconds=60*60*24)).timestamp())}:t>)')
 					embed.add_field(name="Проголосували: ",
 					                value=f'*(ніхто)*')
-					embed.add_field(name="Створив запит: ",
-					                value=f'<@{author_id}>')
 
 					uids_str = ''
 					for member in (await council_channel.guild._fetch_role(council_role_id)).members:
