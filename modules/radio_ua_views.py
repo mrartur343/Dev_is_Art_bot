@@ -84,9 +84,13 @@ class AlbumSongs(discord.ui.View):
 		items_pages = []
 		for album_name in albums_list:
 
+			time_check = False
 
-			album_start_time = dict_timetable[album_name]
-
+			if album_name in dict_timetable:
+				album_start_time = dict_timetable[album_name]
+				time_check = True
+			else:
+				album_start_time = self.next_cycle_time
 
 			audio_info  = TinyTag.get(album_name)
 
@@ -94,8 +98,11 @@ class AlbumSongs(discord.ui.View):
 			n = '\n'
 			items_embed.description = f"❤️ | Цей трек обрали: **{len(album_likes[album_name])}**"
 
-			items_embed.add_field(name=f'Заграє на радіо:', value=f"<t:{round(album_start_time.timestamp())}:f>")
-
+			if time_check:
+				items_embed.add_field(name=f'Заграє на радіо:', value=f"<t:{round(album_start_time.timestamp())}:f>")
+			else:
+				items_embed.add_field(name=f'Заграє на радіо:',
+				                      value=f"~ <t:{round(album_start_time.timestamp())}:f> - <t:{round((album_start_time + datetime.timedelta(seconds=self.cycle_duration)).timestamp())}:f> (Цей альбом заграє вже у наступному циклі, тому час лише приблизний)")
 
 			with open('other/notifications_off.json', 'r') as file:
 				notifications_off: typing.Dict[str, typing.List[str]] = json.loads(file.read())
