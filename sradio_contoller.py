@@ -46,8 +46,7 @@ def get_all_songs_paths() -> typing.Tuple[typing.List[str],typing.List[str]]:
 	with open('other/songs_names_cache.json','r')as file:
 		cache = json.loads(file.read())
 		for f in all_songs_files:
-			if f in cache:
-				all_songs_names.append(cache[f])
+			all_songs_names.append(cache[f])
 
 
 
