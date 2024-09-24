@@ -4,9 +4,9 @@ import sys
 kill_only_alpha = bool(int(sys.argv[1]))
 
 if kill_only_alpha:
-	PROC_NAMES = ["mainRadio.py"]
+	PROC_NAMES = ["mainAlphaRadio.py"]
 else:
-	PROC_NAMES = ["mainRadio.py"]
+	PROC_NAMES = ["mainAlphaRadio.py", "mainRadio.py"]
 
 
 for proc in psutil.process_iter():
