@@ -29,7 +29,7 @@ class RadioPlaylistsView(discord.ui.View):
 	                   emoji="📻")
 	async def button_callback1(self, button, interaction: discord.Interaction):
 
-		radio_name = interaction.message.embeds[0].footer.text
+		radio_name = interaction.message.embeds[0].footer
 
 
 
