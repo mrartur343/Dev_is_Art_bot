@@ -61,8 +61,12 @@ async def radio_play(interaction, general_radio_info_channel, msg_id, bot, cycle
 			songs_names_paths, songs_paths = sradio_contoller.get_all_songs_paths()
 			if not (song_name in songs_names_paths):
 
+				new_downloads_check = True
 
 				await sradio_contoller.song_download(song_url)
+				await asyncio.sleep(3)
+				while not (song_name in songs_names_paths):
+					songs_names_paths, songs_paths = sradio_contoller.get_all_songs_paths()
 
 		for song_name, song_url in zip(songs_names, songs_urls):
 			try:
@@ -79,6 +83,9 @@ async def radio_play(interaction, general_radio_info_channel, msg_id, bot, cycle
 					print(songs_paths)
 
 					await sradio_contoller.song_download(song_url)
+					await asyncio.sleep(3)
+					while not (song_name in songs_names_paths):
+						songs_names_paths, songs_paths = sradio_contoller.get_all_songs_paths()
 
 				album_durations = {}
 				for d_song_path in songs_paths:
