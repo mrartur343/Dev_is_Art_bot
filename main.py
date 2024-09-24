@@ -1,10 +1,9 @@
-import os
 import discord
 from discord.ext import commands
 from cogs import interevents, voting,server_council
 
 
-Token = os.getenv("TOKEN")
+Token = "MTIyMTQwMzcwMDExNTgwMDE2NA.G-wjCw.gsVwNQwPKVbsELllSMGQwLy36iPeBbN-AnEEUI"
 TestToken = "MTI0MTQwMTg0NTU4NzM3ODIzNw.G_1Lg6.j_rEXnLx7lSV1-eM5VnaxfwNYPMHQ9iNhRrq3Q"
 
 intents: discord.Intents = discord.Intents.all()
