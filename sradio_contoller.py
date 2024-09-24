@@ -1,7 +1,6 @@
 import asyncio
 import json
 import os.path
-import shutil
 import typing
 from os import listdir
 import os
@@ -105,9 +104,9 @@ async def playlist_name(url:str) -> typing.Tuple[typing.List[str], typing.List[s
 
 
 async def song_download(song_url: str):
-	path = await web.download_url(song_url)
-	shutil.move(path, 'downloaded_songs/')
-	print(path)
+	await web.download_url(song_url)
+def songs_downloads(radio_url: str):
+	os.system(f"ls;cd downloaded_songs;spotdl download {radio_url} --port 2099 --threads 20")
 
 async def playlist_image(url: str):
 	MAX_RETRIES=15
