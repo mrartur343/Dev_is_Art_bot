@@ -31,6 +31,111 @@ class AlbumSongs(discord.ui.View):
 
 	# Create a class called MyView that subclasses discord.ui.View
 
+	@discord.ui.button(label="До обраних", style=discord.ButtonStyle.gray,
+	                   emoji="❤️")  # Create a button with the label "😎 Click me!" with color Blurple
+	async def button_callback2(self, button, interaction: discord.Interaction):
+
+		album_likes = {}
+		with open("other/album_likes.json", 'r') as file:
+			album_likes = json.loads(file.read())
+		if not self.current_album in album_likes:
+			album_likes[self.current_album]=[]
+		if not interaction.user.id in album_likes[self.current_album]:
+			album_likes[self.current_album].append(interaction.user.id)
+		with open("other/album_likes.json", 'w') as file:
+			json.dump(album_likes, file)
+		await interaction.response.send_message(
+			f"Успішно додано альбом до ваших обраних, тепер вам буде приходити оповіщення за деякий час до початку цього альбому!",
+			ephemeral=True, view=DislikeAlbum(liked_album=self.current_album,
+			                                  timeout=None))  # Send a message when the button is clicked
+
+	@discord.ui.button(label="Список обраних", style=discord.ButtonStyle.gray,
+	                   emoji="💕")  # Create a button with the label "😎 Click me!" with color Blurple
+	async def button_callback3(self, button, interaction: discord.Interaction):
+
+		album_likes = {}
+		with open("other/album_likes.json", 'r') as file:
+			album_likes = json.loads(file.read())
+		with open('other/albums_data.json', 'r') as file:
+			album_data_json = json.loads(file.read())
+		albums_names = {}
+		for short_name, info in album_data_json.items():
+			albums_names[short_name] = info[0]
+		albums_list = []
+
+		for album_name, members in album_likes.items():
+			if interaction.user.id in members:
+				albums_list.append(album_name)
+
+		dict_timetable = {}
+		for line in self.timetable:
+			if not line[0] in dict_timetable:
+				dict_timetable[line[0]] = line[1]
+
+		def sort_albums(album_key):
+			if album_key in dict_timetable:
+				return dict_timetable[album_key].timestamp()
+			else:
+				return 9999999999
+
+		albums_list.sort(key=sort_albums)
+		items_pages = []
+		for album_name in albums_list:
+
+			time_check = False
+
+			if album_name in dict_timetable:
+				album_start_time = dict_timetable[album_name]
+				time_check = True
+			else:
+				album_start_time = self.next_cycle_time
+
+			items_embed = discord.Embed(title=albums_names[album_name])
+			n = '\n'
+			items_embed.description = f"❤️ | Цей альбом обрали: **{len(album_likes[album_name])}**"
+
+			if time_check:
+				items_embed.add_field(name=f'Заграє на радіо:', value=f"<t:{round(album_start_time.timestamp())}:f>")
+			else:
+				items_embed.add_field(name=f'Заграє на радіо:',
+				                      value=f"~ <t:{round(album_start_time.timestamp())}:f> - <t:{round((album_start_time + datetime.timedelta(seconds=self.cycle_duration)).timestamp())}:f> (Цей альбом заграє вже у наступному циклі, тому час лише приблизний)")
+
+			with open('other/notifications_off.json', 'r') as file:
+				notifications_off: typing.Dict[str, typing.List[str]] = json.loads(file.read())
+				if str(interaction.user.id) in notifications_off:
+					if album_name in notifications_off[str(interaction.user.id)]:
+						items_embed.add_field(name='Сповіщення про увімкнення:', value='🌙 Вимкнуто')
+					else:
+						items_embed.add_field(name='Сповіщення про увімкнення:', value='🔔 Увімкнуто')
+				else:
+					items_embed.add_field(name='Сповіщення про увімкнення:', value='🔔 Увімкнуто')
+
+			if album_name in albums_images_cache:
+				items_embed.set_image(url=albums_images_cache[album_name])
+			items_embed.set_footer(text=album_name)
+
+			items_pages.append(items_embed)
+
+		buttons = [
+			pages.PaginatorButton("first", label="<<-", style=discord.ButtonStyle.green),
+			pages.PaginatorButton("prev", label="<-", style=discord.ButtonStyle.green),
+			pages.PaginatorButton("page_indicator", style=discord.ButtonStyle.gray, disabled=True),
+			pages.PaginatorButton("next", label="->", style=discord.ButtonStyle.green),
+			pages.PaginatorButton("last", label="->>", style=discord.ButtonStyle.green),
+		]
+
+		paginator: pages.Paginator = pages.Paginator(
+			pages=items_pages,
+			show_indicator=True,
+			use_default_buttons=False,
+			custom_buttons=buttons
+
+		)
+
+		pmsg = await paginator.respond(interaction, ephemeral=True)
+		custom_view = DislikeAlbumFromList(pmsg.id, pmsg.channel)
+		await paginator.update(custom_view=custom_view)
+
 	@discord.ui.button(label="Таймер сну", style=discord.ButtonStyle.gray,
 	                   emoji="🌙")  # Create a button with the label "😎 Click me!" with color Blurple
 	async def button_callback4(self, button, interaction: discord.Interaction):
