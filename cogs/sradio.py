@@ -34,11 +34,8 @@ class SRadio(commands.Cog):  # create a class for our cog that inherits from com
 	                     cycled: discord.Option(bool, required=False) = True
 	                     ):
 		all_radios = sradio_contoller.get_server_radio(ctx.interaction.guild.id)
-		radio_url = ''
 
-		for rn, rl in all_radios:
-			if rn == radio_name:
-				radio_url=rl
+		radio_url = jmespath.search(f'[?name == "{radio_name}"].url', all_radios)
 
 		radio_queue = sradio_contoller.get_songs(radio_url)
 
