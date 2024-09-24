@@ -136,8 +136,6 @@ class ServerCouncil(commands.Cog):
 								timestamp: int = json.loads(file.read())['timestamp']
 							with open(f'server_requests/{embed.title}.json', 'r') as file:
 								voting: Dict[str, bool | None] = json.loads(file.read())['voting']
-							with open(f'server_requests/{embed.title}.json', 'r') as file:
-								comment: str = json.loads(file.read())['comment']
 							if ((datetime.datetime.now() - datetime.datetime.fromtimestamp(timestamp)).seconds>=60*60*24) or not (None in voting.values()):
 
 
@@ -160,19 +158,19 @@ class ServerCouncil(commands.Cog):
 									                           f"❌ Пропозицію не прийнято\n"
 									                           f"> - {y} - Підтримали\n"
 									                           f"> - {n} - Не підтримали\n"
-									                           f"> - {h} - Утримались", embed=discord.Embed(title=embed.title,description=comment))
+									                           f"> - {h} - Утримались")
 								elif y>n:
 									await council_channel.send(f"Голосування по запиту {embed.title} завершилось прийняттям\n\n"
 									                           f"✅ Пропозицію прийнято\n"
 									                           f"> - {y} - Підтримали\n"
 									                           f"> - {n} - Не підтримали\n"
-									                           f"> - {h} - Утримались", embed=discord.Embed(title=embed.title,description=comment))
+									                           f"> - {h} - Утримались")
 								elif n>y:
 									await council_channel.send(f"Голосування по запиту {embed.title} завершилось не прийняттям\n\n"
 									                           f"❌ Пропозицію не прийнято\n"
 									                           f"> - {y} - Підтримали\n"
 									                           f"> - {n} - Не підтримали\n"
-									                           f"> - {h} - Утримались", embed=discord.Embed(title=embed.title,description=comment))
+									                           f"> - {h} - Утримались")
 
 								await message.delete()
 								os.replace(f'server_requests/{embed.title}.json',f'ended_requests/{embed.title}.json')
