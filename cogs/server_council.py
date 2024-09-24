@@ -33,19 +33,19 @@ class VoteView(discord.ui.View):
 			discord.SelectOption(
 				label="Підтримати",
 				description="Проголосувати за пропозицію",
-				value='1',
+				value='y',
 				emoji='✅'
 			),
 			discord.SelectOption(
 				label="Не підтримати",
 				description="Проголосувати проти пропозиції",
-				value='2',
+				value='n',
 				emoji='⛔'
 			),
 			discord.SelectOption(
 				label="Утриматись",
 				description="Не голосувати. Значення за замовчуванням",
-				value='3',
+				value='h',
 				emoji='😴'
 			)
 		]
@@ -55,16 +55,15 @@ class VoteView(discord.ui.View):
 		with open(f'server_requests/{self.request_name}.json', 'r') as file:
 			request_info = json.loads(file.read())
 
-		s = int(select.values[0])
+		s = select.values[0]
 
 		if str(interaction.user.id) in request_info['voting'].keys():
-			request_info['voting'][str(interaction.user.id)] = s
+			request_info['voting'][str(interaction.user.id)]= True if s=='y' else (False if s=='n' else None)
+
+			await interaction.respond(f"Ваш вибір {'погодитись' if s=='y' else ('не погодитись' if s=='n' else 'утриматись')} буде враховано!", ephemeral= True)
 
 			with open(f'server_requests/{self.request_name}.json', 'w') as file:
 				json.dump(request_info, file)
-
-			await interaction.respond(f"Ваш вибір {'погодитись' if s==1 else ('не погодитись' if s==2 else 'утриматись')} буде враховано!", ephemeral= True)
-
 		else:
 			await interaction.respond(f"Вас немає у раді серверу!", ephemeral= True)
 
@@ -153,7 +152,7 @@ class ServerCouncil(commands.Cog):
 							with open(f'server_requests/{embed.title}.json', 'r') as file:
 								timestamp: int = json.loads(file.read())['timestamp']
 							with open(f'server_requests/{embed.title}.json', 'r') as file:
-								voting: Dict[str, int] = json.loads(file.read())['voting']
+								voting: Dict[str, bool | None] = json.loads(file.read())['voting']
 							with open(f'server_requests/{embed.title}.json', 'r') as file:
 								comment: str = json.loads(file.read())['comment']
 							if ((datetime.datetime.now() - datetime.datetime.fromtimestamp(timestamp)).seconds>=60*60*24) or (not (None in voting.values())):
@@ -163,16 +162,13 @@ class ServerCouncil(commands.Cog):
 								y = 0
 								n = 0
 								h = 0
-								d = 0
 								for v in voting.values():
-									if v == 1:
+									if v is True:
 										y+=1
-									elif v == 2:
+									elif v is False:
 										n+=1
-									elif v == 3:
-										h += 1
 									else:
-										d += 1
+										h +=1
 
 
 
@@ -181,33 +177,30 @@ class ServerCouncil(commands.Cog):
 									                           f"❌ Пропозицію не прийнято\n"
 									                           f"> - {y} - Підтримали\n"
 									                           f"> - {n} - Не підтримали\n"
-									                           f"> - {h} - Утримались\n"
-									                           f"> - {d} - Не проголосували", embed=discord.Embed(title=embed.title,description=comment, colour=discord.Colour.from_rgb(79,84,92)))
+									                           f"> - {h} - Утримались", embed=discord.Embed(title=embed.title,description=comment, colour=discord.Colour.from_rgb(79,84,92)))
 								elif y>n:
 									await council_channel.send(f"Голосування по запиту {embed.title} завершилось прийняттям\n\n"
 									                           f"✅ Пропозицію прийнято\n"
 									                           f"> - {y} - Підтримали\n"
 									                           f"> - {n} - Не підтримали\n"
-									                           f"> - {h} - Утримались\n"
-									                           f"> - {d} - Не проголосували", embed=discord.Embed(title=embed.title,description=comment, colour=discord.Colour.from_rgb(79,84,92)))
+									                           f"> - {h} - Утримались", embed=discord.Embed(title=embed.title,description=comment, colour=discord.Colour.from_rgb(79,84,92)))
 								elif n>y:
 									await council_channel.send(f"Голосування по запиту {embed.title} завершилось не прийняттям\n\n"
 									                           f"❌ Пропозицію не прийнято\n"
 									                           f"> - {y} - Підтримали\n"
 									                           f"> - {n} - Не підтримали\n"
-									                           f"> - {h} - Утримались\n"
-									                           f"> - {d} - Не проголосували", embed=discord.Embed(title=embed.title,description=comment, colour=discord.Colour.from_rgb(79,84,92)))
+									                           f"> - {h} - Утримались", embed=discord.Embed(title=embed.title,description=comment, colour=discord.Colour.from_rgb(79,84,92)))
 
 								await message.delete()
 								os.replace(f'server_requests/{embed.title}.json',f'ended_requests/{embed.title}.json')
 							else:
 								with open(f'server_requests/{embed.title}.json', 'r') as file:
-									voting: Dict[str,int] = json.loads(file.read())['voting']
+									voting: Dict[str,bool|None] = json.loads(file.read())['voting']
 
 								voters = []
 
 								for k, v in voting.items():
-									if v!=0:
+									if not v is None:
 										voters.append(int(k))
 
 								old_voters_str = embed.fields[1].value
