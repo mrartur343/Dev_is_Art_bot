@@ -34,9 +34,7 @@ class RadioPlaylistsView(discord.ui.View):
 
 		radio_name = interaction.message.embeds[0].footer.text
 
-		int_channel:discord.TextChannel = interaction.channel
-		await interaction.respond(embed=discord.Embed(title='Радіо вмикається'))
-		msg = await int_channel.send(embed=discord.Embed(title='load...'))
+		msg: discord.InteractionMessage = await ((await interaction.respond(embed=discord.Embed(title='load...'))).original_message)
 
 
 
