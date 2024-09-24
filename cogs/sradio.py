@@ -27,8 +27,7 @@ class RadioPlaylistsView(discord.ui.View):
 
 	@discord.ui.button(label="Грати радіо", style=discord.ButtonStyle.gray,
 	                   emoji="📻")
-	async def button_callback1(self, button:discord.ui.Button, interaction: discord.Interaction):
-		await interaction.delete_original_message
+	async def button_callback1(self, button, interaction: discord.Interaction):
 
 		radio_name = interaction.message.embeds[0].footer.text
 
@@ -69,10 +68,12 @@ class RadioPlaylistsView(discord.ui.View):
 				if not (song_name in songs_names_paths):
 					print(songs_paths)
 
+					await interaction.channel.send('Зачекайте, не всі треки з плейлиста були завантажені...')
 					sradio_contoller.songs_download(radio_url)
 					await asyncio.sleep(3)
 					while not (song_name in songs_names_paths):
 						songs_names_paths,songs_paths = sradio_contoller.get_all_songs_paths()
+				await interaction.channel.send('Плейлист було дозавантажено!')
 				print("Плейлист було дозавантажено")
 
 				album_durations = {}
