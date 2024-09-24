@@ -344,7 +344,7 @@ class RadioPlaylistsView(discord.ui.View):
 	                   emoji="📻")
 	async def button_callback1(self, button: discord.ui.Button, interaction: discord.Interaction):
 
-		asyncio.run(radio_play(interaction,self.general_radio_info_channel,self.msg_id,self.bot,self.cycled,self.voice_channel))
+		await self.bot.loop.create_task(radio_play(interaction,self.general_radio_info_channel,self.msg_id,self.bot,self.cycled,self.voice_channel))
 		await interaction.respond(embed=discord.Embed(
 			title='Увімкнення радіо може зайняти деякий час, необхідно завантажити всі треки локально'), ephemeral=True)
 
