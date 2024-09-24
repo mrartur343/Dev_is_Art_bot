@@ -185,8 +185,9 @@ class RadioPlaylistsView(discord.ui.View):
 
 				img.save('b_line.png')
 
-				discord.File("b_line.png", filename="b_line.png")
-				line_img_url = "attachment://b_line.png"
+				file = discord.File(fp='b_line.png')
+				imgmsg = await admin_logs.send(content=".", file=file)
+				line_img_url = imgmsg.attachments[0].url
 
 
 				timetable = radio_timetable.get_album_times2(songs_names,
