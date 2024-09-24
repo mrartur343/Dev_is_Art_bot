@@ -107,7 +107,6 @@ async def playlist_name(url:str) -> typing.Tuple[typing.List[str], typing.List[s
 
 
 async def song_download(song_url: str):
-	print(song_url)
 	path = downloader.download_song(song_url)[1]
 	shutil.move(path, 'downloaded_songs/')
 	print(path)
