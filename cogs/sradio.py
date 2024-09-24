@@ -50,11 +50,11 @@ class SRadio(commands.Cog):  # create a class for our cog that inherits from com
 		if ctx_voice_channel is None:
 			return
 
-		async for message in ctx.channel.history():
+		async for message in ctx_voice_channel.history():
 			if message.author.id == self.bot.user.id:
 				await message.delete()
 
-		msg = ctx.respond(embed=discord.Embed(title='load...'))
+		msg = ctx_voice_channel.send(embed=discord.Embed(title='load...'))
 
 
 		while cycle:
@@ -66,11 +66,9 @@ class SRadio(commands.Cog):  # create a class for our cog that inherits from com
 				actual_songs_paths = sradio_contoller.get_all_songs_paths()
 
 				while not (song_name in jmespath.search('[*][0]', actual_songs_paths)):
-					await ctx.channel.send('Зачекайте, не всі треки з плейлиста були завантажені...')
-					sradio_contoller.songs_download(radio_url)
+					sradio_contoller.song_download(song_url)
 					await asyncio.sleep(3)
 					actual_songs_paths = sradio_contoller.get_all_songs_paths()
-				await ctx.channel.send('Плейлист було дозавантажено!')
 
 				album_durations = {}
 				for d_song_path in jmespath.search('[*][1]', actual_songs_paths):
@@ -197,8 +195,6 @@ class SRadio(commands.Cog):  # create a class for our cog that inherits from com
 					'options': f'-vn -b:a 320k -ss {round(time.time() - waiting_start_time)}'}
 				audio_source = discord.FFmpegPCMAudio(song_path,
 				                                      **FFMPEG_OPTIONS)
-
-
 				await vc.play(audio_source,wait_finish=True)
 
 
