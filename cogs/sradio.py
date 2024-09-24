@@ -32,6 +32,8 @@ class RadioPlaylistsView(discord.ui.View):
 
 		radio_name = interaction.message.embeds[0].footer.text
 
+		await interaction.delete_original_message
+
 		msg = await interaction.respond(embed=discord.Embed(title='load...'))
 
 
@@ -244,7 +246,7 @@ class SRadio(commands.Cog):  # create a class for our cog that inherits from com
 			timeout=899
 		)
 
-		pmsg = await paginator.respond(ctx.interaction,ephemeral=True)
+		pmsg = await paginator.respond(ctx.interaction)
 		custom_v =RadioPlaylistsView(pmsg.channel,pmsg.id,self.bot,cycled,voice_channel)
 
 		await paginator.update(pages=embeds,custom_view=custom_v)
