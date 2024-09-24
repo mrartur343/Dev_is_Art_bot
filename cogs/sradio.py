@@ -49,7 +49,7 @@ class RadioPlaylistsView(discord.ui.View):
 
 		radio_queue = sradio_contoller.get_songs(radio_url)
 
-		print(list(radio_queue))
+		print(radio_queue)
 
 		cycle = True
 
