@@ -11,12 +11,12 @@ class VoteView(discord.ui.View): # Create a class called MyView that subclasses 
 	@discord.ui.button(label="Міша @abemys_5272", style=discord.ButtonStyle.blurple) # Create a button with the label "😎 Click me!" with color Blurple
 	async def button_callback(self, button, interaction: discord.Interaction):
 		vote_systems.vote(interaction.user.id, 0)
-		await interaction.respond("Ви проголосували за Міша <@965216192530890853>, якщо ви передумали то просто виберіть інший варіант.",ephemeral=True) # Send a message when the button is clicked
+		await interaction.respond("Ви проголосували за Міша @abemys_5272, якщо ви передумали то просто виберіть інший варіант.",ephemeral=True) # Send a message when the button is clicked
 
 	@discord.ui.button(label="Плашка @playushki", style=discord.ButtonStyle.red) # Create a button with the label "😎 Click me!" with color Blurple
 	async def button_callback2(self, button, interaction: discord.Interaction):
 		vote_systems.vote(interaction.user.id, 1)
-		await interaction.respond("Ви проголосували за Плашка <@654019681534869505>, якщо ви передумали то просто виберіть інший варіант.",ephemeral=True) # Send a message when the button is clicked
+		await interaction.respond("Ви проголосували за Плашка @playushki, якщо ви передумали то просто виберіть інший варіант.",ephemeral=True) # Send a message when the button is clicked
 
 
 class VoteSystem(commands.Cog):  # create a class for our cog that inherits from commands.Cog
@@ -33,8 +33,8 @@ class VoteSystem(commands.Cog):  # create a class for our cog that inherits from
 	async def start_vote(self, ctx:discord.ApplicationContext):
 		embed = discord.Embed(title='Другий тур виборів')
 		embed.description = ("Ось й починається другий тур виборів президента серверу. Оберіть 1 з 2 кандидатів:"
-		                     "\n> <:femboy:1263597372013809757> Міша <@965216192530890853>"
-		                     "\n> <:zIg:1263980733219868852> Плашка <@654019681534869505>")
+		                     "\n> :femboy: Міша @abemys_5272"
+		                     "\n> :zIg: Плашка @playushki")
 		embed.colour = discord.Colour.purple()
 		await ctx.respond(embed=embed,view=VoteView())
 
@@ -51,8 +51,8 @@ class VoteSystem(commands.Cog):  # create a class for our cog that inherits from
 		else:
 			v1=0
 		embed = discord.Embed(title='Обрано президента серверу!' if v0!=v1 else 'Сталась неочікувана ситуація')
-		embed.description = (f"> <:femboy:1263597372013809757> Міша <@965216192530890853> {round((v0/(v0+v1))*100)}%"
-		                     f"\n> <:zIg:1263980733219868852> Плашка <@654019681534869505> {round((v1/(v0+v1))*100)}%")
+		embed.description = (f"> :femboy: Міша @abemys_5272 {round((v0/(v0+v1))*100)}%"
+		                     f"\n> :zIg: Плашка @playushki {round((v1/(v0+v1))*100)}%")
 		embed.colour = discord.Colour.purple()
 		await ctx.respond(embed=embed)
 
