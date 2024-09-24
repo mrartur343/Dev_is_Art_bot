@@ -157,7 +157,7 @@ class AlbumSongs(discord.ui.View):
 
 
 	@discord.ui.button(style=discord.ButtonStyle.gray,
-	                   emoji="🎶")  # Create a button with the label "😎 Click me!" with color Blurple
+	                   emoji="❓")  # Create a button with the label "😎 Click me!" with color Blurple
 	async def button_callback5(self, button, interaction: discord.Interaction):
 		embed_info = discord.Embed(title=self.audio_info.title)
 
@@ -173,7 +173,7 @@ class AlbumSongs(discord.ui.View):
 		await interaction.respond(embed = embed_info, ephemeral=True)
 
 	@discord.ui.button(style=discord.ButtonStyle.gray,
-	                   emoji="ℹ️")  # Create a button with the label "😎 Click me!" with color Blurple
+	                   emoji="📖")  # Create a button with the label "😎 Click me!" with color Blurple
 	async def button_callback6(self, button, interaction: discord.Interaction):
 		embed_info = discord.Embed(title="SRadio Bot")
 
@@ -182,25 +182,11 @@ class AlbumSongs(discord.ui.View):
 		> Це радіо бот якого розробив кодер з Хмельницького @optymist
 		> Цей бот вміє грати будь-який плейлист з Spotify 24/7 у будь-якому голосовому каналі
 		
-		## Як додати свій плейлист на сервер?
+		## Як запустити радіо на своєму сервері?
 		> 1. Додайте бота на свій сервер (кнопка знизу)
-		> 2. Можете додати свій плейлист на сервер командою </add:1250847016305557624>
-		> 3. Готово! Ви додали новий плейлист на сервер, нижче описано як його запустити
-		
-		## Як увімкнути радіо?
-		> 1. Командою </play:1250120238716944576> виберіть голосовий канал
-		> 2. Виберіть плейлист який буде грати у вибраному голосовому каналі
-		> 3. Готово! Після дозавантаження необхідних треків радіо увімкнеться!
-		
-		
-		## Кнопки
-		> ❤️ - Уподобати пісню (будуть приходити сповіщення за деякий час до початку цього трека на будь-якому радіо)
-		> 💕 - Уподобані треки
-		> 🌙 - Таймер сну
-		> 🎶 - Детальніше про трек що зараз грає
-		> ℹ️ - Документація"""
+		> 2. Можете додати свій плейлист командою """
 
-		await interaction.respond(embed = embed_info, ephemeral=True, view=discord.ui.View(discord.ui.Button(label='Запросити бота на сервер', url='https://discord.com/oauth2/authorize?client_id=1221403700115800164', style=discord.ButtonStyle.url)))
+		await interaction.respond(embed = embed_info, ephemeral=True)
 
 
 
