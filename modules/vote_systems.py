@@ -1,8 +1,7 @@
 import json
-from typing import Tuple, List
 
 
-def vote(vid: int, choice: List[int]):
+def vote(vid: int, choice: int):
 	with open('data/vote.json', 'r') as file:
 		votes = json.loads(file.read())
 
@@ -19,10 +18,9 @@ def calculate_voices():
 	choices = {}
 
 	for k, v in votes.items():
-		for v2 in v:
-			if not (v2 in choices):
-				choices[v2] = 1
-			else:
-				choices[v2] += 1
+		if not (v in choices):
+			choices[v] = 1
+		else:
+			choices[v] += 1
 
 	return choices
