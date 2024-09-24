@@ -44,7 +44,6 @@ class RadioPlaylistsView(discord.ui.View):
 		first_play=True
 
 
-
 		while cycle:
 
 			all_radios = sradio_contoller.get_server_radio(interaction.guild.id)
@@ -56,9 +55,8 @@ class RadioPlaylistsView(discord.ui.View):
 			for radio in all_radios:
 				if radio['name'] == radio_name:
 					radio_url = radio['link']
-			radio_image = await sradio_contoller.playlist_image(radio_url)
 
-			songs_names, songs_urls = await sradio_contoller.get_songs(radio_url)
+			songs_names, songs_urls = sradio_contoller.get_songs(radio_url)
 
 
 
@@ -148,11 +146,7 @@ class RadioPlaylistsView(discord.ui.View):
 				embed_info = discord.Embed(title='Зараз грає:',
 				                           color=discord.Color.from_rgb(r=dcolor[0], g=dcolor[1],
 				                                                        b=dcolor[2]))
-				track_image = await (sradio_contoller.track_image(song_url))
-				if track_image is None:
-					track_image = radio_image
-				if not (track_image is None):
-					embed_info.set_thumbnail(url=track_image)
+				embed_info.set_thumbnail(url=sradio_contoller.track_image(song_url))
 
 				embed_info.add_field(name="🎵 Назва:", value=audio_info.title)
 				embed_info.add_field(name="🧑‍🎤 Виконавець: ", value=audio_info.artist)
@@ -282,9 +276,7 @@ class SRadio(commands.Cog):  # create a class for our cog that inherits from com
 		for radio in server_radios:
 			embed = discord.Embed(title=radio['name'])
 			embed.url =radio['link']
-			playlist_image = await sradio_contoller.playlist_image(radio['link'])
-			if not (playlist_image is None):
-				embed.set_image(url = playlist_image)
+			embed.set_image(url = sradio_contoller.playlist_image(radio['link']))
 			embeds.append(embed)
 
 		paginator = pages.Paginator(
@@ -306,9 +298,7 @@ class SRadio(commands.Cog):  # create a class for our cog that inherits from com
 		for radio in server_radios:
 			embed = discord.Embed(title=radio['name'])
 			embed.url =radio['link']
-			playlist_image = await sradio_contoller.playlist_image(radio['link'])
-			if not (playlist_image is None):
-				embed.set_image(url = playlist_image)
+			embed.set_image(url = sradio_contoller.playlist_image(radio['link']))
 			embeds.append(embed)
 
 		paginator = pages.Paginator(
