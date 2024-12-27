@@ -4,7 +4,7 @@ from discord.ext import commands
 from cogs import interevents, voting,server_council
 
 
-Token = os.getenv("TOKEN")
+Token = os.environ.get("Token")
 
 intents: discord.Intents = discord.Intents.all()
 

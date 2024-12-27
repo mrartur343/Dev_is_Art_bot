@@ -19,9 +19,11 @@ actions: List[Tuple[discord.Embed, Type[object]]] = [
 
 
 
-council_role_id = 1249713455787671583
+council_role_id = 1321571484401012797
 
+not_asignable_roles = [1321571484401012797, 1321575209785888875]
 
+council_channel_id = 1321571020838014997
 
 class VoteView(discord.ui.View):
 	def __init__(self, request_name, *args, **kwargs):
@@ -125,7 +127,7 @@ class RequestView(discord.ui.View):
 			role_i = 0
 			roles_nums = {}
 			for role in await interaction.guild.fetch_roles():
-				if role.id in [1249713455787671583,1249711571798720512,1208129686031310850,1208129686031310849] or not (role.is_assignable()):
+				if role.id in not_asignable_roles or not (role.is_assignable()):
 					continue
 				roles_str+=f'\n{role_i} - <@&{role.id}>'
 				roles_nums[role_i]=role.id
@@ -144,7 +146,7 @@ class ServerCouncil(commands.Cog):
 
 	@commands.Cog.listener()
 	async def on_ready(self):
-		council_channel = self.bot.get_channel(1247198900775944202)
+		council_channel = self.bot.get_channel(council_channel_id)
 
 
 		council_messages = await council_channel.history(limit=1000).flatten()
@@ -355,7 +357,7 @@ class ServerCouncil(commands.Cog):
 
 
 
-		if ctx.guild.id == 1208129686031310848:
+		if ctx.guild.id == 1321561629955194961:
 	
 			server_council_ids = []
 	
