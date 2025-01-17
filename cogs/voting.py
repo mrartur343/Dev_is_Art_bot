@@ -5,8 +5,8 @@ from modules import vote_systems
 
 
 
-vote_embed = discord.Embed(title='Вибори у раду (Другий тур)')
-vote_embed.description = ("Виберіть 1 кандидата, вибір можна змінити, неможна голосувати кандидатам")
+vote_embed = discord.Embed(title='Вибори ради I тур')
+vote_embed.description = ("Виберіть 2 кандидатів, вибір можна змінити, неможна голосувати за себе")
 vote_embed.colour = discord.Colour.purple()
 vote_embed.set_image(
 	url='https://cdn.discordapp.com/attachments/1208129686572638214/1267213123555823777/9.png?ex=66a7f7b0&is=66a6a630&hm=d420ac2dab972e393c8663a70dbe3c348990300d3838f67ac12ad7230daaba77&')
@@ -14,25 +14,55 @@ vote_embed.set_image(
 
 class VotingMenu(discord.ui.View):
 	@discord.ui.select( # the decorator that lets you specify the properties of the select menu
-		placeholder = "Виберіть 1 людину", # the placeholder text that will be displayed if nothing is selected
-		min_values = 1, # the minimum number of values that must be selected by the users
-		max_values = 1, # the maximum number of values that can be selected by the users
+		placeholder = "Виберіть 2 людини", # the placeholder text that will be displayed if nothing is selected
+		min_values = 2, # the minimum number of values that must be selected by the users
+		max_values = 2, # the maximum number of values that can be selected by the users
 		custom_id='s',
 		options = [ # the list of options from which users can choose, a required field
 			discord.SelectOption(
-				label="@optymist",
-				description="Партія #newdevisart",
+				label="0. @abemys_5272",
+				description="С.О.Л.О. (лівий)",
 				value="0"
 			),
 			discord.SelectOption(
-				label="@cap_banana",
-				description="Коаліція z.I.g",
+				label="1. @q7d19b_",
+				description="Націонал-демократична партія (правий)",
 				value="1"
 			),
 			discord.SelectOption(
-				label="@playushki",
-				description="Коаліція z.I.g",
+				label="2. @.rykhart",
+				description="Націонал-демократична партія (правий)",
 				value="2"
+			),
+			discord.SelectOption(
+				label="3. @yanekyz",
+				description="Націонал-демократична партія (праий)",
+				value="3"
+			),
+			discord.SelectOption(
+				label="4. @.d.k._",
+				description="Націонал-демократична партія (центрист)",
+				value="4"
+			),
+			discord.SelectOption(
+				label="5. @jjhjahd69",
+				description="Вітряна гвардія (правий)",
+				value="5"
+			),
+			discord.SelectOption(
+				label="6. @redwolf_ua",
+				description="Вітряна гвардія (правий)",
+				value="6"
+			),
+			discord.SelectOption(
+				label="7. @ukrainetop",
+				description="Вітряна гвардія (правий)",
+				value="7"
+			),
+			discord.SelectOption(
+				label="8. @jyemuksya",
+				description="Вітряна гвардія (правий)",
+				value="8"
 			)
 		]
 	)
@@ -40,20 +70,26 @@ class VotingMenu(discord.ui.View):
 		selected_str = ''
 
 		council_select_ids = [
-		658217734814957578,
-		654019681534869505,
-		767783132031352884]
+			965216192530890853,
+			1154105417283150034,
+			950516894102855721,
+			1014161256019664977,
+			670639885433962496,
+			820635779721986150,
+			736910435747364866,
+			821004404664172596,
+			508322094673690655
+		]
 
-
-		if interaction.user.id in council_select_ids:
-			await interaction.respond(f"Кандидати немають права голосувати", ephemeral=True)
-			return
 
 
 		choices_int = [int(select.values[0])]
 
 		for ch in choices_int:
 			selected_str += f"\n- <@{council_select_ids[ch]}>"
+			if council_select_ids[ch] == interaction.user.id:
+				await interaction.respond('Неможливо проголосувати за себе', ephermal=True)
+				return
 		else:
 			vote_systems.vote(interaction.user.id, choices_int)
 
@@ -92,19 +128,25 @@ class VoteSystem(commands.Cog):  # create a class for our cog that inherits from
 
 		voice_num= []
 
-		for i in range(3):
+		for i in range(9):
 			if not (i in voices):
 				voices[i]=0
 			voice_num.append(voices[i])
 
 		total_voices = sum(voice_num)
 
-
-		embed = discord.Embed(title='Дообрано третього радника серверу!')
+		embed = discord.Embed(title='Обрано 2 радників серверу! Президент та рада можуть розпочинати свою діяльність')
 		embed.description = (
-							 f"> <@658217734814957578> {round((voice_num[0]/total_voices)*100)}%"
-							 f"\n> <@654019681534869505> {round((voice_num[1]/total_voices)*100)}%"
-							 f"\n> <@767783132031352884> {round((voice_num[2]/total_voices)*100)}%")
+							 f"> <@965216192530890853> {round((voice_num[0]/total_voices)*100)}%"
+							 f"\n> <@1154105417283150034> {round((voice_num[1]/total_voices)*100)}%"
+							 f"\n> <@950516894102855721> {round((voice_num[2]/total_voices)*100)}%"
+							 f"\n> <@1014161256019664977> {round((voice_num[3] / total_voices) * 100)}%"
+							 f"\n> <@670639885433962496> {round((voice_num[4] / total_voices) * 100)}%"
+							 f"\n> <@820635779721986150> {round((voice_num[5] / total_voices) * 100)}%"
+							 f"\n> <@736910435747364866> {round((voice_num[6] / total_voices) * 100)}%"
+							 f"\n> <@821004404664172596> {round((voice_num[7] / total_voices) * 100)}%"
+							 f"\n> <@508322094673690655> {round((voice_num[8] / total_voices) * 100)}%")
+
 		embed.colour = discord.Colour.purple()
 		await ctx.respond(embed=embed)
 

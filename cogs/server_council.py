@@ -341,15 +341,6 @@ class ServerCouncil(commands.Cog):
 			except Exception as e:
 				with open(f'ERROR_LOG_{round(datetime.datetime.now().timestamp())}.json', 'w') as file:
 					json.dump(['Error in cycle start', e.__str__(), datetime.datetime.now().strftime("%c")],file)
-	@discord.slash_command()  # we can also add application commands
-	@commands.has_permissions(administrator=True)
-	async def clean(self, ctx: discord.ApplicationContext, num: int):
-		await ctx.defer()
-		messages = await ctx.channel.history(limit=num).flatten()
-		for m in messages:
-			await m.delete()
-
-		await ctx.respond(f"Успішно видалено {num} повідомлень!", ephemeral=True)
 
 	@discord.slash_command()  # we can also add application commands
 	async def request(self, ctx: discord.ApplicationContext):
@@ -369,7 +360,7 @@ class ServerCouncil(commands.Cog):
 				last_requests = json.loads(file.read())
 
 			if (str(ctx.author.id) in last_requests) and not (ctx.author.id in server_council_ids):
-				if (datetime.datetime.now()- datetime.datetime.fromtimestamp(last_requests[str(ctx.author.id)])).seconds<60*60*24:
+				if (datetime.datetime.now().timestamp() - last_requests[str(ctx.author.id)])<60*60*24:
 					await ctx.respond(f"Не радники можуть створювати лише 1 запит на добу. Наступний запит ви зможете створити: <t:{round((datetime.datetime.fromtimestamp(last_requests[str(ctx.author.id)])+datetime.timedelta(seconds=60*60*24)).timestamp())}:R>", ephemeral=True)
 					return
 			await ctx.respond(view=RequestView(server_council_ids))
