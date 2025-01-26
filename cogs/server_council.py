@@ -17,13 +17,14 @@ actions: List[Tuple[discord.Embed, Type[object]]] = [
 	 , server_request_inputs.RolesChange)
 ]
 
-
+request_cooldown = 60*30
+accept_cooldown = 60*60*12
 
 council_role_id = 1321571484401012797
 
 not_asignable_roles = [1321571484401012797, 1321575209785888875]
 
-council_channel_id = 1321571020838014997
+council_channel_id = 1327376964163604490
 
 class VoteView(discord.ui.View):
 	def __init__(self, request_name, *args, **kwargs):
@@ -77,8 +78,9 @@ class VoteView(discord.ui.View):
 
 
 class RequestView(discord.ui.View):
-	def __init__(self,server_council_ids, *args, **kwargs):
+	def __init__(self,server_council_ids, queue_mode: bool = False, *args, **kwargs):
 		self.server_council_ids=server_council_ids
+		self.queue_mode = queue_mode
 		super().__init__(timeout=None, *args)
 	@discord.ui.select(  # the decorator that lets you specify the properties of the select menu
 		placeholder="Виберіть тип пропозиції",  # the placeholder text that will be displayed if nothing is selected
@@ -116,13 +118,13 @@ class RequestView(discord.ui.View):
 		roles_str =''
 		if int(select.values[0])==0:
 			await interaction.respond(embed=discord.Embed(title="Власна пропозиція",
-	               fields=[discord.EmbedField(name='name', value=''), discord.EmbedField(name='comment', value='')])
-	 , view=server_request_inputs.OwnRequest(self.server_council_ids, interaction.user.id))
+	               fields=[discord.EmbedField(name='name', value=''), discord.EmbedField(name='public', value='True')])
+	 , view=server_request_inputs.OwnRequest(self.server_council_ids, interaction.user.id, self.queue_mode))
 
 
 		elif int(select.values[0])==1:
 			embed = discord.Embed(title="Ролі й посади",
-	               fields=[discord.EmbedField(name='add_roles', value=''), discord.EmbedField(name='remove_roles', value=''), discord.EmbedField(name='target', value='')])
+	               fields=[discord.EmbedField(name='add_roles', value=''), discord.EmbedField(name='remove_roles', value=''), discord.EmbedField(name='target', value=''), discord.EmbedField(name='public', value='True')])
 
 			role_i = 0
 			roles_nums = {}
@@ -136,7 +138,7 @@ class RequestView(discord.ui.View):
 
 
 
-			await interaction.respond(embed =embed, view=server_request_inputs.RolesChange(self.server_council_ids, interaction.user.id,roles_nums))
+			await interaction.respond(embed =embed, view=server_request_inputs.RolesChange(self.server_council_ids, interaction.user.id,roles_nums, self.queue_mode))
 
 
 class ServerCouncil(commands.Cog):
@@ -152,6 +154,48 @@ class ServerCouncil(commands.Cog):
 		council_messages = await council_channel.history(limit=1000).flatten()
 
 		while True:
+			try:
+				all_requests_names_queue = [f.split(".")[0] for f in listdir('requests_queue')]
+				for r_name in all_requests_names_queue:
+					with open(f'requests_queue/{r_name}.json', 'r') as file:
+						queue_request_info = json.loads(file.read())
+
+					server_council_ids = []
+
+					for member in (await council_channel.guild._fetch_role(council_role_id)).members:
+							server_council_ids.append(member.id)
+
+					with open(f'data/last_requests.json', 'r') as file:
+							last_requests = json.loads(file.read())
+
+					r_author_id  = queue_request_info['author_id']
+
+					ended_queue = True
+
+					if (str(r_author_id) in last_requests) and not (r_author_id in server_council_ids):
+						if (datetime.datetime.now().timestamp() - last_requests[str(r_author_id)]) > request_cooldown:
+							ended_queue=False
+					if True:
+						if ended_queue:
+							os.remove(f'requests_queue/{r_name}.json')
+
+
+							queue_request_info['timestamp'] = round(datetime.datetime.now().timestamp())
+							with open(f'server_requests/{r_name}.json', 'w') as file:
+								json.dump(queue_request_info, file)
+
+							with open(f'data/last_requests.json', 'r') as file:
+								last_requests = json.loads(file.read())
+
+							last_requests[str(r_author_id)] = round(datetime.datetime.now().timestamp())
+
+							with open(f'data/last_requests.json', 'w') as file:
+								json.dump(last_requests, file)
+
+
+			except:
+				pass
+
 			try:
 				all_requests_names = [f.split(".")[0] for f in listdir('server_requests')]
 				unused_names = all_requests_names
@@ -204,8 +248,8 @@ class ServerCouncil(commands.Cog):
 									for role_id in remove_roles_id:
 										comment+=f'\n Забрати <@&{role_id}>'
 
-								print(f"Time check for {embed.title} - {(datetime.datetime.now().timestamp() - timestamp)-60*60*24} seconds")
-								if ((datetime.datetime.now().timestamp() - timestamp)>=60*60*24) or (not (0 in voting.values())) or (list(voting.values()).count(1) > list(voting.values()).count(0)+list(voting.values()).count(2)) or (list(voting.values()).count(2) > list(voting.values()).count(0)+list(voting.values()).count(1)):
+								print(f"Time check for {embed.title} - {(datetime.datetime.now().timestamp() - timestamp)-accept_cooldown} seconds")
+								if ((datetime.datetime.now().timestamp() - timestamp)>=accept_cooldown) or (not (0 in voting.values())) or (list(voting.values()).count(1) > list(voting.values()).count(0)+list(voting.values()).count(2)) or (list(voting.values()).count(2) > list(voting.values()).count(0)+list(voting.values()).count(1)):
 									print(f"END {embed.title}")
 
 
@@ -294,14 +338,17 @@ class ServerCouncil(commands.Cog):
 
 						start_timestamp= request_info['timestamp']
 						author_id= request_info['author_id']
+						public= request_info['public']
 						if 'voting' in request_info:
 							del(request_info['voting'])
 							del(request_info['timestamp'])
 							del(request_info['author_id'])
+							del(request_info['public'])
 						embed.description=''
 						nl = '\n'
 						if 'comment' in request_info:
 							for k,v in request_info.items():
+								v = str(v)
 								embed.description+=f"\n- {k}\n> {v.replace(nl, nl+'> ')}"
 						else:
 							add_roles_id: List[int] = request_info['add_roles'].split(" ")
@@ -324,11 +371,11 @@ class ServerCouncil(commands.Cog):
 							embed.description=comment
 
 						embed.add_field(name="Кінець голосування: ",
-						                value=f'<t:{round((datetime.datetime.fromtimestamp(start_timestamp)+datetime.timedelta(seconds=60*60*24)).timestamp())}:R> (<t:{round((datetime.datetime.fromtimestamp(start_timestamp)+datetime.timedelta(seconds=60*60*24)).timestamp())}:d> <t:{round((datetime.datetime.fromtimestamp(start_timestamp)+datetime.timedelta(seconds=60*60*24)).timestamp())}:t>)')
+						                value=f'<t:{round((datetime.datetime.fromtimestamp(start_timestamp)+datetime.timedelta(seconds=accept_cooldown)).timestamp())}:R> (<t:{round((datetime.datetime.fromtimestamp(start_timestamp)+datetime.timedelta(seconds=accept_cooldown)).timestamp())}:d> <t:{round((datetime.datetime.fromtimestamp(start_timestamp)+datetime.timedelta(seconds=accept_cooldown)).timestamp())}:t>)')
 						embed.add_field(name="Проголосували: ",
 						                value=f'*(ніхто)*')
 						embed.add_field(name="Створив запит: ",
-						                value=f'<@{author_id}>')
+						                value=f'<@{author_id}>' if public else 'Анонімний користувач')
 
 						uids_str = ''
 						for member in (await council_channel.guild._fetch_role(council_role_id)).members:
@@ -348,22 +395,21 @@ class ServerCouncil(commands.Cog):
 
 
 
-		if ctx.guild.id == 1321561629955194961:
-	
-			server_council_ids = []
-	
-			for member in (await ctx.guild._fetch_role(council_role_id)).members:
-				server_council_ids.append(member.id)
+		server_council_ids = []
+
+		for member in (await ctx.guild._fetch_role(council_role_id)).members:
+			server_council_ids.append(member.id)
 
 
-			with open(f'data/last_requests.json' ,'r') as file:
-				last_requests = json.loads(file.read())
+		with open(f'data/last_requests.json' ,'r') as file:
+			last_requests = json.loads(file.read())
+		queue_mode = False
 
-			if (str(ctx.author.id) in last_requests) and not (ctx.author.id in server_council_ids):
-				if (datetime.datetime.now().timestamp() - last_requests[str(ctx.author.id)])<60*60*24:
-					await ctx.respond(f"Не радники можуть створювати лише 1 запит на добу. Наступний запит ви зможете створити: <t:{round((datetime.datetime.fromtimestamp(last_requests[str(ctx.author.id)])+datetime.timedelta(seconds=60*60*24)).timestamp())}:R>", ephemeral=True)
-					return
-			await ctx.respond(view=RequestView(server_council_ids))
+		if (str(ctx.author.id) in last_requests) and not (ctx.author.id in server_council_ids):
+			if (datetime.datetime.now().timestamp() - last_requests[str(ctx.author.id)])<request_cooldown:
+				await ctx.respond(f"Не радники можуть створювати лише 1 запит на півгодини. Запит буде додано до черги. Тоді ваш запит з черги буде відправлено: <t:{round((datetime.datetime.fromtimestamp(last_requests[str(ctx.author.id)])+datetime.timedelta(seconds=request_cooldown)).timestamp())}:R>", ephemeral=True)
+				queue_mode=True
+		await ctx.respond(view=RequestView(server_council_ids, queue_mode))
 
 
 def setup(bot):  # this is called by Pycord to setup the cog

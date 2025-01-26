@@ -83,7 +83,7 @@ class VotingMenu(discord.ui.View):
 
 
 
-		choices_int = [int(select.values[0])]
+		choices_int = [int(select.values[0]), int(select.values[1])]
 
 		for ch in choices_int:
 			selected_str += f"\n- <@{council_select_ids[ch]}>"
