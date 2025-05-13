@@ -8,7 +8,6 @@ import discord
 from discord import InputTextStyle
 from discord.ext import commands, tasks
 from discord.ui import InputText
-import requests
 
 FIRST_MESSAGE_FILE = 'first_message.txt'
 API_KEY = os.environ.get('AI_Token')
@@ -157,7 +156,7 @@ class ScheduledCommands(commands.Cog):
 	async def append_scheduled_commands(self):
 
 		now = int(time.time())
-		guild: discord.Guild = await  self.bot.fetch_guild(GUILD_ID)
+		guild: discord.Guild = self.bot.get_guild(GUILD_ID)
 		true_member_count = len([m for m in guild.members if not m.bot]) if guild else -1
 
 		channel_names = [f"{channel.name} ({channel.category.name})" for channel in guild.channels] if guild else "(Невідомо)"
@@ -203,7 +202,7 @@ class ScheduledCommands(commands.Cog):
 
 		for row in rows:
 			cmd_id, guild_id, channel_id, command = row
-			guild = await self.bot.fetch_guild(guild_id)
+			guild = self.bot.get_guild(GUILD_ID)
 			channel = await guild.fetch_channel(channel_id) if guild and channel_id else None
 			if not channel:
 				continue
