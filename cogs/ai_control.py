@@ -190,6 +190,9 @@ class ScheduledCommands(commands.Cog):
 	async def extract_json_from_text(self, text):
 		"""Спробує знайти та розпарсити JSON у тексті відповіді"""
 		try:
+
+			print(text)
+
 			# Шукаємо початок JSON (можливі варіанти)
 			start = text.find('{')
 			end = text.rfind('}') + 1
