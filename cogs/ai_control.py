@@ -260,7 +260,9 @@ class ScheduledCommands(commands.Cog):
 				("assistant", bot_reply, int(json_data is not None))
 			)
 			conn.commit()
-			
+
+			print('create result')
+
 			# Формуємо результат
 			result = {
 				"text": bot_reply,
