@@ -41,7 +41,7 @@ class StrInput(discord.ui.Modal):
 		msg = self.message_input.value
 		self.cog.message_cursor.execute(
 			"INSERT INTO messages (guild_id, user_id, username, message) VALUES (?, ?, ?, ?)",
-			(interaction.guild.id, interaction.user.id, str(interaction.user.nick), msg)
+			(interaction.guild.id, interaction.user.id, str(interaction.user.global_name), msg)
 		)
 		self.cog.message_db.commit()
 		await interaction.respond("✅ Повідомлення збережено!", ephemeral=True)
