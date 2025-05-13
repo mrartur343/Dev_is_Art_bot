@@ -1,12 +1,19 @@
 import json
-import re
+import os
 import sqlite3
 import time
 
 import discord
 from discord import InputTextStyle
 from discord.ext import commands, tasks
-from discord.ui import Modal, InputText
+from discord.ui import InputText
+import requests
+
+API_KEY = os.environ.get('AI_Token')
+API_URL = "https://api.openai.com/v1/chat/completions"
+DB_NAME = "chat_history.db"
+LOG_CHANNEL_ID = 1371122989038305290
+GUILD_ID = 1371121463717003344
 
 
 class StrInput(discord.ui.Modal):
@@ -77,9 +84,75 @@ class ScheduledCommands(commands.Cog):
 
 		self.check_scheduled_commands.start()
 
+		self.api_db = sqlite3.connect(DB_NAME)
+		self.api_cursor = self.api_db.cursor()
+		self.api_cursor.execute('''
+				CREATE TABLE IF NOT EXISTS messages (
+					id INTEGER PRIMARY KEY AUTOINCREMENT,
+					role TEXT NOT NULL,
+					content TEXT NOT NULL,
+					timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+				)
+			''')
+		self.api_db.commit()
+		self.api_db.close()
+
+
+
+
+		self.message_per_day = 0
+
 	def cog_unload(self):
 		self.check_scheduled_commands.cancel()
 		self.conn.close()
+
+	@commands.Cog.listener()
+	async def on_message(self, msg: discord.Message):
+		if not msg.author.bot:
+			self.message_per_day +=1
+
+
+	@tasks.loop(hours=24)
+	async def append_scheduled_commands(self):
+
+		now = int(time.time())
+		guild: discord.Guild = self.bot.get_guild(GUILD_ID)
+		true_member_count = len([m for m in guild.members if not m.bot])
+
+		channel_names = [f"{channel.name} ({channel.category.name})" for channel in guild.channels]
+		channel_list = "\n - ".join(channel_names) if channel_names else "Немає каналів"
+
+		# Ролі
+		role_names = [role.name for role in guild.roles if role.name != "@everyone"]
+		role_list = "\n - ".join(role_names) if role_names else "Немає ролей"
+
+		# Змінні
+		self.var_cursor.execute('SELECT name, value FROM variables WHERE guild_id = ?', (guild.id,))
+		variables = self.var_cursor.fetchall()
+		if variables:
+			var_list = "\n - ".join(f"{name} = {value}" for name, value in variables)
+		else:
+			var_list = "Немає змінних"
+
+		request_text = (f'1. {now}\n'
+		                f'2. {self.message_per_day}\n'
+		                f'3. {true_member_count}'
+		                f'4. \n'
+		                f'{channel_list}\n'
+		                f'\n'
+		                f'5. \n'
+		                f'{role_list}\n'
+		                f'\n'
+		                f'6. \n'
+		                f'{var_list}\n')
+
+		result = await self.chat_with_deepseek(request_text)
+
+		print(result['text'])
+
+		await self.upload_scheduled_commands(result['json_data'])
+
+
 
 	@tasks.loop(seconds=10)
 	async def check_scheduled_commands(self):
@@ -100,6 +173,95 @@ class ScheduledCommands(commands.Cog):
 			self.cursor.execute('DELETE FROM scheduled_commands WHERE id = ?', (cmd_id,))
 			self.conn.commit()
 
+	async def extract_json_from_text(self, text):
+		"""Спробує знайти та розпарсити JSON у тексті відповіді"""
+		try:
+			# Шукаємо початок JSON (можливі варіанти)
+			start = text.find('{')
+			end = text.rfind('}') + 1
+			if start != -1 and end != 0:
+				json_str = text[start:end]
+				return json.loads(json_str)
+			return None
+		except:
+			return None
+
+	async def chat_with_deepseek(self, user_message, system_prompt=None):
+		"""
+		Функція для спілкування з Deepseek з можливістю отримання JSON-даних
+		
+		:param user_message: Повідомлення користувача
+		:param system_prompt: Системний промпт (необов'язковий)
+		:param expect_json: Чи очікуємо JSON у відповіді (додає інструкцію до запиту)
+		:return: Словник з текстом відповіді та/або розпарсеними JSON-даними
+		"""
+		conn = sqlite3.connect(DB_NAME)
+		cursor = conn.cursor()
+		
+		try:
+			# Додаємо повідомлення користувача до БД
+			cursor.execute(
+				"INSERT INTO messages (role, content) VALUES (?, ?)",
+				("user", user_message)
+			)
+			conn.commit()
+			
+			# Отримуємо історію повідомлень
+			cursor.execute("SELECT role, content FROM messages ORDER BY timestamp")
+			history = [{"role": row[0], "content": row[1]} for row in cursor.fetchall()]
+			
+			# Додаємо системний промпт
+			if system_prompt:
+				history.insert(0, {"role": "system", "content": system_prompt})
+			
+			# Якщо очікуємо JSON - додаємо інструкцію
+			history.append({
+					"role": "system",
+					"content": "Будь ласка, поверни відповідь у форматі JSON. Дані мають бути валідним JSON у межах текстової відповіді."
+				})
+			
+			# Відправляємо запит
+			headers = {
+				"Authorization": f"Bearer {API_KEY}",
+				"Content-Type": "application/json"
+			}
+			
+			response = requests.post(
+				API_KEY,
+				headers=headers,
+				json={
+					"model": "deepseek-reasoner",
+					"messages": history,
+					"temperature": 0.7
+				}
+			)
+			response.raise_for_status()
+			
+			bot_reply = response.json()['choices'][0]['message']['content']
+			json_data = self.extract_json_from_text(bot_reply)
+			
+			# Зберігаємо відповідь
+			cursor.execute(
+				"INSERT INTO messages (role, content, is_json) VALUES (?, ?, ?)",
+				("assistant", bot_reply, int(json_data is not None))
+			)
+			conn.commit()
+			
+			# Формуємо результат
+			result = {
+				"text": bot_reply,
+				"has_json": json_data is not None
+			}
+			
+			if json_data:
+				result["json_data"] = json_data
+			
+			return result
+			
+		except Exception as e:
+			return {"error": str(e)}
+		finally:
+			conn.close()
 	async def execute_command(self, guild: discord.Guild, channel, command: str):
 		args = command.split()
 		if not args:
@@ -225,7 +387,7 @@ class ScheduledCommands(commands.Cog):
 				msg = " ".join(args[2:])
 
 				member = discord.utils.find(lambda m: m.name == target_name or m.display_name == target_name,
-				                            guild.members)
+											guild.members)
 
 				if member:
 					try:
@@ -282,6 +444,24 @@ class ScheduledCommands(commands.Cog):
 
 			case _:
 				await channel.send(f"Невідома команда: `{command}`")
+
+	async def upload_scheduled_commands(self, commands_dict: dict):
+
+		data = commands_dict
+
+		inserted = 0
+		for timestamp_str, command in data.items():
+			timestamp = int(timestamp_str)
+			self.cursor.execute('''
+					INSERT INTO scheduled_commands (guild_id, channel_id, timestamp, command)
+					VALUES (?, ?, ?, ?)
+				''', (GUILD_ID, LOG_CHANNEL_ID, timestamp, command))
+			inserted += 1
+
+		self.conn.commit()
+
+		return inserted
+
 	@commands.has_permissions(administrator=True)
 	@discord.slash_command(name="upload_json", description="Завантажити JSON файл з командами")
 	async def upload_json(self, ctx: discord.ApplicationContext, file: discord.Attachment):
@@ -293,19 +473,8 @@ class ScheduledCommands(commands.Cog):
 			file_bytes = await file.read()
 			data = json.loads(file_bytes.decode("utf-8"))
 
-			inserted = 0
-			for timestamp_str, command in data.items():
-				try:
-					timestamp = int(timestamp_str)
-					self.cursor.execute('''
-						INSERT INTO scheduled_commands (guild_id, channel_id, timestamp, command)
-						VALUES (?, ?, ?, ?)
-					''', (ctx.guild.id, ctx.channel.id, timestamp, command))
-					inserted += 1
-				except Exception as e:
-					await ctx.channel.send(f"Помилка для `{command}`: {e}")
+			inserted = await self.upload_scheduled_commands(data)
 
-			self.conn.commit()
 			await ctx.respond(f"Успішно додано {inserted} команд з JSON.", ephemeral=True)
 
 		except Exception as e:
@@ -317,18 +486,18 @@ class ScheduledCommands(commands.Cog):
 		guild = ctx.guild
 	
 		# Канали
-		channel_names = [channel.name for channel in guild.channels]
-		channel_list = ", ".join(channel_names) if channel_names else "Немає каналів"
+		channel_names = [f"{channel.name} ({channel.category.name})" for channel in guild.channels]
+		channel_list = "\n - ".join(channel_names) if channel_names else "Немає каналів"
 	
 		# Ролі
 		role_names = [role.name for role in guild.roles if role.name != "@everyone"]
-		role_list = ", ".join(role_names) if role_names else "Немає ролей"
+		role_list = "\n - ".join(role_names) if role_names else "Немає ролей"
 	
 		# Змінні
 		self.var_cursor.execute('SELECT name, value FROM variables WHERE guild_id = ?', (guild.id,))
 		variables = self.var_cursor.fetchall()
 		if variables:
-			var_list = ", ".join(f"{name} = {value}" for name, value in variables)
+			var_list = "\n - ".join(f"{name} = {value}" for name, value in variables)
 		else:
 			var_list = "Немає змінних"
 	
@@ -368,6 +537,27 @@ class ScheduledCommands(commands.Cog):
 		)
 	
 		await ctx.respond(embed=embed, ephemeral=True)
+	@commands.has_permissions(administrator=True)
+	@discord.slash_command(name="send_first_prompt", description="Надіслати перше повідомлення в AI")
+
+	async def send_first_prompt(self, ctx: discord.ApplicationContext):
+
+
+		with open('first_message.txt', 'r') as file:
+			result = await self.chat_with_deepseek(file.read())
+
+			print(result['text'])
+
+
+		embed = discord.Embed(
+			title="✅ Перший промт відправлено!",
+			color=discord.Color.green()
+		)
+		await ctx.respond(embed=embed, ephemeral=True)
+
+	@discord.slash_command(name="submit_message", description="Написати ШІ повідомлення. Це може бути пропозиція, чи питання, чи ідея")
+	async def submit_message(self,  ctx: discord.ApplicationContext):
+		await ctx.send_modal(StrInput(self, ctx.interaction))
 	@commands.has_permissions(administrator=True)
 	@discord.slash_command(name="view_submitted", description="Всі останні запитання")
 
