@@ -524,7 +524,7 @@ class ScheduledCommands(commands.Cog):
 		guild = ctx.guild
 	
 		# Канали
-		channel_names = [f"{channel.name} ({channel.category.name if channel.category else ''})" for channel in await guild.fetch_channels()]
+		channel_names = [f"{channel.name} ({channel.category.name if channel.category else ('Це категорія!' if channel.type==discord.ChannelType.category else '')})" for channel in guild.channels]
 		channel_list = "\n - ".join(channel_names) if channel_names else "Немає каналів"
 	
 		# Ролі
