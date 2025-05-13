@@ -241,7 +241,7 @@ class ScheduledCommands(commands.Cog):
 			}
 			
 			response = requests.post(
-				API_KEY,
+				API_URL,
 				headers=headers,
 				json={
 					"model": "deepseek-reasoner",
