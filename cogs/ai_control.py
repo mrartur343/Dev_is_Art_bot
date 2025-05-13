@@ -162,7 +162,7 @@ class ScheduledCommands(commands.Cog):
 
 		result = await self.chat_with_deepseek(request_text)
 
-		print(result['text'])
+		print(result)
 
 		await self.upload_scheduled_commands(result['json_data'])
 
