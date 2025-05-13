@@ -10,7 +10,7 @@ from discord.ui import InputText
 import requests
 
 API_KEY = os.environ.get('AI_Token')
-API_URL = "https://api.deepseek.com/v1/chat/completions"
+API_URL = "https://openrouter.ai/api/v1"
 DB_NAME = "chat_history.db"
 LOG_CHANNEL_ID = 1371122989038305290
 GUILD_ID = 1371121463717003344
