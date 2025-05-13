@@ -183,7 +183,11 @@ class ScheduledCommands(commands.Cog):
 			"SELECT username, message FROM messages WHERE guild_id = ?", (guild.id,))
 		messages = self.message_cursor.fetchall()
 
-		text = "\n".join([f"{user} — {msg}" for user, msg in messages])
+
+		with open(FIRST_MESSAGE_FILE, 'r', encoding='utf-8') as f:
+			first_message = f.read().strip()
+		text=first_message+'\n'
+		text += "\n".join([f"{user} — {msg}" for user, msg in messages])
 
 		request_text = (f'1. {now}\n'
 		                f'2. {self.message_per_day}\n'
