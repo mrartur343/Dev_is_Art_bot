@@ -180,7 +180,7 @@ class ScheduledCommands(commands.Cog):
 
 
 		self.message_cursor.execute(
-			"SELECT username, message FROM messages WHERE guild_id = ?", (ctx.guild.id,))
+			"SELECT username, message FROM messages WHERE guild_id = ?", (guild.id,))
 		messages = self.message_cursor.fetchall()
 
 		text = "\n".join([f"{user} — {msg}" for user, msg in messages])
