@@ -451,6 +451,7 @@ class ScheduledCommands(commands.Cog):
 				target_channel = discord.utils.get(guild.text_channels, name=target_channel_name)
 				if not target_channel:
 					await channel.send(f"❌ Канал `{target_channel_name}` не знайдено.")
+					await channel.send(f"```{guild.text_channels}```")
 					return
 
 				# Підстановка змінних з бази
@@ -462,6 +463,7 @@ class ScheduledCommands(commands.Cog):
 
 				await target_channel.send(raw_message)
 				await channel.send(f"✅ Повідомлення надіслано до каналу `{target_channel_name}`.")
+
 			# --- Сервер ---
 			case "change_server_name":
 				new_name = " ".join(args[1:])
