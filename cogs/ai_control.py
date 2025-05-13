@@ -10,6 +10,7 @@ from discord.ext import commands, tasks
 from discord.ui import InputText
 import requests
 
+FIRST_MESSAGE_FILE = 'first_message.txt'
 API_KEY = os.environ.get('AI_Token')
 API_URL = "https://openrouter.ai/api/v1"
 DB_NAME = "chat_history.db"
@@ -88,6 +89,23 @@ class ScheduledCommands(commands.Cog):
 		''')
 		self.message_db.commit()
 
+
+		if os.path.exists(FIRST_MESSAGE_FILE):
+			with open(FIRST_MESSAGE_FILE, 'r', encoding='utf-8') as f:
+				first_message = f.read().strip()
+
+			# Перевіряємо чи не додано вже це повідомлення
+			self.message_cursor.execute('''
+		        SELECT 1 FROM messages 
+		        WHERE role = 'system' AND content = ? 
+		        LIMIT 1
+		    ''', (first_message,))
+
+			if not self.message_cursor.fetchone():
+				self.message_cursor.execute('''
+		            INSERT INTO messages (role, content) 
+		            VALUES (?, ?)
+		        ''', ('system', first_message))
 
 		self.api_db = sqlite3.connect(DB_NAME)
 		self.api_cursor = self.api_db.cursor()
