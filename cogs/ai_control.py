@@ -14,7 +14,7 @@ FIRST_MESSAGE_FILE = 'first_message.txt'
 API_KEY = os.environ.get('AI_Token')
 API_URL = "https://openrouter.ai/api/v1"
 DB_NAME = "chat_history.db"
-LOG_CHANNEL_ID = 1371122989038305290
+LOG_CHANNEL_ID = 1371537439495028856
 GUILD_ID = 1371121463717003344
 
 client = OpenAI(
@@ -204,7 +204,7 @@ class ScheduledCommands(commands.Cog):
 		for row in rows:
 			cmd_id, guild_id, channel_id, command = row
 			guild = await self.bot.fetch_guild(guild_id)
-			channel = await guild.fetch_channel(channel_id) if guild else None
+			channel = await guild.fetch_channel(channel_id) if guild and channel_id else None
 			if not channel:
 				continue
 			try:
