@@ -157,6 +157,9 @@ class ScheduledCommands(commands.Cog):
 
 		now = int(time.time())
 		guild: discord.Guild = self.bot.get_guild(GUILD_ID)
+		if not guild:
+			print('Помилка пошуку серверу!')
+			return
 		true_member_count = len([m for m in guild.members if not m.bot]) if guild else -1
 
 		channel_names = [f"{channel.name} ({channel.category.name})" for channel in guild.channels] if guild else "(Невідомо)"
