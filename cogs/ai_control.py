@@ -162,7 +162,8 @@ class ScheduledCommands(commands.Cog):
 			return
 		true_member_count = len([m for m in guild.members if not m.bot]) if guild else -1
 
-		channel_names = [f"{channel.name} ({channel.category.name})" for channel in guild.channels] if guild else "(Невідомо)"
+		# Канали
+		channel_names = [f"{channel.name} ({f'в категорії {channel.category.name}' if channel.category else ('категорія на сервері' if channel.type==discord.ChannelType.category else 'без категорії')})" for channel in guild.channels]
 		channel_list = "\n - ".join(channel_names) if channel_names else "Немає каналів"
 
 		# Ролі
