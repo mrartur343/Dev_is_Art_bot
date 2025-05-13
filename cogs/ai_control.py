@@ -253,7 +253,7 @@ class ScheduledCommands(commands.Cog):
 
 
 			bot_reply = completion.choices[0].message.content
-			json_data = self.extract_json_from_text(bot_reply)
+			json_data = await self.extract_json_from_text(bot_reply)
 			
 			# Зберігаємо відповідь
 			cursor.execute(
