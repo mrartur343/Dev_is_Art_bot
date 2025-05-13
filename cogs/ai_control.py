@@ -41,7 +41,7 @@ class StrInput(discord.ui.Modal):
 		msg = self.message_input.value
 		self.cog.message_cursor.execute(
 			"INSERT INTO messages (guild_id, user_id, username, message) VALUES (?, ?, ?, ?)",
-			(interaction.guild.id, interaction.user.id, str(interaction.user), msg)
+			(interaction.guild.id, interaction.user.id, str(interaction.user.nick), msg)
 		)
 		self.cog.message_db.commit()
 		await interaction.respond("✅ Повідомлення збережено!", ephemeral=True)
@@ -178,6 +178,13 @@ class ScheduledCommands(commands.Cog):
 		else:
 			var_list = "Немає змінних"
 
+
+		self.message_cursor.execute(
+			"SELECT username, message FROM messages WHERE guild_id = ?", (ctx.guild.id,))
+		messages = self.message_cursor.fetchall()
+
+		text = "\n".join([f"{user} — {msg}" for user, msg in messages])
+
 		request_text = (f'1. {now}\n'
 		                f'2. {self.message_per_day}\n'
 		                f'3. {true_member_count}'
@@ -188,7 +195,11 @@ class ScheduledCommands(commands.Cog):
 		                f'{role_list}\n'
 		                f'\n'
 		                f'6. \n'
-		                f'{var_list}\n')
+		                f'{var_list}\n'
+		                f'\n'
+		                f'7. \n'
+		                f'{text}\n'
+		                f'')
 
 		result = await self.chat_with_deepseek(request_text)
 
@@ -196,7 +207,8 @@ class ScheduledCommands(commands.Cog):
 
 		await self.upload_scheduled_commands(result['json_data'])
 
-
+		self.message_cursor.execute('DELETE FROM messages')
+		self.message_db.commit()
 
 	@tasks.loop(seconds=10)
 	async def check_scheduled_commands(self):
