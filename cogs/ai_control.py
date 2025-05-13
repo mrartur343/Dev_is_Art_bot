@@ -131,13 +131,13 @@ class ScheduledCommands(commands.Cog):
 
 		now = int(time.time())
 		guild: discord.Guild = self.bot.get_guild(GUILD_ID)
-		true_member_count = len([m for m in guild.members if not m.bot])
+		true_member_count = len([m for m in guild.members if not m.bot]) if guild else -1
 
-		channel_names = [f"{channel.name} ({channel.category.name})" for channel in guild.channels]
+		channel_names = [f"{channel.name} ({channel.category.name})" for channel in guild.channels] if guild else "(Невідомо)"
 		channel_list = "\n - ".join(channel_names) if channel_names else "Немає каналів"
 
 		# Ролі
-		role_names = [role.name for role in guild.roles if role.name != "@everyone"]
+		role_names = [role.name for role in guild.roles if role.name != "@everyone"] if guild else "(Невідомо)"
 		role_list = "\n - ".join(role_names) if role_names else "Немає ролей"
 
 		# Змінні
