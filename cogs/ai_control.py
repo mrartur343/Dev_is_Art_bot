@@ -2,6 +2,7 @@ import json
 import os
 import sqlite3
 import time
+from openai import OpenAI
 
 import discord
 from discord import InputTextStyle
@@ -14,6 +15,11 @@ API_URL = "https://openrouter.ai/api/v1"
 DB_NAME = "chat_history.db"
 LOG_CHANNEL_ID = 1371122989038305290
 GUILD_ID = 1371121463717003344
+
+client = OpenAI(
+  base_url="https://openrouter.ai/api/v1",
+  api_key=os.environ.get('AI_Token'),
+)
 
 
 class StrInput(discord.ui.Modal):
@@ -238,23 +244,15 @@ class ScheduledCommands(commands.Cog):
 				})
 			
 			# Відправляємо запит
-			headers = {
-				"Authorization": f"Bearer {API_KEY}",
-				"Content-Type": "application/json"
-			}
-			
-			response = requests.post(
-				API_URL,
-				headers=headers,
-				json={
-					"model": "deepseek-reasoner",
-					"messages": history,
-					"temperature": 0.7
-				}
+
+			completion = client.chat.completions.create(
+				extra_body={},
+				model="deepseek/deepseek-prover-v2:free",
+				messages=history
 			)
-			response.raise_for_status()
-			
-			bot_reply = response.json()['choices'][0]['message']['content']
+
+
+			bot_reply = completion.choices[0].message.content
 			json_data = self.extract_json_from_text(bot_reply)
 			
 			# Зберігаємо відповідь
