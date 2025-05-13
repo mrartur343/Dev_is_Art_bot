@@ -306,6 +306,7 @@ class ScheduledCommands(commands.Cog):
 			await channel.send("Пуста команда.")
 			return
 
+
 		action = args[0]
 		match action:
 			# --- Канали ---
@@ -373,6 +374,7 @@ class ScheduledCommands(commands.Cog):
 					await channel.send(f"📂 Канал `{ch_name}` переміщено до категорії `{cat_name}`.")
 				else:
 					await channel.send("❌ Канал або категорію не знайдено.")
+					await channel.send(f"```{guild.categories}```")
 
 			# --- Ролі ---
 			case "create_role":
