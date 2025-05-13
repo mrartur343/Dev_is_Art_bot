@@ -43,7 +43,7 @@ class StrInput(discord.ui.Modal):
 
 class ScheduledCommands(commands.Cog):
 	def __init__(self, bot):
-		self.bot = bot
+		self.bot: discord.Bot = bot
 		self.conn = sqlite3.connect('scheduled_commands.db')
 		self.cursor = self.conn.cursor()
 		self.cursor.execute('''
@@ -130,7 +130,7 @@ class ScheduledCommands(commands.Cog):
 	async def append_scheduled_commands(self):
 
 		now = int(time.time())
-		guild: discord.Guild = self.bot.get_guild(GUILD_ID)
+		guild: discord.Guild = await  self.bot.fetch_guild(GUILD_ID)
 		true_member_count = len([m for m in guild.members if not m.bot]) if guild else -1
 
 		channel_names = [f"{channel.name} ({channel.category.name})" for channel in guild.channels] if guild else "(Невідомо)"
@@ -176,8 +176,8 @@ class ScheduledCommands(commands.Cog):
 
 		for row in rows:
 			cmd_id, guild_id, channel_id, command = row
-			guild = self.bot.get_guild(guild_id)
-			channel = guild.get_channel(channel_id) if guild else None
+			guild = await self.bot.fetch_guild(guild_id)
+			channel = await guild.fetch_channel(channel_id) if guild else None
 			if not channel:
 				continue
 			try:
