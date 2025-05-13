@@ -92,13 +92,14 @@ class ScheduledCommands(commands.Cog):
 		self.api_db = sqlite3.connect(DB_NAME)
 		self.api_cursor = self.api_db.cursor()
 		self.api_cursor.execute('''
-				CREATE TABLE IF NOT EXISTS messages (
-					id INTEGER PRIMARY KEY AUTOINCREMENT,
-					role TEXT NOT NULL,
-					content TEXT NOT NULL,
-					timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
-				)
-			''')
+        CREATE TABLE IF NOT EXISTS messages (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            role TEXT NOT NULL,
+            content TEXT NOT NULL,
+            timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+            is_json BOOLEAN DEFAULT 0
+        )
+    ''')
 		self.api_db.commit()
 		self.api_db.close()
 
