@@ -82,7 +82,6 @@ class ScheduledCommands(commands.Cog):
 		''')
 		self.message_db.commit()
 
-		self.check_scheduled_commands.start()
 
 		self.api_db = sqlite3.connect(DB_NAME)
 		self.api_cursor = self.api_db.cursor()
@@ -99,6 +98,8 @@ class ScheduledCommands(commands.Cog):
 
 
 
+		self.check_scheduled_commands.start()
+		self.append_scheduled_commands.start()
 
 		self.message_per_day = 0
 
@@ -110,6 +111,19 @@ class ScheduledCommands(commands.Cog):
 	async def on_message(self, msg: discord.Message):
 		if not msg.author.bot:
 			self.message_per_day +=1
+
+
+	@commands.has_permissions(administrator=True)
+	@discord.slash_command(name="append_scheduled_command", description="Додати завчасно звіт й запросити команди")
+	async def append_scheduled_command(self, ctx: discord.ApplicationContext):
+		await self.append_scheduled_commands()
+
+		embed = discord.Embed(
+			title="✅ Успішно надіслано звіт!",
+			color=discord.Color.blue()
+		)
+
+		await ctx.respond(embed=embed, ephemeral=True)
 
 
 	@tasks.loop(hours=24)
