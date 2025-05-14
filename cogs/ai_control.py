@@ -187,16 +187,16 @@ class ScheduledCommands(commands.Cog):
 
 
 
-	async def get_last_message(self):
+	async def get_last_message(self, ai_chat):
 		"""Повертає останнє повідомлення з історії чату"""
 		conn = sqlite3.connect(DB_NAME)
 		cursor = conn.cursor()
 		
 		try:
 			# Отримуємо останній запис, відсортувавши за часом або ID
-			cursor.execute('''
+			cursor.execute(f'''
 				SELECT role, content, timestamp 
-				FROM messages 
+				FROM messages_{ai_chat} 
 				ORDER BY timestamp DESC 
 				LIMIT 1
 			''')
@@ -237,7 +237,7 @@ class ScheduledCommands(commands.Cog):
 
 
 
-		text = await self.get_last_message()
+		text = await self.get_last_message('getter')
 
 		request_text = (f'1. {self.message_per_day}\n'
 						f'2. {true_member_count}\n'
