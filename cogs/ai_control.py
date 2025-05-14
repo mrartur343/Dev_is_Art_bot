@@ -247,7 +247,7 @@ class ScheduledCommands(commands.Cog):
 						f'4. \n'
 						f'{role_list}\n'
 						f'\n'
-						f'7. \n'
+						f'5. \n'
 						f'{text}\n'
 						f'')
 
