@@ -1,5 +1,6 @@
 import json
 import os
+import random
 import sqlite3
 import time
 from openai import OpenAI
@@ -9,7 +10,8 @@ from discord import InputTextStyle
 from discord.ext import commands, tasks
 from discord.ui import InputText
 
-FIRST_MESSAGE_FILE = 'first_message.txt'
+AI_LIST = ['getter', 'owner', 'admin.txt', 'eventer', 'moderator']
+FIRST_MESSAGE_FILE = 'first_messages/{ai_name}.txt'
 API_KEY = os.environ.get('AI_Token')
 API_URL = "https://openrouter.ai/api/v1"
 DB_NAME = "chat_history.db"
@@ -39,12 +41,8 @@ class StrInput(discord.ui.Modal):
 
 	async def callback(self, interaction: discord.Interaction):
 		msg = self.message_input.value
-		self.cog.message_cursor.execute(
-			"INSERT INTO messages (guild_id, user_id, username, message) VALUES (?, ?, ?, ?)",
-			(interaction.guild.id, interaction.user.id, str(interaction.user.global_name), msg)
-		)
-		self.cog.message_db.commit()
-		await interaction.respond("✅ Повідомлення збережено!", ephemeral=True)
+		self.cog.send_submit_to_ai(msg, author_nickname=interaction.user.global_name)
+		await interaction.respond("✅ Повідомлення надіслано!", ephemeral=True)
 
 
 class ScheduledCommands(commands.Cog):
@@ -75,49 +73,71 @@ class ScheduledCommands(commands.Cog):
 		''')
 		self.var_db.commit()
 
-		self.message_db = sqlite3.connect("user_messages.db")
-		self.message_cursor = self.message_db.cursor()
-
-		self.message_cursor.execute('''
-			CREATE TABLE IF NOT EXISTS messages (
-				guild_id INTEGER,
-				user_id INTEGER,
-				username TEXT,
-				message TEXT
-			)
-		''')
-		self.message_db.commit()
-
-
 		self.api_db = sqlite3.connect(DB_NAME)
 		self.api_cursor = self.api_db.cursor()
 		self.api_cursor.execute('''
-        CREATE TABLE IF NOT EXISTS messages (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            role TEXT NOT NULL,
-            content TEXT NOT NULL,
-            timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
-            is_json BOOLEAN DEFAULT 0
-        )
-    ''')
+		CREATE TABLE IF NOT EXISTS messages_getter (
+			id INTEGER PRIMARY KEY AUTOINCREMENT,
+			role TEXT NOT NULL,
+			content TEXT NOT NULL,
+			timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+			is_json BOOLEAN DEFAULT 0
+		)
+	''')
+		self.api_cursor.execute('''
+		CREATE TABLE IF NOT EXISTS messages_owner (
+			id INTEGER PRIMARY KEY AUTOINCREMENT,
+			role TEXT NOT NULL,
+			content TEXT NOT NULL,
+			timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+			is_json BOOLEAN DEFAULT 0
+		)
+	''')
+		self.api_cursor.execute('''
+		CREATE TABLE IF NOT EXISTS messages_admin (
+			id INTEGER PRIMARY KEY AUTOINCREMENT,
+			role TEXT NOT NULL,
+			content TEXT NOT NULL,
+			timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+			is_json BOOLEAN DEFAULT 0
+		)
+	''')
+		self.api_cursor.execute('''
+		CREATE TABLE IF NOT EXISTS messages_eventer (
+			id INTEGER PRIMARY KEY AUTOINCREMENT,
+			role TEXT NOT NULL,
+			content TEXT NOT NULL,
+			timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+			is_json BOOLEAN DEFAULT 0
+		)
+	''')
+		self.api_cursor.execute('''
+		CREATE TABLE IF NOT EXISTS messages_moderator (
+			id INTEGER PRIMARY KEY AUTOINCREMENT,
+			role TEXT NOT NULL,
+			content TEXT NOT NULL,
+			timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+			is_json BOOLEAN DEFAULT 0
+		)
+	''')
 
+		for ai_name in AI_LIST:
+			if os.path.exists(FIRST_MESSAGE_FILE.format(ai_name=ai_name)):
+				with open(FIRST_MESSAGE_FILE.format(ai_name=ai_name), 'r', encoding='utf-8') as f:
+					first_message = f.read().strip()
 
-		if os.path.exists(FIRST_MESSAGE_FILE):
-			with open(FIRST_MESSAGE_FILE, 'r', encoding='utf-8') as f:
-				first_message = f.read().strip()
+				# Перевіряємо чи не додано вже це повідомлення
+				self.api_cursor.execute(f'''
+					SELECT 1 FROM messages_{ai_name} 
+					WHERE role = 'system' AND content = ? 
+					LIMIT 1
+				''', (first_message,))
 
-			# Перевіряємо чи не додано вже це повідомлення
-			self.api_cursor.execute('''
-		        SELECT 1 FROM messages 
-		        WHERE role = 'system' AND content = ? 
-		        LIMIT 1
-		    ''', (first_message,))
-
-			if not self.api_cursor.fetchone():
-				self.api_cursor.execute('''
-		            INSERT INTO messages (role, content) 
-		            VALUES (?, ?)
-		        ''', ('system', first_message))
+				if not self.api_cursor.fetchone():
+					self.api_cursor.execute(f'''
+						INSERT INTO messages_{ai_name} (role, content) 
+						VALUES (?, ?)
+					''', ('system', first_message))
 
 		self.api_db.commit()
 		self.api_db.close()
@@ -138,10 +158,21 @@ class ScheduledCommands(commands.Cog):
 		if not msg.author.bot:
 			self.message_per_day +=1
 
+		if random.random()<0.05:
+			await self.send_message_to_moderator(msg.content, msg.author.global_name)
+	async def send_message_to_moderator(self, submit_text, author_nickname):
+		moderator_result = await self.chat_with_deepseek(f'Інструкція: {self.moderator_rules}\n'
+				                              f'Зараз: {int(time.time())}\n'
+				                      f'Автор: {author_nickname}\n'
+				                      f'Повідомлення: {submit_text}', 'moderator')
+
+		await self.upload_scheduled_commands(moderator_result['json_data'])
+
 
 	@commands.has_permissions(administrator=True)
-	@discord.slash_command(name="append_scheduled_command", description="Додати завчасно звіт й запросити команди")
-	async def append_scheduled_command(self, ctx: discord.ApplicationContext):
+	@discord.slash_command(name="ai_iter", description="Додати завчасно звіт й запросити команди")
+	async def ai_iter(self, ctx: discord.ApplicationContext):
+		await ctx.defer()
 		await self.append_scheduled_commands()
 
 		embed = discord.Embed(
@@ -150,12 +181,44 @@ class ScheduledCommands(commands.Cog):
 		)
 
 		await ctx.respond(embed=embed, ephemeral=True)
+	async def send_submit_to_ai(self, submit_text, author_nickname):
+		await self.chat_with_deepseek(f'автор: {author_nickname}\n'
+		                              f'повідомлення: {submit_text}', 'getter')
 
 
+
+	async def get_last_message(self):
+		"""Повертає останнє повідомлення з історії чату"""
+		conn = sqlite3.connect(DB_NAME)
+		cursor = conn.cursor()
+		
+		try:
+			# Отримуємо останній запис, відсортувавши за часом або ID
+			cursor.execute('''
+				SELECT role, content, timestamp 
+				FROM messages 
+				ORDER BY timestamp DESC 
+				LIMIT 1
+			''')
+			
+			result = cursor.fetchone()
+			
+			if result:
+				return {
+					"role": result[0],
+					"content": result[1],
+					"timestamp": result[2]
+				}
+			return None
+			
+		except sqlite3.Error as e:
+			print(f"Помилка бази даних: {e}")
+			return None
+		finally:
+			conn.close()
 	@tasks.loop(hours=24)
 	async def append_scheduled_commands(self):
 
-		now = int(time.time())
 		guild: discord.Guild = self.bot.get_guild(GUILD_ID)
 		if not guild:
 			print('Помилка пошуку серверу!')
@@ -170,49 +233,46 @@ class ScheduledCommands(commands.Cog):
 		role_names = [role.name for role in guild.roles if role.name != "@everyone"] if guild else "(Невідомо)"
 		role_list = "\n - ".join(role_names) if role_names else "Немає ролей"
 
-		# Змінні
-		self.var_cursor.execute('SELECT name, value FROM variables WHERE guild_id = ?', (guild.id,))
-		variables = self.var_cursor.fetchall()
-		if variables:
-			var_list = "\n - ".join(f"{name} = {value}" for name, value in variables)
-		else:
-			var_list = "Немає змінних"
 
 
-		self.message_cursor.execute(
-			"SELECT username, message FROM messages WHERE guild_id = ?", (guild.id,))
-		messages = self.message_cursor.fetchall()
 
 
-		with open(FIRST_MESSAGE_FILE, 'r', encoding='utf-8') as f:
-			first_message = f.read().strip()
-		text=first_message+'\n'
-		text += "\n".join([f"{user} — {msg}" for user, msg in messages])
+		text = self.get_last_message()
 
-		request_text = (f'1. {now}\n'
-		                f'2. {self.message_per_day}\n'
-		                f'3. {true_member_count}'
-		                f'4. \n'
-		                f'{channel_list}\n'
-		                f'\n'
-		                f'5. \n'
-		                f'{role_list}\n'
-		                f'\n'
-		                f'6. \n'
-		                f'{var_list}\n'
-		                f'\n'
-		                f'7. \n'
-		                f'{text}\n'
-		                f'')
+		request_text = (f'1. {self.message_per_day}\n'
+						f'2. {true_member_count}\n'
+						f'3. \n'
+						f'{channel_list}\n'
+						f'\n'
+						f'4. \n'
+						f'{role_list}\n'
+						f'\n'
+						f'7. \n'
+						f'{text}\n'
+						f'')
 
-		result = await self.chat_with_deepseek(request_text)
+		result = await self.chat_with_deepseek(request_text, 'owner')
 
+		print(request_text)
+		print('----')
 		print(result)
 
-		await self.upload_scheduled_commands(result['json_data'])
 
-		self.message_cursor.execute('DELETE FROM messages')
-		self.message_db.commit()
+		await self.extract_scheduled_commands(result['json_data'])
+
+
+	async def extract_scheduled_commands(self, json_data: dict):
+		if 'admin' in json_data:
+			admin_result = await self.chat_with_deepseek(json_data["admin"]+f'\n \n \n timestamp зараз - {int(time.time())}', 'admin')
+			await self.upload_scheduled_commands(admin_result['json_data'])
+
+		if 'eventer' in json_data:
+			eventer_result = await self.chat_with_deepseek(json_data["eventer"]+f'\n \n \n timestamp зараз - {int(time.time())}', 'eventer')
+			await self.upload_scheduled_commands(eventer_result['json_data'])
+
+		if 'moderator' in json_data:
+			self.moderator_rules = json_data['moderator']
+
 
 	@tasks.loop(seconds=10)
 	async def check_scheduled_commands(self):
@@ -249,7 +309,7 @@ class ScheduledCommands(commands.Cog):
 		except:
 			return None
 
-	async def chat_with_deepseek(self, user_message, system_prompt=None):
+	async def chat_with_deepseek(self, user_message, ai_chat: str, system_prompt=None):
 		"""
 		Функція для спілкування з Deepseek з можливістю отримання JSON-даних
 		
@@ -264,13 +324,13 @@ class ScheduledCommands(commands.Cog):
 		try:
 			# Додаємо повідомлення користувача до БД
 			cursor.execute(
-				"INSERT INTO messages (role, content) VALUES (?, ?)",
+				f"INSERT INTO messages_{ai_chat} (role, content) VALUES (?, ?)",
 				("user", user_message)
 			)
 			conn.commit()
 			
 			# Отримуємо історію повідомлень
-			cursor.execute("SELECT role, content FROM messages ORDER BY timestamp")
+			cursor.execute(f"SELECT role, content FROM messages_{ai_chat} ORDER BY timestamp")
 			history = [{"role": row[0], "content": row[1]} for row in cursor.fetchall()]
 			
 			# Додаємо системний промпт
@@ -297,7 +357,7 @@ class ScheduledCommands(commands.Cog):
 			
 			# Зберігаємо відповідь
 			cursor.execute(
-				"INSERT INTO messages (role, content, is_json) VALUES (?, ?, ?)",
+				f"INSERT INTO messages_{ai_chat} (role, content, is_json) VALUES (?, ?, ?)",
 				("assistant", bot_reply, int(json_data is not None))
 			)
 			conn.commit()
@@ -441,6 +501,14 @@ class ScheduledCommands(commands.Cog):
 					await channel.send(f"Роль `{role_name}` видалено в користувача `{member_name}`.")
 				else:
 					await channel.send(f"Не знайдено користувача або ролі.")
+			case "ban_user":
+				member_name = args[1]
+				member = discord.utils.find(lambda m: m.name == member_name, guild.members)
+				if member:
+					await member.ban()
+					await channel.send(f"Користувач {member.name} забанено на сервері!")
+				else:
+					await channel.send(f"Не знайдено користувача.")
 			case "dm_user":
 				target_name = args[1]
 				msg = " ".join(args[2:])
@@ -597,23 +665,6 @@ class ScheduledCommands(commands.Cog):
 			color=discord.Color.green()
 		)
 	
-		await ctx.respond(embed=embed, ephemeral=True)
-	@commands.has_permissions(administrator=True)
-	@discord.slash_command(name="send_first_prompt", description="Надіслати перше повідомлення в AI")
-
-	async def send_first_prompt(self, ctx: discord.ApplicationContext):
-
-
-		with open('first_message.txt', 'r') as file:
-			result = await self.chat_with_deepseek(file.read())
-
-			print(result['text'])
-
-
-		embed = discord.Embed(
-			title="✅ Перший промт відправлено!",
-			color=discord.Color.green()
-		)
 		await ctx.respond(embed=embed, ephemeral=True)
 
 	@discord.slash_command(name="submit_message", description="Написати ШІ повідомлення. Це може бути пропозиція, чи питання, чи ідея")
