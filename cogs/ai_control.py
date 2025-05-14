@@ -344,7 +344,7 @@ class ScheduledCommands(commands.Cog):
 				messages=history
 			)
 
-
+			print(completion)
 			bot_reply = completion.choices[0].message.content
 
 			print(f"Відповідь бота:\n{bot_reply}")
