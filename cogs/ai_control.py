@@ -237,7 +237,7 @@ class ScheduledCommands(commands.Cog):
 
 
 
-		text = self.get_last_message()
+		text = await self.get_last_message()
 
 		request_text = (f'1. {self.message_per_day}\n'
 						f'2. {true_member_count}\n'
