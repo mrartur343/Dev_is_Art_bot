@@ -253,9 +253,6 @@ class ScheduledCommands(commands.Cog):
 
 		result = await self.chat_with_deepseek(request_text, 'owner')
 
-		print(request_text)
-		print('----')
-		print(result)
 
 
 		await self.extract_scheduled_commands(result['json_data'])
@@ -297,7 +294,6 @@ class ScheduledCommands(commands.Cog):
 		"""Спробує знайти та розпарсити JSON у тексті відповіді"""
 		try:
 
-			print(text)
 
 			# Шукаємо початок JSON (можливі варіанти)
 			start = text.find('{')
@@ -345,6 +341,7 @@ class ScheduledCommands(commands.Cog):
 			
 			# Відправляємо запит
 
+			print(f'Історія {ai_chat}: \n'+ str(history))
 			completion = client.chat.completions.create(
 				extra_body={},
 				model="deepseek/deepseek-prover-v2:free",
