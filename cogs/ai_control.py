@@ -41,7 +41,7 @@ class StrInput(discord.ui.Modal):
 
 	async def callback(self, interaction: discord.Interaction):
 		msg = self.message_input.value
-		self.cog.send_submit_to_ai(msg, author_nickname=interaction.user.global_name)
+		await self.cog.send_submit_to_ai(msg, author_nickname=interaction.user.global_name)
 		await interaction.respond("✅ Повідомлення надіслано!", ephemeral=True)
 
 
