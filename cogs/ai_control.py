@@ -340,7 +340,7 @@ class ScheduledCommands(commands.Cog):
 			print(f'Історія {ai_chat}: \n'+ str(history))
 			completion = client.chat.completions.create(
 				extra_body={},
-				model="deepseek/deepseek-prover-v2:free",
+				model="deepseek/deepseek-r1-zero:free",
 				messages=history
 			)
 
