@@ -10,7 +10,7 @@ from discord import InputTextStyle
 from discord.ext import commands, tasks
 from discord.ui import InputText
 
-AI_LIST = ['getter', 'owner', 'admin.txt', 'eventer', 'moderator']
+AI_LIST = ['getter', 'owner', 'admin', 'eventer', 'moderator']
 FIRST_MESSAGE_FILE = 'first_messages/{ai_name}.txt'
 API_KEY = os.environ.get('AI_Token')
 API_URL = "https://openrouter.ai/api/v1"
