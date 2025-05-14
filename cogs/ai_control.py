@@ -687,6 +687,7 @@ class ScheduledCommands(commands.Cog):
 
 	@discord.slash_command(name="submit_message", description="Написати ШІ повідомлення. Це може бути пропозиція, чи питання, чи ідея")
 	async def submit_message(self,  ctx: discord.ApplicationContext):
+		await ctx.defer()
 		await ctx.send_modal(StrInput(self, ctx.interaction))
 def setup(bot):  # this is called by Pycord to setup the cog
 	bot.add_cog(ScheduledCommands(bot))  # add the cog to the bot
