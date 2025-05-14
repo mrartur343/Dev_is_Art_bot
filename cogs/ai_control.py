@@ -204,11 +204,7 @@ class ScheduledCommands(commands.Cog):
 			result = cursor.fetchone()
 			
 			if result:
-				return {
-					"role": result[0],
-					"content": result[1],
-					"timestamp": result[2]
-				}
+				return result[1]
 			return None
 			
 		except sqlite3.Error as e:
