@@ -142,7 +142,8 @@ class ScheduledCommands(commands.Cog):
 
 		self.api_db.commit()
 		self.api_db.close()
-
+		self.moderator_check_limit=35
+		self.moderator_check_count=35
 
 
 		self.check_scheduled_commands.start()
@@ -159,7 +160,7 @@ class ScheduledCommands(commands.Cog):
 		if not msg.author.bot:
 			self.message_per_day +=1
 
-		if random.random()<0.05:
+		if random.random()<1/(2+(self.moderator_check_count^3)):
 			await self.send_message_to_moderator(msg.content, msg.author.global_name)
 	async def send_message_to_moderator(self, submit_text, author_nickname):
 		moderator_result = await self.chat_with_deepseek(f'Інструкція: {self.moderator_rules}\n'
@@ -213,8 +214,10 @@ class ScheduledCommands(commands.Cog):
 			return None
 		finally:
 			conn.close()
-	@tasks.loop(hours=6)
+	@tasks.loop(hours=24)
 	async def append_scheduled_commands(self):
+
+		self.moderator_check_count=self.moderator_check_limit
 
 		guild: discord.Guild = self.bot.get_guild(GUILD_ID)
 		if not guild:
