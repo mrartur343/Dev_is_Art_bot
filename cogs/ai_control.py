@@ -303,7 +303,10 @@ class ScheduledCommands(commands.Cog):
 
 
 			# Шукаємо початок JSON (можливі варіанти)
-			json_str = text.split('```json' if '```json' in text else '```')[1].split('```')[0]
+			if '```' in text:
+				json_str = text.split('```json' if '```json' in text else '```')[1].split('```')[0]
+			else:
+				json_str = '{'+text.split('{{')[1].split('}}')[0] + '}'
 			return json.loads(json_str)
 		except:
 			return None
