@@ -294,12 +294,8 @@ class ScheduledCommands(commands.Cog):
 
 
 			# Шукаємо початок JSON (можливі варіанти)
-			start = text.find('{')
-			end = text.rfind('}') + 1
-			if start != -1 and end != 0:
-				json_str = text[start:end]
-				return json.loads(json_str)
-			return None
+			json_str = text.split('```json')[1].split('```')[0]
+			return json.loads(json_str)
 		except:
 			return None
 
