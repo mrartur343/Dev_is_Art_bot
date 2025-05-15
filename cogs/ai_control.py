@@ -256,15 +256,24 @@ class ScheduledCommands(commands.Cog):
 
 	async def extract_scheduled_commands(self, json_data: dict):
 		if 'admin' in json_data:
-			admin_result = await self.chat_with_deepseek(json_data["admin"]+f'\n \n \n timestamp зараз - {int(time.time())}', 'admin')
-			await self.upload_scheduled_commands(admin_result['json_data'])
+			try:
+				admin_result = await self.chat_with_deepseek(json_data["admin"]+f'\n \n \n timestamp зараз - {int(time.time())}', 'admin')
+				await self.upload_scheduled_commands(admin_result['json_data'])
+			except Exception as e:
+				print(e)
 
 		if 'eventer' in json_data:
-			eventer_result = await self.chat_with_deepseek(json_data["eventer"]+f'\n \n \n timestamp зараз - {int(time.time())}', 'eventer')
-			await self.upload_scheduled_commands(eventer_result['json_data'])
+			try:
+				eventer_result = await self.chat_with_deepseek(json_data["eventer"]+f'\n \n \n timestamp зараз - {int(time.time())}', 'eventer')
+				await self.upload_scheduled_commands(eventer_result['json_data'])
+			except Exception as e:
+				print(e)
 
 		if 'moderator' in json_data:
-			self.moderator_rules = json_data['moderator']
+			try:
+				self.moderator_rules = json_data['moderator']
+			except Exception as e:
+				print(e)
 
 
 	@tasks.loop(seconds=10)
