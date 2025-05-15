@@ -294,7 +294,7 @@ class ScheduledCommands(commands.Cog):
 
 
 			# Шукаємо початок JSON (можливі варіанти)
-			json_str = text.split('```json')[1].split('```')[0]
+			json_str = text.split('```')[1].split('```')[0]
 			return json.loads(json_str)
 		except:
 			return None
@@ -330,7 +330,7 @@ class ScheduledCommands(commands.Cog):
 			# Якщо очікуємо JSON - додаємо інструкцію
 			history.append({
 					"role": "system",
-					"content": "Будь ласка, поверни відповідь у форматі JSON. Дані мають бути валідним JSON у межах текстової відповіді."
+					"content": "Будь ласка, поверни відповідь у форматі JSON. Дані мають бути валідним JSON у межах текстової відповіді. json відповідь мають бути всередині ```{...}``` де {...} це json відповідь"
 				})
 			
 			# Відправляємо запит
