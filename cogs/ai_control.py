@@ -212,7 +212,7 @@ class ScheduledCommands(commands.Cog):
 			return None
 		finally:
 			conn.close()
-	@tasks.loop(hours=24)
+	@tasks.loop(hours=6)
 	async def append_scheduled_commands(self):
 
 		guild: discord.Guild = self.bot.get_guild(GUILD_ID)
@@ -255,6 +255,11 @@ class ScheduledCommands(commands.Cog):
 
 
 	async def extract_scheduled_commands(self, json_data: dict):
+		if 'moderator' in json_data:
+			try:
+				self.moderator_rules = json_data['moderator']
+			except Exception as e:
+				print(e)
 		if 'admin' in json_data:
 			try:
 				admin_result = await self.chat_with_deepseek(json_data["admin"]+f'\n \n \n timestamp зараз - {int(time.time())}', 'admin')
@@ -269,11 +274,6 @@ class ScheduledCommands(commands.Cog):
 			except Exception as e:
 				print(e)
 
-		if 'moderator' in json_data:
-			try:
-				self.moderator_rules = json_data['moderator']
-			except Exception as e:
-				print(e)
 
 
 	@tasks.loop(seconds=10)
