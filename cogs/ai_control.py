@@ -288,6 +288,8 @@ class ScheduledCommands(commands.Cog):
 
 	async def extract_json_from_text(self, text):
 		"""Спробує знайти та розпарсити JSON у тексті відповіді"""
+
+		print("try to find json:\n "+text+"\n\n\n")
 		try:
 
 
