@@ -28,32 +28,42 @@ async def execute_command(self, guild: discord.Guild, channel, command: str):
             await channel.send(f"ℹ️ Інформаційний канал `{name}` створено.")
 
         case "delete_channel":
-            name = " ".join(args[1:])
-            ch = discord.utils.get(guild.channels, name=name)
+            try:
+                ch_id = int(args[1])
+                ch = guild.get_channel(ch_id)
+            except:
+                ch = None
             if ch:
                 await ch.delete()
-                await channel.send(f"Канал `{name}` видалено.")
+                await channel.send(f"Канал з id `{args[1]}` видалено.")
             else:
-                await channel.send(f"Канал `{name}` не знайдено.")
+                await channel.send(f"Канал з id `{args[1]}` не знайдено.")
 
         case "rename_channel":
-            old_name, new_name = args[1], args[2]
-            ch = discord.utils.get(guild.channels, name=old_name)
+            try:
+                ch_id = int(args[1])
+                new_name = " ".join(args[2:])
+                ch = guild.get_channel(ch_id)
+            except:
+                ch = None
             if ch:
                 await ch.edit(name=new_name)
-                await channel.send(f"Канал `{old_name}` перейменовано на `{new_name}`.")
+                await channel.send(f"Канал з id `{args[1]}` перейменовано на `{new_name}`.")
             else:
-                await channel.send(f"Канал `{old_name}` не знайдено.")
+                await channel.send(f"Канал з id `{args[1]}` не знайдено.")
 
         case "set_channel_topic":
-            ch_name = args[1]
-            topic = " ".join(args[2:])
-            ch = discord.utils.get(guild.channels, name=ch_name)
+            try:
+                ch_id = int(args[1])
+                topic = " ".join(args[2:])
+                ch = guild.get_channel(ch_id)
+            except:
+                ch = None
             if ch and isinstance(ch, discord.TextChannel):
                 await ch.edit(topic=topic)
-                await channel.send(f"Тема каналу `{ch_name}` оновлена.")
+                await channel.send(f"Тема каналу з id `{args[1]}` оновлена.")
             else:
-                await channel.send(f"Канал `{ch_name}` не знайдено або він не текстовий.")
+                await channel.send(f"Канал з id `{args[1]}` не знайдено або він не текстовий.")
 
         case "create_category":
             name = " ".join(args[1:])
@@ -61,15 +71,19 @@ async def execute_command(self, guild: discord.Guild, channel, command: str):
             await channel.send(f"📁 Категорію `{name}` створено.")
 
         case "move_channel":
-            ch_name, cat_name = args[1], " ".join(args[2:])
-            ch = discord.utils.get(guild.channels, name=ch_name)
-            category = discord.utils.get(guild.categories, name=cat_name)
+            try:
+                ch_id = int(args[1])
+                cat_id = int(args[2])
+                ch = guild.get_channel(ch_id)
+                category = discord.utils.get(guild.categories, id=cat_id)
+            except:
+                ch = None
+                category = None
             if ch and category:
                 await ch.edit(category=category)
-                await channel.send(f"📂 Канал `{ch_name}` переміщено до категорії `{cat_name}`.")
+                await channel.send(f"📂 Канал з id `{args[1]}` переміщено до категорії з id `{args[2]}`.")
             else:
                 await channel.send("❌ Канал або категорію не знайдено.")
-                await channel.send(f"```{guild.categories}```")
 
         # --- Ролі ---
         case "create_role":
@@ -78,80 +92,105 @@ async def execute_command(self, guild: discord.Guild, channel, command: str):
             await channel.send(f"Роль `{name}` створено.")
 
         case "delete_role":
-            name = " ".join(args[1:])
-            role = discord.utils.get(guild.roles, name=name)
+            try:
+                role_id = int(args[1])
+                role = guild.get_role(role_id)
+            except:
+                role = None
             if role:
                 await role.delete()
-                await channel.send(f"Роль `{name}` видалено.")
+                await channel.send(f"Роль з id `{args[1]}` видалено.")
             else:
-                await channel.send(f"Роль `{name}` не знайдено.")
+                await channel.send(f"Роль з id `{args[1]}` не знайдено.")
 
         case "rename_role":
-            old_name, new_name = args[1], args[2]
-            role = discord.utils.get(guild.roles, name=old_name)
+            try:
+                role_id = int(args[1])
+                new_name = " ".join(args[2:])
+                role = guild.get_role(role_id)
+            except:
+                role = None
             if role:
                 await role.edit(name=new_name)
-                await channel.send(f"Роль `{old_name}` перейменовано на `{new_name}`.")
+                await channel.send(f"Роль з id `{args[1]}` перейменовано на `{new_name}`.")
             else:
-                await channel.send(f"Роль `{old_name}` не знайдено.")
+                await channel.send(f"Роль з id `{args[1]}` не знайдено.")
 
         # --- Користувачі / ролі ---
         case "add_role":
-            member_name = args[1]
-            role_name = args[2]
-            member = discord.utils.find(lambda m: m.name == member_name, guild.members)
-            role = discord.utils.get(guild.roles, name=role_name)
+            try:
+                member_id = int(args[1])
+                role_id = int(args[2])
+                member = guild.get_member(member_id)
+                role = guild.get_role(role_id)
+            except:
+                member = None
+                role = None
             if member and role:
                 await member.add_roles(role)
-                await channel.send(f"Роль `{role_name}` додано користувачу `{member_name}`.")
+                await channel.send(f"Роль з id `{args[2]}` додано користувачу з id `{args[1]}`.")
             else:
                 await channel.send(f"Не знайдено користувача або ролі.")
 
         case "remove_role":
-            member_name = args[1]
-            role_name = args[2]
-            member = discord.utils.find(lambda m: m.name == member_name, guild.members)
-            role = discord.utils.get(guild.roles, name=role_name)
+            try:
+                member_id = int(args[1])
+                role_id = int(args[2])
+                member = guild.get_member(member_id)
+                role = guild.get_role(role_id)
+            except:
+                member = None
+                role = None
             if member and role:
                 await member.remove_roles(role)
-                await channel.send(f"Роль `{role_name}` видалено в користувача `{member_name}`.")
+                await channel.send(f"Роль з id `{args[2]}` видалено в користувача з id `{args[1]}`.")
             else:
                 await channel.send(f"Не знайдено користувача або ролі.")
 
         case "ban_user":
-            member_name = args[1]
-            member = discord.utils.find(lambda m: m.name == member_name, guild.members)
+            try:
+                member_id = int(args[1])
+                member = guild.get_member(member_id)
+            except:
+                member = None
             if member:
                 await member.ban()
-                await channel.send(f"Користувач {member.name} забанено на сервері!")
+                await channel.send(f"Користувач з id `{args[1]}` забанено на сервері!")
             else:
                 await channel.send(f"Не знайдено користувача.")
 
         case "dm_user":
-            target_name = args[1]
-            msg = " ".join(args[2:])
-            member = discord.utils.find(lambda m: m.name == target_name or m.display_name == target_name, guild.members)
+            try:
+                member_id = int(args[1])
+                msg = " ".join(args[2:])
+                member = guild.get_member(member_id)
+            except:
+                member = None
+                msg = ""
             if member:
                 try:
                     await member.send(msg)
-                    await channel.send(f"📨 Повідомлення надіслано {member.name}.")
+                    await channel.send(f"📨 Повідомлення надіслано користувачу з id `{args[1]}`.")
                 except discord.Forbidden:
                     await channel.send("❌ Не вдалося надіслати повідомлення. Можливо, користувач вимкнув DM.")
             else:
-                await channel.send(f"❌ Користувача `{target_name}` не знайдено.")
+                await channel.send(f"❌ Користувача з id `{args[1]}` не знайдено.")
 
         # --- Повідомлення ---
         case "send_message":
             if len(args) < 3:
-                await channel.send("❌ Використання: send_message НазваКаналу Повідомлення")
+                await channel.send("❌ Використання: send_message idКаналу Повідомлення")
                 return
 
-            target_channel_name = args[1]
-            raw_message = " ".join(args[2:])
-            target_channel = discord.utils.get(guild.text_channels, name=target_channel_name)
+            try:
+                target_channel_id = int(args[1])
+                raw_message = " ".join(args[2:])
+                target_channel = guild.get_channel(target_channel_id)
+            except:
+                target_channel = None
+                raw_message = ""
             if not target_channel:
-                await channel.send(f"❌ Канал `{target_channel_name}` не знайдено.")
-                await channel.send(f"```{guild.text_channels}```")
+                await channel.send(f"❌ Канал з id `{args[1]}` не знайдено.")
                 return
 
             self.var_cursor.execute("SELECT name, value FROM variables WHERE guild_id = ?", (guild.id,))
@@ -160,7 +199,7 @@ async def execute_command(self, guild: discord.Guild, channel, command: str):
                 raw_message = raw_message.replace(f"{{{key}}}", value)
 
             await target_channel.send(raw_message)
-            await channel.send(f"✅ Повідомлення надіслано до каналу `{target_channel_name}`.")
+            await channel.send(f"✅ Повідомлення надіслано до каналу з id `{args[1]}`.")
 
         # --- Сервер ---
         case "change_server_name":
