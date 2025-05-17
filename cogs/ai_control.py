@@ -348,7 +348,7 @@ class ScheduledCommands(commands.Cog):
             try:
                 await execute_command(self, guild, command)  # Виклик з окремого файлу
             except Exception as e:
-                await print(f"Помилка при виконанні `{command}`: {e}")
+                print(f"Помилка при виконанні `{command}`: {e}")
             self.cursor.execute('DELETE FROM scheduled_commands WHERE id = ?', (cmd_id,))
             self.conn.commit()
 
