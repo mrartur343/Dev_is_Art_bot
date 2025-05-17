@@ -9,10 +9,10 @@ import discord
 from discord import InputTextStyle
 from discord.ext import commands, tasks
 from discord.ui import InputText
-from .db_config import DB_NAME, SCHEDULED_DB, VARIABLES_DB
+from .db_config import DB_NAME, SCHEDULED_DB, VARIABLES_DB, CARDS_DB
 from .execute_command import execute_command
 
-AI_LIST = ['getter', 'owner', 'admin', 'eventer', 'moderator']
+AI_LIST = ['getter', 'owner', 'admin', 'eventer', 'moderator', 'designer', 'hr']
 FIRST_MESSAGE_FILE = 'first_messages/{ai_name}.txt'
 API_KEY = os.environ.get('AI_Token')
 API_URL = "https://openrouter.ai/api/v1"
@@ -86,51 +86,19 @@ class ScheduledCommands(commands.Cog):
 
 		self.api_db = sqlite3.connect(DB_NAME)
 		self.api_cursor = self.api_db.cursor()
-		self.api_cursor.execute('''
-		CREATE TABLE IF NOT EXISTS messages_getter (
-			id INTEGER PRIMARY KEY AUTOINCREMENT,
-			role TEXT NOT NULL,
-			content TEXT NOT NULL,
-			timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
-			is_json BOOLEAN DEFAULT 0
-		)
-	''')
-		self.api_cursor.execute('''
-		CREATE TABLE IF NOT EXISTS messages_owner (
-			id INTEGER PRIMARY KEY AUTOINCREMENT,
-			role TEXT NOT NULL,
-			content TEXT NOT NULL,
-			timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
-			is_json BOOLEAN DEFAULT 0
-		)
-	''')
-		self.api_cursor.execute('''
-		CREATE TABLE IF NOT EXISTS messages_admin (
-			id INTEGER PRIMARY KEY AUTOINCREMENT,
-			role TEXT NOT NULL,
-			content TEXT NOT NULL,
-			timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
-			is_json BOOLEAN DEFAULT 0
-		)
-	''')
-		self.api_cursor.execute('''
-		CREATE TABLE IF NOT EXISTS messages_eventer (
-			id INTEGER PRIMARY KEY AUTOINCREMENT,
-			role TEXT NOT NULL,
-			content TEXT NOT NULL,
-			timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
-			is_json BOOLEAN DEFAULT 0
-		)
-	''')
-		self.api_cursor.execute('''
-		CREATE TABLE IF NOT EXISTS messages_moderator (
-			id INTEGER PRIMARY KEY AUTOINCREMENT,
-			role TEXT NOT NULL,
-			content TEXT NOT NULL,
-			timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
-			is_json BOOLEAN DEFAULT 0
-		)
-	''')
+
+		# --- Створення таблиць для всіх AI з AI_LIST ---
+		for ai_name in AI_LIST:
+			self.api_cursor.execute(f'''
+				CREATE TABLE IF NOT EXISTS messages_{ai_name} (
+					id INTEGER PRIMARY KEY AUTOINCREMENT,
+					role TEXT NOT NULL,
+					content TEXT NOT NULL,
+					timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+					is_json BOOLEAN DEFAULT 0
+				)
+			''')
+		# -----------------------------------------------
 
 		for ai_name in AI_LIST:
 			if os.path.exists(FIRST_MESSAGE_FILE.format(ai_name=ai_name)):
@@ -161,6 +129,19 @@ class ScheduledCommands(commands.Cog):
 
 		self.message_per_day = 0
 
+		# --- Таблиця карток учасників ---
+		self.cards_db = sqlite3.connect(CARDS_DB)
+		self.cards_cursor = self.cards_db.cursor()
+		self.cards_cursor.execute('''
+			CREATE TABLE IF NOT EXISTS user_cards (
+				user_id INTEGER PRIMARY KEY,
+				username TEXT,
+				card_content TEXT,
+				updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+			)
+		''')
+		self.cards_db.commit()
+
 	def cog_unload(self):
 		self.check_scheduled_commands.cancel()
 		self.conn.close()
@@ -168,16 +149,20 @@ class ScheduledCommands(commands.Cog):
 	@commands.Cog.listener()
 	async def on_message(self, msg: discord.Message):
 		if not msg.author.bot:
-			self.message_per_day +=1
+			self.message_per_day += 1
 
-		if random.random()<1/(2+(self.moderator_check_count^3)):
-			await self.send_message_to_moderator(msg.content, msg.author.global_name)
-	async def send_message_to_moderator(self, submit_text, author_nickname):
-		moderator_result = await self.chat_with_deepseek(f'Інструкція: {self.moderator_rules}\n'
-				                              f'Зараз: {int(time.time())}\n'
-				                      f'Автор: {author_nickname}\n'
-				                      f'Повідомлення: {submit_text}', 'moderator')
-
+		if random.random() < 1 / (2 + (self.moderator_check_count ** 3)):
+			await self.send_message_to_moderator(msg.content, msg.author.global_name, msg.author.id)
+	async def send_message_to_moderator(self, submit_text, author_nickname, author_id=None):
+        # Отримати картку учасника
+		card = await self.get_user_card(author_id) if author_id else None
+		card_text = f"Картка учасника:\n{card}\n\n" if card else ""
+		moderator_result = await self.chat_with_deepseek(
+		    f'{card_text}Інструкція: {self.moderator_rules}\n'
+		    f'Зараз: {int(time.time())}\n'
+		    f'Автор: {author_nickname}\n'
+		    f'Повідомлення: {submit_text}', 'moderator'
+		)
 		await self.upload_scheduled_commands(moderator_result['json_data'])
 
 
@@ -714,5 +699,79 @@ class ScheduledCommands(commands.Cog):
 	@discord.slash_command(name="submit_message", description="Написати ШІ повідомлення. Це може бути пропозиція, чи питання, чи ідея")
 	async def submit_message(self,  ctx: discord.ApplicationContext):
 		await ctx.send_modal(StrInput(self, ctx.interaction))
+
+	async def get_user_card(self, user_id: int):
+		self.cards_cursor.execute('SELECT card_content FROM user_cards WHERE user_id = ?', (user_id,))
+		row = self.cards_cursor.fetchone()
+		return row[0] if row else None
+
+	async def chat_with_deepseek_text(self, user_message, ai_chat: str, system_prompt=None):
+		"""
+        Отримати відповідь від Deepseek без очікування JSON, тільки текст.
+        """
+		conn = sqlite3.connect(DB_NAME)
+		cursor = conn.cursor()
+		try:
+			cursor.execute(
+				f"INSERT INTO messages_{ai_chat} (role, content) VALUES (?, ?)",
+				("user", user_message)
+			)
+			conn.commit()
+
+			cursor.execute(f"SELECT role, content FROM messages_{ai_chat} ORDER BY timestamp")
+			history = [{"role": row[0], "content": row[1]} for row in cursor.fetchall()]
+
+			if system_prompt:
+				history.insert(0, {"role": "system", "content": system_prompt})
+
+			completion = client.chat.completions.create(
+                extra_body={},
+                model="deepseek/deepseek-r1-zero:free",
+                messages=history
+            )
+
+			bot_reply = completion.choices[0].message.content
+
+			cursor.execute(
+                f"INSERT INTO messages_{ai_chat} (role, content, is_json) VALUES (?, ?, ?)",
+                ("assistant", bot_reply, 0)
+            )
+			conn.commit()
+
+			return bot_reply
+
+		except Exception as e:
+			return f"Помилка: {e}"
+		finally:
+			conn.close()
+	@commands.has_permissions(administrator=True)
+	@discord.slash_command(name="set_user_card", description="Задати або оновити картку учасника")
+	async def set_user_card(self, ctx: discord.ApplicationContext, member: discord.Member, *, card: str):
+		await self.save_user_card(member.id, member.display_name, card)
+		await ctx.respond(f"Картку для {member.display_name} оновлено.", ephemeral=True)
+	async def save_user_card(self, user_id: int, username: str, card_content: str):
+		self.cards_cursor.execute('''
+			INSERT INTO user_cards (user_id, username, card_content, updated_at)
+			VALUES (?, ?, ?, CURRENT_TIMESTAMP)
+			ON CONFLICT(user_id) DO UPDATE SET
+			    username=excluded.username,
+			    card_content=excluded.card_content,
+			    updated_at=CURRENT_TIMESTAMP
+		''', (user_id, username, card_content))
+		self.cards_db.commit()
+
+	@discord.slash_command(name="view_user_card", description="Переглянути картку учасника")
+	async def view_user_card(self, ctx: discord.ApplicationContext, member: discord.Member):
+		"""Показати картку учасника за його Discord-аккаунтом"""
+		card = await self.get_user_card(member.id)
+		if card:
+			embed = discord.Embed(
+				title=f"Картка учасника: {member.display_name}",
+				description=card,
+				color=discord.Color.green()
+			)
+			await ctx.respond(embed=embed, ephemeral=True)
+		else:
+			await ctx.respond(f"Картка для {member.display_name} не знайдена.", ephemeral=True)
 def setup(bot):  # this is called by Pycord to setup the cog
 	bot.add_cog(ScheduledCommands(bot))  # add the cog to the bot
