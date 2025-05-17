@@ -14,6 +14,7 @@ from .execute_command import execute_command
 
 AI_LIST = ['getter', 'owner', 'admin', 'eventer', 'moderator', 'designer', 'hr']
 FIRST_MESSAGE_FILE = 'first_messages/{ai_name}.txt'
+MODERATOR_RULES_FILE = "moderator_rules.json"  # Додаємо шлях до файлу
 API_KEY = os.environ.get('AI_Token')
 API_URL = "https://openrouter.ai/api/v1"
 
@@ -142,6 +143,16 @@ class ScheduledCommands(commands.Cog):
 		''')
 		self.cards_db.commit()
 
+		# --- Завантаження правил модератора з файлу ---
+		self.moderator_rules = None
+		if os.path.exists(MODERATOR_RULES_FILE):
+			try:
+				with open(MODERATOR_RULES_FILE, "r", encoding="utf-8") as f:
+					self.moderator_rules = json.load(f)
+			except Exception as e:
+				print(f"Не вдалося завантажити правила модератора: {e}")
+		# ----------------------------------------------
+
 	def cog_unload(self):
 		self.check_scheduled_commands.cancel()
 		self.conn.close()
@@ -169,9 +180,11 @@ class ScheduledCommands(commands.Cog):
 		    f'Автор: {author_nickname}\n'
 		    f'Повідомлення: {submit_text}', 'moderator'
 		)
-		await self.upload_scheduled_commands(moderator_result['json_data'])
 
 		await self.set_user_card(author_id, moderator_result['content'].split('```')[0]) if author_id else None
+
+		await self.upload_scheduled_commands(moderator_result['json_data'])
+
 
 
 	@commands.has_permissions(administrator=True)
@@ -265,6 +278,13 @@ class ScheduledCommands(commands.Cog):
 		if 'moderator' in json_data:
 			try:
 				self.moderator_rules = json_data['moderator']
+				# --- Зберігаємо правила модератора у файл ---
+				try:
+					with open(MODERATOR_RULES_FILE, "w", encoding="utf-8") as f:
+						json.dump(self.moderator_rules, f, ensure_ascii=False, indent=2)
+				except Exception as e:
+					print(f"Не вдалося зберегти правила модератора: {e}")
+				# ---------------------------------------------
 			except Exception as e:
 				print(e)
 		if 'admin' in json_data:
