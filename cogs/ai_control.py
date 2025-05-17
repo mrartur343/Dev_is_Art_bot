@@ -151,7 +151,13 @@ class ScheduledCommands(commands.Cog):
 		if not msg.author.bot:
 			self.message_per_day += 1
 
-			if random.random() < 1 / (2 + (self.moderator_check_count ** 1.5)):
+			random_k = random.random()
+
+			msg_k = 1 / (2 + (self.moderator_check_count ** 1.5))
+
+			print(f"{random_k} | {msg_k}")
+
+			if random_k < msg_k:
 				await self.send_message_to_moderator(msg.content, msg.author.global_name, msg.author.id)
 	async def send_message_to_moderator(self, submit_text, author_nickname, author_id=None):
         # Отримати картку учасника
