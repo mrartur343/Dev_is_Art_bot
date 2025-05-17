@@ -165,6 +165,8 @@ class ScheduledCommands(commands.Cog):
 		)
 		await self.upload_scheduled_commands(moderator_result['json_data'])
 
+		await self.set_user_card(author_id, moderator_result['content'].split('```')[0]) if author_id else None
+
 
 	@commands.has_permissions(administrator=True)
 	@discord.slash_command(name="ai_iter", description="Додати завчасно звіт й запросити команди")
