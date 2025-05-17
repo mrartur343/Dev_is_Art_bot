@@ -1,7 +1,7 @@
 import discord
 import logging
 
-async def execute_command(self, guild: discord.Guild, channel, command: str):
+async def execute_command(self, guild: discord.Guild, command: str):
     args = command.split()
     if not args:
         logging.info("Пуста команда.")
