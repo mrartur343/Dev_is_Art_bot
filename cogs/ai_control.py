@@ -4,6 +4,7 @@ import random
 import sqlite3
 import time
 from openai import OpenAI
+import logging
 
 import discord
 from discord import InputTextStyle
@@ -28,6 +29,14 @@ VARIABLES_DB = os.path.join(DB_FOLDER, "variables.db")
 
 LOG_CHANNEL_ID = 1371537439495028856
 GUILD_ID = 1371121463717003344
+
+LOG_FILE = "bot_commands.log"
+logging.basicConfig(
+    filename=LOG_FILE,
+    level=logging.INFO,
+    format="%(asctime)s %(levelname)s: %(message)s",
+    encoding="utf-8"
+)
 
 client = OpenAI(
   base_url="https://openrouter.ai/api/v1",
@@ -269,7 +278,7 @@ class ScheduledCommands(commands.Cog):
 
     async def extract_scheduled_commands(self, json_data: dict):
         guild = self.bot.get_guild(GUILD_ID)
-        # Формуємо списки id - назва для каналів, ролей, користувачів, категорій
+        # Формуємо списки id - назва для каналах, ролях, користувачах, категоріях
         if guild:
             channels_text = "\n".join([f"{ch.id} - {ch.name}" for ch in guild.channels])
             roles_text = "\n".join([f"{role.id} - {role.name}" for role in guild.roles])
@@ -502,8 +511,6 @@ class ScheduledCommands(commands.Cog):
     @commands.has_permissions(administrator=True)
     @discord.slash_command(name="view_scheduled", description="Всі заплановані команди")
     async def view_scheduled(self, ctx: discord.ApplicationContext):
-        # Перевірка чи адмін
-
         self.cursor.execute('''
             SELECT timestamp, command, channel_id FROM scheduled_commands
             WHERE guild_id = ?
@@ -512,20 +519,18 @@ class ScheduledCommands(commands.Cog):
         rows = self.cursor.fetchall()
 
         if not rows:
-            await ctx.respond("🔍 Немає запланованих завдань.", ephemeral=True)
+            log_msg = f"[view_scheduled] 🔍 Немає запланованих завдань для гільдії {ctx.guild.id}"
+            logging.info(log_msg)
             return
 
         lines = []
         for ts, cmd, ch_id in rows:
             lines.append(f"• ⏰ <t:{ts}:F> в <#{ch_id}> — `{cmd}`")
 
-        embed = discord.Embed(
-            title="📅 Заплановані завдання",
-            description="\n".join(lines),
-            color=discord.Color.green()
-        )
+        log_msg = f"[view_scheduled] 📅 Заплановані завдання для гільдії {ctx.guild.id}:\n" + "\n".join(lines)
+        logging.info(log_msg)
 
-        await ctx.respond(embed=embed, ephemeral=True)
+        # Не відправляємо повідомлення в Discord, лише лог
 
     @discord.slash_command(name="submit_message", description="Написати ШІ повідомлення. Це може бути пропозиція, чи питання, чи ідея")
     async def submit_message(self,  ctx: discord.ApplicationContext):
@@ -619,6 +624,7 @@ class ScheduledCommands(commands.Cog):
         """Показати картку учасника за його Discord-аккаунтом"""
         card = await self.get_user_card(member.id)
         if card:
+            logging.info(f"[view_user_card] Картка для {member.display_name} (ID: {member.id}):\n{card}")
             embed = discord.Embed(
                 title=f"Картка учасника: {member.display_name}",
                 description=card,
@@ -626,6 +632,7 @@ class ScheduledCommands(commands.Cog):
             )
             await ctx.respond(embed=embed, ephemeral=True)
         else:
+            logging.info(f"[view_user_card] Картка для {member.display_name} (ID: {member.id}) не знайдена.")
             await ctx.respond(f"Картка для {member.display_name} не знайдена.", ephemeral=True)
 
 def setup(bot):  # this is called by Pycord to setup the cog
