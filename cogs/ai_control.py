@@ -9,12 +9,22 @@ import discord
 from discord import InputTextStyle
 from discord.ext import commands, tasks
 from discord.ui import InputText
+from .db_config import DB_NAME, SCHEDULED_DB, VARIABLES_DB
+from .execute_command import execute_command
 
 AI_LIST = ['getter', 'owner', 'admin', 'eventer', 'moderator']
 FIRST_MESSAGE_FILE = 'first_messages/{ai_name}.txt'
 API_KEY = os.environ.get('AI_Token')
 API_URL = "https://openrouter.ai/api/v1"
-DB_NAME = "chat_history.db"
+
+# --- Додаємо цю секцію ---
+DB_FOLDER = "db"
+os.makedirs(DB_FOLDER, exist_ok=True)
+DB_NAME = os.path.join(DB_FOLDER, "chat_history.db")
+SCHEDULED_DB = os.path.join(DB_FOLDER, "scheduled_commands.db")
+VARIABLES_DB = os.path.join(DB_FOLDER, "variables.db")
+# -------------------------
+
 LOG_CHANNEL_ID = 1371537439495028856
 GUILD_ID = 1371121463717003344
 
@@ -49,7 +59,7 @@ class StrInput(discord.ui.Modal):
 class ScheduledCommands(commands.Cog):
 	def __init__(self, bot):
 		self.bot: discord.Bot = bot
-		self.conn = sqlite3.connect('scheduled_commands.db')
+		self.conn = sqlite3.connect(SCHEDULED_DB)
 		self.cursor = self.conn.cursor()
 		self.cursor.execute('''
 			CREATE TABLE IF NOT EXISTS scheduled_commands (
@@ -62,7 +72,7 @@ class ScheduledCommands(commands.Cog):
 		''')
 		self.conn.commit()
 
-		self.var_db = sqlite3.connect("variables.db")
+		self.var_db = sqlite3.connect(VARIABLES_DB)
 		self.var_cursor = self.var_db.cursor()
 		self.var_cursor.execute('''
 			CREATE TABLE IF NOT EXISTS variables (
@@ -293,7 +303,7 @@ class ScheduledCommands(commands.Cog):
 			if not channel:
 				continue
 			try:
-				await self.execute_command(guild, channel, command)
+				await execute_command(self, guild, channel, command)  # Виклик з окремого файлу
 			except Exception as e:
 				await channel.send(f"Помилка при виконанні `{command}`: {e}")
 			self.cursor.execute('DELETE FROM scheduled_commands WHERE id = ?', (cmd_id,))
