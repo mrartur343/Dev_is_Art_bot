@@ -5,6 +5,7 @@ import sqlite3
 import time
 from openai import OpenAI
 import logging
+import io
 
 import discord
 from discord import InputTextStyle
@@ -344,13 +345,10 @@ class ScheduledCommands(commands.Cog):
         for row in rows:
             cmd_id, guild_id, channel_id, command = row
             guild = self.bot.get_guild(GUILD_ID)
-            channel = await guild.fetch_channel(channel_id) if guild and channel_id else None
-            if not channel:
-                continue
             try:
-                await execute_command(self, guild, channel, command)  # Виклик з окремого файлу
+                await execute_command(self, guild, command)  # Виклик з окремого файлу
             except Exception as e:
-                await channel.send(f"Помилка при виконанні `{command}`: {e}")
+                await print(f"Помилка при виконанні `{command}`: {e}")
             self.cursor.execute('DELETE FROM scheduled_commands WHERE id = ?', (cmd_id,))
             self.conn.commit()
 
@@ -521,16 +519,32 @@ class ScheduledCommands(commands.Cog):
         if not rows:
             log_msg = f"[view_scheduled] 🔍 Немає запланованих завдань для гільдії {ctx.guild.id}"
             logging.info(log_msg)
+            await ctx.respond("🔍 Немає запланованих завдань.", ephemeral=True)
             return
 
-        lines = []
-        for ts, cmd, ch_id in rows:
-            lines.append(f"• ⏰ <t:{ts}:F> в <#{ch_id}> — `{cmd}`")
+        # Формуємо JSON-структуру для експорту
+        tasks_json = {
+            str(ts): {
+                "command": cmd,
+                "channel_id": ch_id
+            }
+            for ts, cmd, ch_id in rows
+        }
 
-        log_msg = f"[view_scheduled] 📅 Заплановані завдання для гільдії {ctx.guild.id}:\n" + "\n".join(lines)
+        # Створюємо файл у пам'яті
+        json_bytes = json.dumps(tasks_json, ensure_ascii=False, indent=2).encode("utf-8")
+        file = discord.File(io.BytesIO(json_bytes), filename="scheduled_tasks.json")
+
+        await ctx.respond(
+            content="📅 Ось ваші заплановані завдання у форматі JSON:",
+            file=file,
+            ephemeral=True
+        )
+
+        log_msg = f"[view_scheduled] 📅 Заплановані завдання для гільдії {ctx.guild.id}:\n" + "\n".join(
+            [f"• ⏰ <t:{ts}:F> в <#{ch_id}> — `{cmd}`" for ts, cmd, ch_id in rows]
+        )
         logging.info(log_msg)
-
-        # Не відправляємо повідомлення в Discord, лише лог
 
     @discord.slash_command(name="submit_message", description="Написати ШІ повідомлення. Це може бути пропозиція, чи питання, чи ідея")
     async def submit_message(self,  ctx: discord.ApplicationContext):
