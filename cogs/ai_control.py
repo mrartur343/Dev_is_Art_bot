@@ -153,7 +153,7 @@ class ScheduledCommands(commands.Cog):
 
 			random_k = random.random()
 
-			msg_k = 1 / (2 + (self.moderator_check_count ** 1.5))
+			msg_k = 1 / (2 + (100-self.moderator_check_count ** 1.5))
 
 			print(f"{random_k} | {msg_k}")
 
