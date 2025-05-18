@@ -212,5 +212,53 @@ async def execute_command(self, guild: discord.Guild, command: str):
             self.var_db.commit()
             logging.info(f"✅ Змінну `{var_name}` встановлено на `{var_value}`.")
 
+        # --- HR завдання ---
+        case "hr_assign_role":
+            # Формат: hr_assign_role user role
+            if len(args) < 3:
+                logging.info("❌ Формат: hr_assign_role користувач роль")
+                return
+
+            user_identifier = args[1]
+            role_identifier = args[2]
+            member = get_member_by_id_or_name(user_identifier)
+            role = get_role_by_id_or_name(role_identifier)
+
+            if not member:
+                logging.info(f"❌ Користувача `{user_identifier}` не знайдено.")
+                return
+            if not role:
+                logging.info(f"❌ Роль `{role_identifier}` не знайдено.")
+                return
+
+            # Отримати картку учасника
+            card = await self.get_user_card(member.id) if hasattr(self, "get_user_card") else None
+            card_text = f"Картка учасника:\n{card}\n\n" if card else "Картка учасника не знайдена.\n\n"
+
+            # Формуємо запит для HR ШІ
+            hr_prompt = (
+                f"Користувач: {member.display_name} (ID: {member.id})\n"
+                f"Роль: {role.name} (ID: {role.id})\n"
+                f"{card_text}"
+                f"Відповідь має містити JSON із завданням для бота по додаванню ролі користувачу."
+            )
+
+            # Відправляємо запит до HR ШІ
+            if hasattr(self, "chat_with_deepseek"):
+                hr_result = await self.chat_with_deepseek(hr_prompt, 'hr')
+                logging.info(f"[hr_assign_role] Відповідь HR ШІ: {hr_result}")
+
+                # Якщо відповідь містить json_data із завданнями, завантажуємо їх як у admin
+                if isinstance(hr_result, dict) and "json_data" in hr_result:
+                    if hasattr(self, "upload_scheduled_commands"):
+                        await self.upload_scheduled_commands(hr_result["json_data"])
+                        logging.info("[hr_assign_role] Завдання HR ШІ додано до scheduled_commands.")
+                    else:
+                        logging.info("[hr_assign_role] Не знайдено метод upload_scheduled_commands.")
+                else:
+                    logging.info("[hr_assign_role] Відповідь HR ШІ не містить json_data.")
+            else:
+                logging.info("[hr_assign_role] Не знайдено метод chat_with_deepseek.")
+
         case _:
             logging.info(f"Невідома команда: `{command}`")

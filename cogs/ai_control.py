@@ -178,6 +178,7 @@ class ScheduledCommands(commands.Cog):
             print(f"{random_k} | {msg_k}")
 
             if random_k < msg_k:
+                await msg.add_reaction("🤖")
                 await self.send_message_to_moderator(msg.content, msg.author.global_name, msg.author.id)
 
     async def send_message_to_moderator(self, submit_text, author_nickname, author_id=None):
