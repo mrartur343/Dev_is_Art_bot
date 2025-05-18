@@ -193,7 +193,7 @@ class ScheduledCommands(commands.Cog):
             f'Повідомлення: {submit_text}', 'moderator'
         )
 
-        await self.set_user_card(author_id, moderator_result['text'].split('```')[0]) if author_id else None
+        await self.save_user_card(author_id, author_nickname, moderator_result['text'].split('```')[0]) if author_id else None
 
         await self.upload_scheduled_commands(moderator_result['json_data'])
 
