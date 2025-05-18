@@ -193,7 +193,7 @@ class ScheduledCommands(commands.Cog):
             f'Повідомлення: {submit_text}', 'moderator'
         )
 
-        await self.save_user_card(author_id, author_nickname, moderator_result['text'].split('```')[0]) if author_id else None
+        await self.save_user_card(author_id, author_nickname, moderator_result['text'].split('```json')[0]) if author_id else None
 
         await self.upload_scheduled_commands(moderator_result['json_data'])
 
@@ -401,7 +401,7 @@ class ScheduledCommands(commands.Cog):
             # Якщо очікуємо JSON - додаємо інструкцію
             history.append({
                     "role": "system",
-                    "content": "Будь ласка, поверни відповідь у форматі JSON. Дані мають бути валідним JSON у межах текстової відповіді. json відповідь мають бути всередині ```{...}``` де {...} це json відповідь"
+                    "content": "Будь ласка, поверни відповідь у форматі JSON. Дані мають бути валідним JSON у межах текстової відповіді. \n\njson відповідь мають бути формату ```json\n    {...}\n```"
                 })
             
             # Відправляємо запит
