@@ -195,6 +195,8 @@ class ScheduledCommands(commands.Cog):
 
         await self.save_user_card(author_id, author_nickname, moderator_result['text'].split('```json')[0]) if author_id else None
 
+        self.moderator_check_count -= 1
+
         await self.upload_scheduled_commands(moderator_result['json_data'])
 
     @commands.has_permissions(administrator=True)
