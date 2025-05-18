@@ -131,8 +131,8 @@ class ScheduledCommands(commands.Cog):
 
         self.api_db.commit()
         self.api_db.close()
-        self.moderator_check_limit=35
-        self.moderator_check_count=35
+        self.moderator_check_limit=100
+        self.moderator_check_count=100
 
         self.check_scheduled_commands.start()
         self.append_scheduled_commands.start()
@@ -173,7 +173,7 @@ class ScheduledCommands(commands.Cog):
 
             random_k = random.random()
 
-            msg_k = 1-(1 / (2 + (self.moderator_check_count ** 1.5)))
+            msg_k = 1/(self.moderator_check_limit+2-self.moderator_check_count)
 
             print(f"{random_k} | {msg_k}")
 
