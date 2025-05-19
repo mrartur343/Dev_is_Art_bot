@@ -237,10 +237,9 @@ async def execute_command(self, guild: discord.Guild, command: str):
 
             # Формуємо запит для HR ШІ
             hr_prompt = (
-                f"Користувач: {member.display_name} (ID: {member.id})\n"
+                f"Користувач: {member.global_name} (ID: {member.id})\n"
                 f"Роль: {role.name} (ID: {role.id})\n"
                 f"{card_text}"
-                f"Відповідь має містити JSON із завданням для бота по додаванню ролі користувачу."
             )
 
             # Відправляємо запит до HR ШІ
