@@ -2,6 +2,8 @@ import os
 import discord
 from discord.ext import commands
 from cogs import ai_control
+from dotenv import load_dotenv
+load_dotenv()
 
 
 Token = os.environ.get("Token")
