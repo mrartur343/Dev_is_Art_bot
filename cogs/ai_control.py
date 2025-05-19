@@ -163,6 +163,8 @@ class ScheduledCommands(commands.Cog):
                 print(f"Не вдалося завантажити правила модератора: {e}")
         # ----------------------------------------------
 
+        self.user_mention_count = {}  # user_id: count для згадувань бота модератору
+
     def cog_unload(self):
         self.check_scheduled_commands.cancel()
         self.conn.close()
@@ -653,5 +655,96 @@ class ScheduledCommands(commands.Cog):
             logging.info(f"[view_user_card] Картка для {member.display_name} (ID: {member.id}) не знайдена.")
             await ctx.respond(f"Картка для {member.display_name} не знайдена.", ephemeral=True)
 
-def setup(bot):  # this is called by Pycord to setup the cog
-    bot.add_cog(ScheduledCommands(bot))  # add the cog to the bot
+    @commands.slash_command(name="public_opinion", description="Оцінка громадської думки від getter")
+    async def public_opinion(self, ctx: discord.ApplicationContext):
+        """Відправляє оцінку громадської думки з останнього повідомлення getter"""
+        conn = sqlite3.connect(DB_NAME)
+        cursor = conn.cursor()
+        try:
+            cursor.execute("SELECT content FROM messages_getter ORDER BY timestamp DESC LIMIT 1")
+            row = cursor.fetchone()
+            if row:
+                await ctx.respond(f"Оцінка громадської думки:\n{row[0]}", ephemeral=True)
+            else:
+                await ctx.respond("Немає повідомлень від getter.", ephemeral=True)
+        finally:
+            conn.close()
+
+    @commands.slash_command(name="owner_plans", description="Останні плани та вказання від owner")
+    async def owner_plans(self, ctx: discord.ApplicationContext):
+        """Відправляє останні плани та вказання з останнього повідомлення owner"""
+        conn = sqlite3.connect(DB_NAME)
+        cursor = conn.cursor()
+        try:
+            cursor.execute("SELECT content FROM messages_owner ORDER BY timestamp DESC LIMIT 1")
+            row = cursor.fetchone()
+            if row:
+                await ctx.respond(f"Останні плани та вказання owner:\n{row[0]}", ephemeral=True)
+            else:
+                await ctx.respond("Немає повідомлень від owner.", ephemeral=True)
+        finally:
+            conn.close()
+
+    @commands.slash_command(name="owner_orders", description="Останні накази для ШІ з owner")
+    async def owner_orders(self, ctx: discord.ApplicationContext):
+        """Відправляє останні накази для ШІ з json_data з останнього повідомлення owner"""
+        conn = sqlite3.connect(DB_NAME)
+        cursor = conn.cursor()
+        try:
+            cursor.execute("SELECT content FROM messages_owner ORDER BY timestamp DESC LIMIT 1")
+            row = cursor.fetchone()
+            if row:
+                content = row[0]
+                json_data = None
+                if '```' in content:
+                    try:
+                        json_str = content.split('```json' if '```json' in content else '```')[1].split('```')[0]
+                        json_data = json.loads(json_str)
+                    except Exception:
+                        pass
+                if json_data:
+                    await ctx.respond(f"Останні накази для ШІ (owner):\n```json\n{json.dumps(json_data, ensure_ascii=False, indent=2)}\n```", ephemeral=True)
+                else:
+                    await ctx.respond("Не знайдено наказів у форматі JSON в останньому повідомленні owner.", ephemeral=True)
+            else:
+                await ctx.respond("Немає повідомлень від owner.", ephemeral=True)
+        finally:
+            conn.close()
+
+    @commands.slash_command(name="mod_mentions", description="Всі повідомлення з згадуванням бота для модератора (до 50/день/користувач)")
+    async def mod_mentions(self, ctx: discord.ApplicationContext):
+        """Відправляє всі повідомлення з згадуванням бота модератору (до 50 на день на користувача)"""
+        import datetime
+        conn = sqlite3.connect(DB_NAME)
+        cursor = conn.cursor()
+        try:
+            today = datetime.datetime.utcnow().date()
+            bot_id = str(ctx.bot.user.id)
+            cursor.execute("""
+                SELECT user_id, username, content, timestamp
+                FROM messages_moderator
+                WHERE content LIKE ? AND DATE(timestamp) = ?
+                ORDER BY timestamp DESC
+            """, (f"%<@{bot_id}>%", today))
+            rows = cursor.fetchall()
+
+            from collections import defaultdict
+            user_msgs = defaultdict(list)
+            for user_id, username, content, ts in rows:
+                count = self.user_mention_count.get(user_id, 0)
+                if count < 50:
+                    user_msgs[user_id].append((username, content, ts))
+                    self.user_mention_count[user_id] = count + 1
+
+            if not user_msgs:
+                await ctx.respond("Немає повідомлень з згадуванням бота для модератора за сьогодні.", ephemeral=True)
+                return
+
+            text = ""
+            for user_id, msgs in user_msgs.items():
+                text += f"\n**{msgs[0][0]}** (ID: {user_id}):\n"
+                for username, content, ts in msgs:
+                    text += f"- {content}\n"
+            await ctx.respond(f"Ось повідомлення з згадуванням бота (до 50 на користувача):\n{text[:4000]}", ephemeral=True)
+        finally:
+            conn.close()
