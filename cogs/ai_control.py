@@ -424,8 +424,8 @@ class ScheduledCommands(commands.Cog):
             history = [{"role": row[0], "content": row[1]} for row in cursor.fetchall()]
             
             # Додаємо системний промпт
-            if system_prompt:
-                history.insert(0, {"role": "system", "content": system_prompt})
+            if system_prompt: 
+                history.insert(0,{"role": "system", "content": system_prompt+" detailed thinking on "})
             
             # Якщо очікуємо JSON - додаємо інструкцію
             history.append({
