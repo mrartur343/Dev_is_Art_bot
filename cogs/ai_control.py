@@ -406,7 +406,7 @@ class ScheduledCommands(commands.Cog):
             # Якщо очікуємо JSON - додаємо інструкцію
             history.append({
                     "role": "system",
-                    "content": "Будь ласка, поверни відповідь у форматі JSON. Дані мають бути валідним JSON у межах текстової відповіді."
+                    "content": "Поверни всі JSON дані у форматі ```json{...}```"
                 })
             
             # Відправляємо запит
