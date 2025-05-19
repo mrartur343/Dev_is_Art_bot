@@ -414,7 +414,7 @@ class ScheduledCommands(commands.Cog):
             print(f'Історія {ai_chat}: \n'+ str(history))
             completion = client.chat.completions.create(
                 extra_body={},
-                model="opengvlab/internvl3-2b:free",
+                model="opengvlab/internvl3-14b:free",
                 messages=history
             )
 
