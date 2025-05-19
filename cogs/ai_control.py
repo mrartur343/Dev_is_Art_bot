@@ -14,7 +14,7 @@ from discord.ui import InputText
 from .db_config import DB_NAME, SCHEDULED_DB, VARIABLES_DB, CARDS_DB
 from .execute_command import execute_command
 
-AI_LIST = ['getter', 'owner', 'admin', 'eventer', 'moderator', 'designer', 'hr']
+AI_LIST = ['getter', 'owner', 'admin', 'eventer', 'moderator', 'designer', 'hr', 'dreamer']
 FIRST_MESSAGE_FILE = 'first_messages/{ai_name}.txt'
 MODERATOR_RULES_FILE = "moderator_rules.json"  # Додаємо шлях до файлу
 API_KEY = os.environ.get('AI_Token')
@@ -248,7 +248,7 @@ class ScheduledCommands(commands.Cog):
     @tasks.loop(hours=24)
     async def append_scheduled_commands(self):
 
-        self.moderator_check_count=self.moderator_check_limit
+        self.moderator_check_count = self.moderator_check_limit
 
         guild: discord.Guild = self.bot.get_guild(GUILD_ID)
         if not guild:
@@ -266,17 +266,38 @@ class ScheduledCommands(commands.Cog):
 
         text = await self.get_last_message('getter')
 
-        request_text = (f'1. {self.message_per_day}\n'
-                        f'2. {true_member_count}\n'
-                        f'3. \n'
-                        f'{channel_list}\n'
-                        f'\n'
-                        f'4. \n'
-                        f'{role_list}\n'
-                        f'\n'
-                        f'5. \n'
-                        f'{text}\n'
-                        f'')
+        # --- Генерація ідей через dreamer ---
+        dreamer_prompt = (
+            "Згенеруй 50 унікальних ідей для розвитку, івентів, покращення чи цікавих активностей для Discord-сервера. "
+            "Відповідь має бути у форматі списку, кожна ідея з нового рядка."
+        )
+        dreamer_result = await self.chat_with_deepseek(dreamer_prompt, 'dreamer')
+        ideas_list = []
+        if dreamer_result and "text" in dreamer_result:
+            # Розбиваємо по рядках, фільтруємо порожні
+            ideas_list = [line.strip("-•. \n") for line in dreamer_result["text"].splitlines() if line.strip()]
+            # Якщо ідеї мають формат "1. ...", видаляємо нумерацію
+            ideas_list = [idea.partition('. ')[2] if '. ' in idea else idea for idea in ideas_list]
+        # Випадково вибираємо 7 ідей
+        import random
+        selected_ideas = random.sample(ideas_list, min(7, len(ideas_list))) if ideas_list else []
+
+        ideas_text = "\n".join([f"- {idea}" for idea in selected_ideas]) if selected_ideas else "Немає ідей."
+
+        request_text = (
+            f'1. {self.message_per_day}\n'
+            f'2. {true_member_count}\n'
+            f'3. \n'
+            f'{channel_list}\n'
+            f'\n'
+            f'4. \n'
+            f'{role_list}\n'
+            f'\n'
+            f'5. \n'
+            f'{text}\n'
+            f'\n'
+            f'6. Ідеї для розвитку:\n{ideas_text}\n'
+        )
 
         result = await self.chat_with_deepseek(request_text, 'owner')
 
