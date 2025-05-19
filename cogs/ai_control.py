@@ -368,6 +368,8 @@ class ScheduledCommands(commands.Cog):
                 json_str = text.split('```json' if '```json' in text else '```')[1].split('```')[0]
             elif '{{' in text and '}}' in text:
                 json_str = '{'+text.split('{{')[1].split('}}')[0] + '}'
+            elif '{' in text and '}' in text:
+                json_str = '{'+text.split('{')[1].split('}')[0] + '}'
             else:
                 json_str = '{'+text.split('{\n{\n')[1].split('\n}\n}')[0] + '}'
 
