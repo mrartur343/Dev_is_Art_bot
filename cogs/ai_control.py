@@ -411,7 +411,7 @@ class ScheduledCommands(commands.Cog):
         cursor = conn.cursor()
         
         try:
-            llm_model = 'deepseek/deepseek-r1-zero:free' if ai_chat in ['dreamer', 'owner'] else 'opengvlab/internvl3-14b:free'
+            llm_model = 'nvidia/llama-3.3-nemotron-super-49b-v1:free' if ai_chat in ['dreamer', 'owner'] else 'opengvlab/internvl3-14b:free'
             # Додаємо повідомлення користувача до БД
             cursor.execute(
                 f"INSERT INTO messages_{ai_chat} (role, content) VALUES (?, ?)",
