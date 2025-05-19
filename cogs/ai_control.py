@@ -268,7 +268,7 @@ class ScheduledCommands(commands.Cog):
 
         # --- Генерація ідей через dreamer ---
         dreamer_prompt = (
-            "Згенеруй 50 унікальних ідей для розвитку, івентів, покращення чи цікавих активностей для Discord-сервера. "
+            "Згенеруй 25 унікальних ідей для розвитку, івентів, покращення чи цікавих активностей для Discord-сервера, а також оформлення каналів на ньому. "
             "Відповідь має бути у форматі списку, кожна ідея з нового рядка."
         )
         dreamer_result = await self.chat_with_deepseek(dreamer_prompt, 'dreamer')
@@ -411,6 +411,7 @@ class ScheduledCommands(commands.Cog):
         cursor = conn.cursor()
         
         try:
+            llm_model = 'deepseek/deepseek-r1-zero:free' if ai_chat in ['dreamer', 'owner'] else 'opengvlab/internvl3-14b:free'
             # Додаємо повідомлення користувача до БД
             cursor.execute(
                 f"INSERT INTO messages_{ai_chat} (role, content) VALUES (?, ?)",
@@ -437,7 +438,7 @@ class ScheduledCommands(commands.Cog):
             print(f'Історія {ai_chat}: \n'+ str(history))
             completion = client.chat.completions.create(
                 extra_body={},
-                model="opengvlab/internvl3-14b:free",
+                model=llm_model,
                 messages=history
             )
 
