@@ -30,6 +30,7 @@ VARIABLES_DB = os.path.join(DB_FOLDER, "variables.db")
 
 LOG_CHANNEL_ID = 1371537439495028856
 GUILD_ID = 1371121463717003344
+#GUILD_ID = 1374033689477910578
 
 LOG_FILE = "bot_commands.log"
 logging.basicConfig(
